@@ -2,16 +2,16 @@ package com.example.haksikmokjang.domain.member.controller;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.domain.member.dto.DuplicateCheckResponse;
+import com.example.haksikmokjang.domain.member.dto.SignupResponse;
+import com.example.haksikmokjang.domain.member.dto.UserSignupRequest;
 import com.example.haksikmokjang.domain.member.service.MemberSignupService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 public class MemberSignupController {
-
     private final MemberSignupService memberSignupService;
 
     @GetMapping("/api/members/check-login-id")
@@ -31,4 +31,11 @@ public class MemberSignupController {
         DuplicateCheckResponse response = memberSignupService.checkNickname(nickname);
         return ApiResponse.success(response);
     }
+
+    @PostMapping("/api/members/signup/user")
+    public ApiResponse<SignupResponse> signupUser(@Valid @RequestBody UserSignupRequest request) {
+        SignupResponse response = memberSignupService.signupUser(request);
+        return ApiResponse.success(response);
+    }
+
 }
