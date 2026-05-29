@@ -1,8 +1,9 @@
-package com.example.haksikmokjang.domain.member.service;
+package com.example.haksikmokjang.service.member;
 
-import com.example.haksikmokjang.domain.member.dto.DuplicateCheckResponse;
-import com.example.haksikmokjang.domain.member.dto.SignupResponse;
-import com.example.haksikmokjang.domain.member.dto.UserSignupRequest;
+import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
+import com.example.haksikmokjang.dto.member.SignupResponse;
+import com.example.haksikmokjang.dto.member.UserSignupRequest;
+import com.example.haksikmokjang.domain.school.School;
 import com.example.haksikmokjang.repository.MemberRepository;
 import com.example.haksikmokjang.repository.SchoolRepository;
 import com.example.haksikmokjang.repository.UserProfileRepository;
@@ -39,6 +40,8 @@ public class MemberSignupService {
         validateDuplicateEmail(request.getSchoolEmail());
         validateDuplicateNickname(request.getNickname());
 
+        School school = getSchool(request.getSchoolId());
+
         throw new UnsupportedOperationException("회원가입 저장 로직 구현 예정");
     }
 
@@ -58,6 +61,11 @@ public class MemberSignupService {
         if (userProfileRepository.existsByNickname(nickname)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
+    }
+
+    private School getSchool(Long schoolId) {
+        return schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학교입니다."));
     }
 
 }

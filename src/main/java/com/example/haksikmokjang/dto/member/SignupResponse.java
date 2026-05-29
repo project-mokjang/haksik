@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.domain.member.dto;
+package com.example.haksikmokjang.dto.member;
 
 import com.example.haksikmokjang.domain.member.MemberRole;
 import lombok.AllArgsConstructor;

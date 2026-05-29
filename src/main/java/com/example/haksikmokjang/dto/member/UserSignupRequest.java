@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.domain.member.dto;
+package com.example.haksikmokjang.dto.member;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;

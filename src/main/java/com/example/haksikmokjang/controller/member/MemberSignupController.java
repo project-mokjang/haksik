@@ -1,10 +1,10 @@
-package com.example.haksikmokjang.domain.member.controller;
+package com.example.haksikmokjang.controller.member;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
-import com.example.haksikmokjang.domain.member.dto.DuplicateCheckResponse;
-import com.example.haksikmokjang.domain.member.dto.SignupResponse;
-import com.example.haksikmokjang.domain.member.dto.UserSignupRequest;
-import com.example.haksikmokjang.domain.member.service.MemberSignupService;
+import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
+import com.example.haksikmokjang.dto.member.SignupResponse;
+import com.example.haksikmokjang.dto.member.UserSignupRequest;
+import com.example.haksikmokjang.service.member.MemberSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
