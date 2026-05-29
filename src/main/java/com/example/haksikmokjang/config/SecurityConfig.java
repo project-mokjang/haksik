@@ -14,9 +14,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // API 서버이므로 CSRF 공격 방어 비활성화
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // 팩트: /api/auth로 시작하는 모든 요청은 인증 없이 무조건 통과!
+                        .requestMatchers("/api/auth/**", "/api/terms/**").permitAll() // /api/auth,terms로 시작하는 모든 요청은 인증 없이 통과
                         .anyRequest().authenticated() // 나머지는 다 막음
                 );
 
