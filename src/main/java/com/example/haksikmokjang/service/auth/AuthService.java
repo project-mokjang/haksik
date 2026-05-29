@@ -1,5 +1,7 @@
 package com.example.haksikmokjang.service.auth;
 
+import com.example.haksikmokjang.domain.common.exception.CustomException;
+import com.example.haksikmokjang.domain.common.response.ErrorCode;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
 import com.example.haksikmokjang.repository.EmailVerificationRepository;
@@ -26,7 +28,7 @@ public class AuthService {
     @Transactional
     public void sendEmailVerification(String email) {
         if (memberRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
 
         int verificationCode = ThreadLocalRandom.current().nextInt(100000, 1000000);
@@ -37,7 +39,11 @@ public class AuthService {
         message.setSubject("[학식목장] 학교 이메일 인증번호입니다.");
         message.setText("인증번호: " + codeStr + "\n5분 이내에 입력해주세요.");
 
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
+        }
 
         //조장의 엔티티 뼈대에 맞춰 Nullable=false 값들을 정확히 주입
         EmailVerification verification = EmailVerification.builder()
@@ -56,29 +62,18 @@ public class AuthService {
     public void verifyEmail(String email, String code) {
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailAndPurposeOrderByCreatedAtDesc(email, EmailPurpose.SIGNUP)
-                .orElseThrow(() -> new IllegalArgumentException("인증 요청 내역이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
         if (LocalDateTime.now().isAfter(verification.getExpiresAt())) {
-            throw new IllegalArgumentException("인증 시간이 만료되었습니다.");
+            throw new CustomException(ErrorCode.EMAIL_VERIFICATION_EXPIRED);
         }
 
         if (!verification.getVerificationCode().equals(code)) {
-            throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
         //모든 검증을 통과했다면 DB의 verified_yn 값을 'Y'로 업데이트
         verification.verifySuccess();
     }
 
-    //아이디 중복 확인
-    @Transactional(readOnly = true)
-    public boolean checkLoginIdDuplicate(String loginId) {
-        return memberRepository.existsByLoginId(loginId);
-    }
-
-    //이메일 중복 확인
-    @Transactional(readOnly = true)
-    public boolean checkEmailDuplicate(String email) {
-        return memberRepository.existsByEmail(email);
-    }
 }
