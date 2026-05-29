@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>학식목장 - 로그인</title>
+  <title>학식목장 - 비밀번호 재설정</title>
   <style>
     :root {
       --ivory: #fff7e8;
@@ -69,8 +69,8 @@
 
     .header-section {
       text-align: center;
-      margin-bottom: 50px;
-      margin-top: 20px;
+      margin-bottom: 40px;
+      margin-top: 10px;
     }
 
     .logo {
@@ -105,10 +105,10 @@
 
     .input-field {
       width: 100%;
-      height: 56px;
-      padding: 0 20px;
+      height: 52px;
+      padding: 0 16px;
       border: 2px solid var(--line);
-      border-radius: 16px;
+      border-radius: 12px;
       font-size: 15px;
       background-color: var(--card);
       transition: all 0.3s ease;
@@ -134,7 +134,7 @@
       transition: opacity 0.2s;
     }
 
-    .login-btn {
+    .submit-btn {
       width: 100%;
       height: 56px;
       background-color: var(--green);
@@ -148,7 +148,7 @@
       transition: background-color 0.3s;
     }
 
-    .login-btn:hover {
+    .submit-btn:hover {
       background-color: var(--green2);
     }
 
@@ -171,12 +171,6 @@
     .link-section a:hover {
       color: var(--soil);
     }
-
-    .divider {
-      width: 1px;
-      height: 12px;
-      background-color: var(--line);
-    }
   </style>
 </head>
 <body>
@@ -190,47 +184,53 @@
     <div class="content">
       <div class="header-section">
         <div class="logo">🐑</div>
-        <h1 class="title">학식목장</h1>
+        <h1 class="title">비밀번호 재설정</h1>
       </div>
 
       <div class="form-section">
+        
         <div class="input-group">
-          <label class="input-label">아이디</label>
-          <input type="text" class="input-field" id="idInput" placeholder="아이디를 입력해주세요" />
+          <label class="input-label">새 비밀번호</label>
+          <input type="password" class="input-field" id="newPw" placeholder="새로운 비밀번호를 입력해주세요" />
         </div>
 
         <div class="input-group">
-          <label class="input-label">비밀번호</label>
-          <input type="password" class="input-field" id="passwordInput" placeholder="비밀번호를 입력해주세요" />
+          <label class="input-label">새 비밀번호 확인</label>
+          <input type="password" class="input-field" id="confirmPw" placeholder="비밀번호를 다시 한번 입력해주세요" />
         </div>
 
-        <div class="error-msg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
+        <div class="error-msg" id="resetPwError">비밀번호가 일치하지 않습니다.</div>
 
-        <button class="login-btn" onclick="handleLogin()">로그인</button>
+        <button class="submit-btn" onclick="handleResetPw()">비밀번호 변경하기</button>
       </div>
 
       <div class="link-section">
-        <a href="#find-id">아이디 찾기</a>
-        <div class="divider"></div>
-        <a href="#find-pw" style="color: var(--green);">비밀번호 찾기</a>
+        <a href="login.html">로그인으로 돌아가기</a>
       </div>
     </div>
   </div>
 
   <script>
-    function handleLogin() {
-      const userId = document.getElementById('idInput').value;
-      const password = document.getElementById('passwordInput').value;
-      const errorMsg = document.getElementById('loginError');
+    function handleResetPw() {
+      const newPw = document.getElementById('newPw').value;
+      const confirmPw = document.getElementById('confirmPw').value;
+      const errorMsg = document.getElementById('resetPwError');
 
-      if (!userId || !password) {
+      if (!newPw || !confirmPw) {
+        errorMsg.innerText = "비밀번호를 모두 입력해주세요.";
         errorMsg.style.opacity = '1';
-        errorMsg.innerText = '아이디와 비밀번호를 모두 입력해주세요.';
+        return;
+      }
+
+      if (newPw !== confirmPw) {
+        errorMsg.innerText = "비밀번호가 일치하지 않습니다.";
+        errorMsg.style.opacity = '1';
         return;
       }
 
       errorMsg.style.opacity = '0';
-      alert(`[API 호출 예정]\n아이디: ${userId}\n비밀번호: ***\n환영합니다! 🚀`);
+      alert("비밀번호가 성공적으로 변경되었습니다! ✅\n다시 로그인해주세요.");
+      location.href = "login.html";
     }
   </script>
 </body>
