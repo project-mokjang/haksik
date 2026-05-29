@@ -1,7 +1,8 @@
 package com.example.haksikmokjang.domain.member.controller;
 
-import com.example.haksikmokjang.domain.member.dto.DuplicateCheckResponse;
-import com.example.haksikmokjang.domain.member.service.MemberSignupService;
+import com.example.haksikmokjang.controller.member.MemberSignupController;
+import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
+import com.example.haksikmokjang.service.member.MemberSignupService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
