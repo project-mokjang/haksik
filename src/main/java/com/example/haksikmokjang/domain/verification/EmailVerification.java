@@ -2,16 +2,16 @@ package com.example.haksikmokjang.domain.verification;
 
 import com.example.haksikmokjang.domain.common.CreatedTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Entity
 @Table(name = "EMAIL_VERIFICATION")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class EmailVerification extends CreatedTimeEntity {
 
     @Id
@@ -34,4 +34,8 @@ public class EmailVerification extends CreatedTimeEntity {
 
     @Column(name = "verified_yn", nullable = false, length = 1)
     private String verifiedYn;
+
+    public void verifySuccess() {
+        this.verifiedYn = "Y"; //진우 - 이메일 인증 완료 구분 로직
+    }
 }
