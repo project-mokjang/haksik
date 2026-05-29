@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.auth.dto;
+package com.example.haksikmokjang.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

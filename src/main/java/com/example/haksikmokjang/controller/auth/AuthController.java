@@ -1,8 +1,8 @@
-package com.example.haksikmokjang.auth.controller;
+package com.example.haksikmokjang.controller.auth;
 
-import com.example.haksikmokjang.auth.dto.EmailSendRequest;
-import com.example.haksikmokjang.auth.dto.EmailVerifyRequest;
-import com.example.haksikmokjang.auth.service.AuthService;
+import com.example.haksikmokjang.dto.auth.EmailSendRequest;
+import com.example.haksikmokjang.dto.auth.EmailVerifyRequest;
+import com.example.haksikmokjang.service.auth.AuthService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

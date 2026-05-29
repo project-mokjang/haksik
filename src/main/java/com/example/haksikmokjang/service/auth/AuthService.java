@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.auth.service;
+package com.example.haksikmokjang.service.auth;
 
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
