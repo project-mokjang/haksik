@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학식목장 - 회원가입 유형 선택</title>
+  <style>
+    :root {
+      --ivory: #fff7e8;
+      --ivory2: #f3e7d3;
+      --paper: #fffdf8;
+      --card: #fffaf0;
+      --green: #126b4f;
+      --green2: #168a62;
+      --emerald: #7CFFB2;
+      --forest: #173f35;
+      --soil: #9b622e;
+      --muted: #766f65;
+      --line: #d9e9d9;
+      --red: #d85f4f;
+      --shadow: 0 12px 32px rgba(55, 42, 26, 0.1);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Pretendard, -apple-system, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #fffdf8 0, #fff7e8 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--charcoal);
+      padding: 20px;
+    }
+
+    .mobile-container {
+      width: 100%;
+      max-width: 390px;
+      height: 844px;
+      background-color: var(--paper);
+      border-radius: 40px;
+      box-shadow: 0 24px 64px rgba(55, 42, 26, 0.18);
+      border: 8px solid var(--forest);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-bar {
+      height: 40px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 30px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+      padding: 30px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .header-section {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .logo {
+      font-size: 42px;
+      margin-bottom: 12px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--forest);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .type-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 40px 0;
+    }
+
+    .type-card {
+      background-color: var(--card);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .type-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .type-card.active {
+      border-color: var(--green);
+      background-color: #f0f9f5;
+    }
+
+    .type-card.active .radio-circle {
+      border-color: var(--green);
+      background-color: var(--green);
+    }
+
+    .type-card.active .radio-circle::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: white;
+      border-radius: 50%;
+    }
+
+    .icon-box {
+      width: 56px;
+      height: 56px;
+      background-color: var(--ivory2);
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      transition: background-color 0.25s;
+    }
+
+    .type-card.active .icon-box {
+      background-color: var(--lime);
+    }
+
+    .text-box {
+      flex: 1;
+    }
+
+    .role-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--forest);
+      margin-bottom: 4px;
+    }
+
+    .role-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .radio-circle {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .bottom-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .error-msg {
+      font-size: 13px;
+      color: var(--red);
+      font-weight: 600;
+      min-height: 20px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .next-btn {
+      width: 100%;
+      height: 54px;
+      background-color: var(--muted);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: not-allowed;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .next-btn.ready {
+      background-color: var(--green);
+      cursor: pointer;
+    }
+
+    .next-btn.ready:hover {
+      background-color: var(--green2);
+      transform: translateY(-1px);
+    }
+
+    .login-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link span {
+      color: var(--soil);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-container">
+  <div class="status-bar">
+    <span>17:26</span>
+    <span>🌾 학식목장</span>
+  </div>
+
+  <div class="content">
+    <div class="header-section">
+      <div class="logo">🐑</div>
+      <h1 class="title">학식목장</h1>
+      <p class="subtitle">캠퍼스 라이프의 모든 맛과 만남<br>당신은 어떤 회원인가요?</p>
+    </div>
+
+    <div class="type-section">
+      <div class="type-card" onclick="selectRole('USER')">
+        <div class="icon-box">🎓</div>
+        <div class="text-box">
+          <h3 class="role-name">일반 이용자 가입</h3>
+          <p class="role-desc">오늘의 학식 추천부터 밥친구 매칭, 과팅, 커뮤니티까지 즐겨보세요!</p>
+        </div>
+        <div class="radio-circle"></div>
+      </div>
+
+      <div class="type-card" onclick="selectRole('OWNER')">
+        <div class="icon-box">👨‍🍳</div>
+        <div class="text-box">
+          <h3 class="role-name">식당 사장님 가입</h3>
+          <p class="role-desc">매장 등록, 메뉴 관리, 예약 및 실시간 웨이팅을 효율적으로 관리하세요!</p>
+        </div>
+        <div class="radio-circle"></div>
+      </div>
+    </div>
+
+    <div class="bottom-section">
+      <div class="error-msg" id="errorMsg">회원 유형을 먼저 선택해 주세요!</div>
+      <button class="next-btn" id="nextBtn" onclick="handleNextStep()">다음 단계로</button>
+      <a href="login.html" class="login-link">이미 계정이 있으신가요? <span>로그인하기</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedRole = null;
+
+  function selectRole(role) {
+    selectedRole = role;
+
+    document.querySelectorAll('.type-card').forEach(card => {
+      card.classList.remove('active');
+    });
+
+    const errorElement = document.getElementById('errorMsg');
+    errorElement.style.opacity = '0';
+
+    if(role === 'USER') {
+      document.querySelectorAll('.type-card')[0].classList.add('active');
+    } else if(role === 'OWNER') {
+      document.querySelectorAll('.type-card')[1].classList.add('active');
+    }
+
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.classList.add('ready');
+  }
+
+  function handleNextStep() {
+    const errorElement = document.getElementById('errorMsg');
+
+    if (!selectedRole) {
+      errorElement.style.opacity = '1';
+      return;
+    }
+
+    if (selectedRole === 'USER') {
+
+    } else if (selectedRole === 'OWNER') {
+
+    }
+  }
+</script>
+</body>
+</html>
