@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학식목장 - 메인</title>
+  <style>
+    :root {
+      --ivory: #fff7e8;
+      --ivory2: #f3e7d3;
+      --paper: #fffdf8;
+      --card: #fffaf0;
+      --green: #126b4f;
+      --green2: #168a62;
+      --emerald: #7CFFB2;
+      --forest: #173f35;
+      --soil: #9b622e;
+      --muted: #766f65;
+      --line: #d9e9d9;
+      --red: #d85f4f;
+      --shadow: 0 12px 32px rgba(55, 42, 26, 0.1);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Pretendard, -apple-system, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #fffdf8 0, #fff7e8 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--charcoal);
+      padding: 20px;
+    }
+
+    .mobile-container {
+      width: 100%;
+      max-width: 390px;
+      height: 844px;
+      background-color: var(--paper);
+      border-radius: 40px;
+      box-shadow: 0 24px 64px rgba(55, 42, 26, 0.18);
+      border: 8px solid var(--forest);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-bar {
+      height: 40px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 30px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+      padding: 30px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .header-section {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .logo {
+      font-size: 42px;
+      margin-bottom: 12px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--forest);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .bottom-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .next-btn {
+      width: 100%;
+      height: 54px;
+      background-color: var(--green);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 700;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+
+    .next-btn:hover {
+      background-color: var(--green2);
+      transform: translateY(-1px);
+    }
+
+    .login-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link span {
+      color: var(--soil);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-container">
+  <div class="status-bar">
+    <span>17:26</span>
+    <span>🌾 학식목장</span>
+  </div>
+
+  <div class="content">
+    <div class="header-section">
+      <div class="logo">🐑</div>
+      <h1 class="title">학식목장</h1>
+      <p class="subtitle">캠퍼스 라이프의 모든 맛과 만남<br>당신은 어떤 회원인가요?</p>
+    </div>
+
+    <div class="bottom-section">
+
+      <button class="next-btn" id="nextBtn" onclick="location.href='./member/login.html'">환영합니다.</button>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
