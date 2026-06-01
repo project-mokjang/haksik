@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학식목장 - 아이디 찾기</title>
+  <link rel="stylesheet" href="/css/auth.css" th:href="@{/css/auth.css}">
+</head>
+<body class="auth-body">
+<div class="mobile-container">
+  <div class="status-bar">
+    <span>17:41</span>
+    <span>🌾 학식목장</span>
+  </div>
+
+  <div class="content">
+    <div class="header-section">
+      <div class="logo">🐑</div>
+      <h1 class="title">아이디 찾기</h1>
+    </div>
+
+    <form class="form-section" action="/api/auth/find-id" method="post">
+      <input type="hidden" id="emailVerified" name="emailVerified" value="false">
+
+      <div class="input-group">
+        <label class="input-label" for="name">이름</label>
+        <input type="text" class="input-field" id="name" name="name" placeholder="가입한 이름을 입력해주세요" required />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="email">이메일 인증</label>
+        <div class="input-row">
+          <input type="email" class="input-field" id="email" name="email" placeholder="가입한 이메일을 입력해주세요" required />
+          <button type="button" class="action-btn" onclick="sendFindCode('FIND_ID')">전송</button>
+        </div>
+        <div class="input-row" style="margin-top: 4px;">
+          <input type="text" class="input-field" id="emailCode" name="emailCode" placeholder="인증번호 6자리 입력" />
+          <button type="button" class="action-btn" id="verifyBtn" onclick="verifyFindCode('FIND_ID')">확인</button>
+        </div>
+      </div>
+
+      <div class="error-msg" id="findIdError">이름과 인증번호를 확인해주세요.</div>
+
+      <button type="submit" class="submit-btn">아이디 찾기</button>
+    </form>
+
+    <div class="link-section">
+      <a href="/api/auth/login" th:href="@{/api/auth/login}">로그인으로 돌아가기</a>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js" th:src="@{/js/auth.js}"></script>
+<script>
+  async function sendFindCode(purpose) {
+    const email = document.getElementById('email').value;
+    if (!email) {
+      alert('이메일을 먼저 입력해주세요.');
+      return;
+    }
+
+    await fetch('/api/email-verifications/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, purpose: purpose })
+    });
+
+    alert('인증번호가 전송되었습니다.');
+  }
+
+  async function verifyFindCode(purpose) {
+    const email = document.getElementById('email').value;
+    const code = document.getElementById('emailCode').value;
+
+    if (!email || !code) {
+      alert('이메일과 인증번호를 모두 입력해주세요.');
+      return;
+    }
+
+    const response = await fetch('/api/email-verifications/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, code: code, purpose: purpose })
+    });
+
+    if (response.ok) {
+      document.getElementById('emailVerified').value = 'true';
+      const verifyBtn = document.getElementById('verifyBtn');
+      verifyBtn.innerText = '완료';
+      verifyBtn.classList.add('success');
+      alert('인증이 완료되었습니다.');
+    } else {
+      alert('인증번호를 확인해주세요.');
+    }
+  }
+</script>
+</body>
+</html>
