@@ -25,6 +25,7 @@ public enum ErrorCode {
     EMAIL_VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "EMAIL_002", "인증번호가 만료되었습니다."),
     EMAIL_VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "EMAIL_003", "인증번호가 일치하지 않습니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "EMAIL_004", "이메일 인증이 완료되지 않았습니다."),
+
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_005", "이메일 발송에 실패했습니다."),
 
     // Terms
