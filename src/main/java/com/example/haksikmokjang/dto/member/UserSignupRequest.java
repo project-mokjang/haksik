@@ -16,7 +16,7 @@ public class UserSignupRequest {
     private String loginId;
 
     @NotBlank(message = "비밀번호는 필수입니다.")
-    @Size(max = 255, message = "비밀번호는 255자 이하여야 합니다.")
+    @Size(min = 8, max = 255, message = "비밀번호는 8자 이상 255자 이하여야 합니다.") // 나중에 길이 맟춰서 수정
     private String password;
 
     @NotBlank(message = "이름은 필수입니다.")
@@ -40,9 +40,11 @@ public class UserSignupRequest {
     private String schoolEmail;
 
     @NotNull(message = "생년월일은 필수입니다.")
+    @Past(message = "생년월일은 과거 날짜여야 합니다.")
     private LocalDate birthDate;
 
     @NotBlank(message = "성별은 필수입니다.")
+    @Pattern(regexp = "[MF]", message = "성별은 M 또는 F만 가능합니다.")
     private String gender;
 
     @Size(max = 20, message = "전화번호는 20자 이하여야 합니다.")
