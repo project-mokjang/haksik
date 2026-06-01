@@ -4,9 +4,7 @@ import com.example.haksikmokjang.domain.common.BaseEntity;
 import com.example.haksikmokjang.domain.fileattachment.FileAttachment;
 import com.example.haksikmokjang.domain.school.School;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,6 +13,8 @@ import java.time.LocalDate;
 @Table(name = "USER_PROFILE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class UserProfile extends BaseEntity {
 
     @Id
