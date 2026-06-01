@@ -22,7 +22,13 @@ public class SecurityConfig {
                                 "/api/members/signup/user",
                                 "/api/members/check-login-id",
                                 "/api/members/check-email",
-                                "/api/users/check-nickname"
+                                "/api/users/check-nickname",
+
+                                // 정적 리소스 허용
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico"
                                 ).permitAll() // /api/auth,terms로 시작하는 모든 요청은 인증 없이 통과
                         .anyRequest().authenticated() // 나머지는 다 막음
                 );
