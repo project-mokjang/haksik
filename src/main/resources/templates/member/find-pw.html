@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학식목장 - 비밀번호 찾기</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body class="auth-body">
+<div class="mobile-container">
+  <div class="status-bar">
+    <span>17:41</span>
+    <span>🌾 학식목장</span>
+  </div>
+
+  <div class="content">
+    <div class="header-section">
+      <div class="logo">🐑</div>
+      <h1 class="title">비밀번호 재설정</h1>
+    </div>
+
+    <form class="form-section" th:action="@{/member/find-pw}" method="post" th:object="${findPwRequest}">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
+      <input type="hidden" th:field="*{emailVerified}" id="emailVerified" value="false">
+
+      <div class="input-group">
+        <label class="input-label" for="loginId">아이디</label>
+        <input type="text" class="input-field" id="loginId" th:field="*{loginId}" name="loginId" placeholder="가입한 아이디를 입력해주세요" required />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="email">이메일 인증</label>
+        <div class="input-row">
+          <input type="email" class="input-field" id="email" th:field="*{email}" name="email" placeholder="가입한 이메일을 입력해주세요" required />
+          <button type="button" class="action-btn" onclick="sendFindPwCode()">전송</button>
+        </div>
+        <div class="input-row" style="margin-top: 4px;">
+          <input type="text" class="input-field" id="emailCode" name="emailCode" placeholder="인증번호 6자리 입력" />
+          <button type="button" class="action-btn" id="verifyBtn" onclick="verifyFindPwCode()">확인</button>
+        </div>
+      </div>
+
+      <div class="error-msg visible" th:if="${findPwError}" th:text="${findPwError}">아이디와 인증번호를 확인해주세요.</div>
+
+      <button type="submit" class="submit-btn">비밀번호 재설정</button>
+    </form>
+
+    <div class="link-section">
+      <a th:href="@{/member/login}">로그인으로 돌아가기</a>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/auth.js}"></script>
+<script>
+  async function sendFindPwCode() {
+    const email = document.getElementById('email').value;
+    if (!email) {
+      alert('이메일을 먼저 입력해주세요.');
+      return;
+    }
+
+    await fetch('/api/email-verifications/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, purpose: 'RESET_PASSWORD' })
+    });
+
+    alert('비밀번호 재설정 인증번호가 전송되었습니다.');
+  }
+
+  async function verifyFindPwCode() {
+    const email = document.getElementById('email').value;
+    const code = document.getElementById('emailCode').value;
+
+    const response = await fetch('/api/email-verifications/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, code: code, purpose: 'RESET_PASSWORD' })
+    });
+
+    if (response.ok) {
+      document.getElementById('emailVerified').value = 'true';
+      markVerified('verifyBtn');
+      alert('인증이 완료되었습니다.');
+    } else {
+      alert('인증번호를 확인해주세요.');
+    }
+  }
+</script>
+</body>
+</html>
