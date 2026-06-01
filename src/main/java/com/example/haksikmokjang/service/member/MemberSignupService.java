@@ -35,21 +35,25 @@ public class MemberSignupService {
     private final PasswordEncoder passwordEncoder;
     private final TermsAgreementRepository termsAgreementRepository;
 
+    // 아이디 중복 확인 로직
     public DuplicateCheckResponse checkLoginId(String loginId) {
         boolean available = !memberRepository.existsByLoginId(loginId);
         return DuplicateCheckResponse.of(available);
     }
 
+    // 이메일 중복 확인 로직
     public DuplicateCheckResponse checkEmail(String email) {
         boolean available = !memberRepository.existsByEmail(email);
         return DuplicateCheckResponse.of(available);
     }
 
+    // 닉네임 중복 확인 로직
     public DuplicateCheckResponse checkNickname(String nickname) {
         boolean available = !userProfileRepository.existsByNickname(nickname);
         return DuplicateCheckResponse.of(available);
     }
 
+    // 일반 사용자 회원가입 저장 로직
     @Transactional
     public SignupResponse signupUser(UserSignupRequest request) {
         validateDuplicateLoginId(request.getLoginId());
@@ -105,6 +109,7 @@ public class MemberSignupService {
         return SignupResponse.of(member.getMemberId(), member.getRole());
     }
 
+    // 아이디 중복 검증
     private void validateDuplicateLoginId(String loginId) {
         if (memberRepository.existsByLoginId(loginId)) {
             // 이미 사용 중인 아이디로 회원가입을 시도한 경우
@@ -112,6 +117,7 @@ public class MemberSignupService {
         }
     }
 
+    // 이메일 중복 검증
     private void validateDuplicateEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
             // 이미 가입된 이메일로 회원가입을 시도한 경우
@@ -119,6 +125,7 @@ public class MemberSignupService {
         }
     }
 
+    // 닉네임 중복 검증
     private void validateDuplicateNickname(String nickname) {
         if (userProfileRepository.existsByNickname(nickname)) {
             // 이미 사용 중인 닉네임으로 회원가입을 시도한 경우
@@ -126,12 +133,14 @@ public class MemberSignupService {
         }
     }
 
+    // 학교 존재 여부 확인
     private School getSchool(Long schoolId) {
         return schoolRepository.findById(schoolId)
                 // 존재하지 않는 학교 ID로 회원가입을 시도한 경우
                 .orElseThrow(() -> new CustomException(ErrorCode.SCHOOL_NOT_FOUND));
     }
 
+    // 동의한 약관 목록 조회
     private List<Terms> getAgreedTerms(List<Long> termsIds) {
         List<Terms> terms = termsRepository.findAllById(termsIds);
 
@@ -143,6 +152,7 @@ public class MemberSignupService {
         return terms;
     }
 
+    // 필수 약관 동의 여부 검증
     private void validateRequiredTermsAgreed(List<Long> agreedTermsIds) {
         List<Terms> allTerms = termsRepository.findAllByOrderByEffectiveAtDesc();
 
@@ -159,6 +169,7 @@ public class MemberSignupService {
         }
     }
 
+    // 이메일 인증 완료 여부 검증
     private void validateEmailVerified(String email) {
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailAndPurposeOrderByCreatedAtDesc(email, EmailPurpose.SIGNUP)
