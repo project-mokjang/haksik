@@ -1,0 +1,115 @@
+0. 테스트 데이터 초기화
+테스트를 처음부터 깔끔하게 다시 하려면 먼저 실행.
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE terms_agreement;
+TRUNCATE TABLE user_profile;
+TRUNCATE TABLE email_verification;
+TRUNCATE TABLE member;
+TRUNCATE TABLE terms;
+TRUNCATE TABLE school;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+확인:
+
+SELECT * FROM school;
+SELECT * FROM terms;
+SELECT * FROM email_verification;
+SELECT * FROM member;
+SELECT * FROM user_profile;
+SELECT * FROM terms_agreement;
+
+전부 비어 있으면 정상.
+
+
+1. 기본 데이터 세팅
+1-1. 학교 데이터 세팅
+INSERT INTO school (created_at, email_domain, school_name)
+VALUES (NOW(), 'test.ac.kr', '테스트대학교');
+
+확인:
+
+SELECT * FROM school;
+
+예상:
+
+school_id = 1
+email_domain = test.ac.kr
+school_name = 테스트대학교
+1-2. 약관 데이터 세팅
+-- 필수 약관 1
+INSERT INTO terms (content, effective_at, required_yn, title, version)
+VALUES ('서비스 이용약관 내용입니다.', NOW(), 'Y', '서비스 이용약관', '1.0');
+
+-- 필수 약관 2
+INSERT INTO terms (content, effective_at, required_yn, title, version)
+VALUES ('개인정보 처리방침 내용입니다.', NOW(), 'Y', '개인정보 처리방침', '1.0');
+
+-- 선택 약관
+INSERT INTO terms (content, effective_at, required_yn, title, version)
+VALUES ('마케팅 정보 수신 동의 내용입니다.', NOW(), 'N', '마케팅 정보 수신 동의', '1.0');
+
+확인:
+
+SELECT * FROM terms;
+
+예상:
+
+terms_id = 1 / required_yn = Y / 서비스 이용약관
+terms_id = 2 / required_yn = Y / 개인정보 처리방침
+terms_id = 3 / required_yn = N / 마케팅 정보 수신 동의
+2. 이메일 인증 데이터 세팅
+2-1. 정상 회원가입용
+
+1번 정상 성공 테스트에 필요.
+
+INSERT INTO email_verification
+(created_at, email, expires_at, purpose, verification_code, verified_yn)
+VALUES
+(NOW(), 'test01@test.ac.kr', DATE_ADD(NOW(), INTERVAL 10 MINUTE), 'SIGNUP', '123456', 'Y');
+
+확인:
+
+SELECT * FROM email_verification
+WHERE email = 'test01@test.ac.kr';
+2-2. 이메일 인증 미완료 테스트용
+
+EMAIL_NOT_VERIFIED 확인용.
+
+INSERT INTO email_verification
+(created_at, email, expires_at, purpose, verification_code, verified_yn)
+VALUES
+(NOW(), 'notdone@test.ac.kr', DATE_ADD(NOW(), INTERVAL 10 MINUTE), 'SIGNUP', '123456', 'N');
+
+확인:
+
+SELECT * FROM email_verification
+WHERE email = 'notdone@test.ac.kr';
+2-3. 이메일 인증 만료 테스트용
+
+EMAIL_VERIFICATION_EXPIRED 확인용.
+
+INSERT INTO email_verification
+(created_at, email, expires_at, purpose, verification_code, verified_yn)
+VALUES
+(NOW(), 'expired@test.ac.kr', DATE_SUB(NOW(), INTERVAL 10 MINUTE), 'SIGNUP', '123456', 'Y');
+
+확인:
+
+SELECT * FROM email_verification
+WHERE email = 'expired@test.ac.kr';
+2-4. 선택 약관 제외 성공 테스트용
+
+11번 성공 테스트에 필요.
+
+INSERT INTO email_verification
+(created_at, email, expires_at, purpose, verification_code, verified_yn)
+VALUES
+(NOW(), 'test10@test.ac.kr', DATE_ADD(NOW(), INTERVAL 10 MINUTE), 'SIGNUP', '123456', 'Y');
+
+확인:
+
+SELECT * FROM email_verification
+WHERE email = 'test10@test.ac.kr';

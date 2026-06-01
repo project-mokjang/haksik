@@ -1,0 +1,207 @@
+### 1. 정상 회원가입 성공 테스트 - 필수 + 선택 약관 모두 동의
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser01",
+  "password": "1234",
+  "name": "홍길동",
+  "nickname": "길동이",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test01@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-1234-5678",
+  "termsIds": [1, 2, 3]
+}
+
+
+### 2. 중복 아이디 테스트 - testuser01이 이미 가입된 뒤 실행해야 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser01",
+  "password": "1234",
+  "name": "김철수",
+  "nickname": "철수닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test02@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-1111-2222",
+  "termsIds": [1, 2]
+}
+
+
+### 3. 중복 이메일 테스트 - test01@test.ac.kr이 이미 가입된 뒤 실행해야 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser02",
+  "password": "1234",
+  "name": "김철수",
+  "nickname": "철수닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test01@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-1111-2222",
+  "termsIds": [1, 2]
+}
+
+
+### 4. 중복 닉네임 테스트 - 길동이가 이미 가입된 뒤 실행해야 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser03",
+  "password": "1234",
+  "name": "이영희",
+  "nickname": "길동이",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test03@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "F",
+  "phone": "010-3333-4444",
+  "termsIds": [1, 2]
+}
+
+
+### 5. 학교 없음 테스트 - schoolId 9999가 없으면 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser04",
+  "password": "1234",
+  "name": "박민수",
+  "nickname": "민수닉",
+  "schoolId": 9999,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test04@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-5555-6666",
+  "termsIds": [1, 2]
+}
+
+
+### 6. 필수 약관 누락 테스트 - 2번 필수 약관 빠짐, 실패해야 정상
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser05",
+  "password": "1234",
+  "name": "최유리",
+  "nickname": "유리닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test05@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "F",
+  "phone": "010-7777-8888",
+  "termsIds": [1, 3]
+}
+
+
+### 7. 존재하지 않는 약관 테스트 - termsId 9999가 없으면 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser06",
+  "password": "1234",
+  "name": "오준호",
+  "nickname": "준호닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test06@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-9999-0000",
+  "termsIds": [1, 2, 9999]
+}
+
+
+### 8. 이메일 인증 없음 테스트 - email_verification에 없는 이메일이면 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser07",
+  "password": "1234",
+  "name": "정하늘",
+  "nickname": "하늘닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "notverified@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "F",
+  "phone": "010-1212-3434",
+  "termsIds": [1, 2]
+}
+
+
+### 9. 이메일 인증 미완료 테스트 - verified_yn = N이면 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser08",
+  "password": "1234",
+  "name": "강민재",
+  "nickname": "민재닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "notdone@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-5656-7878",
+  "termsIds": [1, 2]
+}
+
+
+### 10. 이메일 인증 만료 테스트 - expires_at이 과거면 실패
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser09",
+  "password": "1234",
+  "name": "한서준",
+  "nickname": "서준닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "expired@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-9090-8080",
+  "termsIds": [1, 2]
+}
+
+
+### 11. 선택 약관 제외 성공 테스트 - 필수 약관만 동의, 성공해야 정상
+POST http://localhost:8080/api/members/signup/user
+Content-Type: application/json
+
+{
+  "loginId": "testuser10",
+  "password": "1234",
+  "name": "윤지호",
+  "nickname": "지호닉",
+  "schoolId": 1,
+  "department": "컴퓨터공학과",
+  "schoolEmail": "test10@test.ac.kr",
+  "birthDate": "2000-01-01",
+  "gender": "M",
+  "phone": "010-1010-2020",
+  "termsIds": [1, 2]
+}
