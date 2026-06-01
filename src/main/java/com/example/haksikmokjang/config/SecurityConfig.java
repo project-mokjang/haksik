@@ -16,7 +16,14 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/terms/**").permitAll() // /api/auth,terms로 시작하는 모든 요청은 인증 없이 통과
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/terms/**",
+                                "/api/members/signup/user",
+                                "/api/members/check-login-id",
+                                "/api/members/check-email",
+                                "/api/users/check-nickname"
+                                ).permitAll() // /api/auth,terms로 시작하는 모든 요청은 인증 없이 통과
                         .anyRequest().authenticated() // 나머지는 다 막음
                 );
 
