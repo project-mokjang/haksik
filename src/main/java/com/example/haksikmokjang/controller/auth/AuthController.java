@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService; // 여기서 서비스(근육)를 끌어옵니다.
+    private final AuthService authService; // 서비스랑 연결
 
     // 1. 이메일 인증번호 발송 API
     @PostMapping("/send")
