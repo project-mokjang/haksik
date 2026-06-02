@@ -20,11 +20,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/terms/**",
                                 "/api/view/**",
-                                "/api/members/signup/user",
-                                "/api/members/check-login-id",
-                                "/api/members/check-email",
-                                "/api/users/check-nickname",
-
+                                "/api/signup/users",
 
                                 // 정적 리소스 허용
                                 "/css/**",

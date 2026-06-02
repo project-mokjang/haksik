@@ -3,9 +3,7 @@ package com.example.haksikmokjang.domain.owner;
 import com.example.haksikmokjang.domain.common.BaseEntity;
 import com.example.haksikmokjang.domain.member.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +11,8 @@ import java.time.LocalDateTime;
 @Table(name = "OWNER_PROFILE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class OwnerProfile extends BaseEntity {
 
     @Id

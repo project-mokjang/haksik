@@ -2,9 +2,9 @@ package com.example.haksikmokjang.controller.member;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.member.SignupResponse;
+import com.example.haksikmokjang.dto.member.UserSignupResponse;
 import com.example.haksikmokjang.dto.member.UserSignupRequest;
-import com.example.haksikmokjang.service.member.MemberSignupService;
+import com.example.haksikmokjang.service.member.UserSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindException;
@@ -12,11 +12,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/signup/users")
 @RequiredArgsConstructor
-public class MemberSignupController {
+public class UserSignupController {
 
-    private final MemberSignupService memberSignupService;
+    private final UserSignupService memberSignupService;
 
     // 아이디 중복 확인
     @GetMapping("/check-login-id")
@@ -40,15 +40,15 @@ public class MemberSignupController {
     }
 
     // 일반 사용자 회원가입
-    @PostMapping("/signup/user")
-    public ApiResponse<SignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
-                                                  BindingResult bindingResult) throws BindException {
+    @PostMapping("")
+    public ApiResponse<UserSignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
+                                                      BindingResult bindingResult) throws BindException {
 
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
 
-        SignupResponse signupResponse = memberSignupService.signupUser(userSignupRequest);
+        UserSignupResponse signupResponse = memberSignupService.signupUser(userSignupRequest);
         return ApiResponse.success(signupResponse);
     }
 }
