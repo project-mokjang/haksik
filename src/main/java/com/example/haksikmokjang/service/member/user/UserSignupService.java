@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.service.member;
+package com.example.haksikmokjang.service.member.user;
 
 import com.example.haksikmokjang.domain.common.exception.CustomException;
 import com.example.haksikmokjang.domain.common.response.ErrorCode;
@@ -9,8 +9,8 @@ import com.example.haksikmokjang.domain.terms.TermsAgreement;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.member.UserSignupResponse;
-import com.example.haksikmokjang.dto.member.UserSignupRequest;
+import com.example.haksikmokjang.dto.member.user.UserSignupResponse;
+import com.example.haksikmokjang.dto.member.user.UserSignupRequest;
 import com.example.haksikmokjang.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,10 +1,10 @@
-package com.example.haksikmokjang.controller.owner;
+package com.example.haksikmokjang.controller.member.owner;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.owner.OwnerSignupRequest;
-import com.example.haksikmokjang.dto.owner.OwnerSignupResponse;
-import com.example.haksikmokjang.service.owner.OwnerSignupService;
+import com.example.haksikmokjang.dto.member.owner.OwnerSignupRequest;
+import com.example.haksikmokjang.dto.member.owner.OwnerSignupResponse;
+import com.example.haksikmokjang.service.member.owner.OwnerSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindException;
