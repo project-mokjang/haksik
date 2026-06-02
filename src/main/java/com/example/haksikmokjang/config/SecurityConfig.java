@@ -11,14 +11,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // ... 상단 생략
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/signup", // 팩트: 브라우저가 화면을 띄우려면 이 주소가 무조건 열려있어야 합니다.
                                 "/api/auth/**",
                                 "/api/terms/**",
                                 "/api/members/signup/user",
@@ -26,12 +24,13 @@ public class SecurityConfig {
                                 "/api/members/check-email",
                                 "/api/users/check-nickname",
 
+                                // 정적 리소스 허용
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "favicon.ico"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                                "/favicon.ico"
+                                ).permitAll() // /api/auth,terms로 시작하는 모든 요청은 인증 없이 통과
+                        .anyRequest().authenticated() // 나머지는 다 막음
                 );
 
         return http.build();

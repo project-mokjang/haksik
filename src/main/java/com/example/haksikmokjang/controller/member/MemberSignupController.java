@@ -7,34 +7,48 @@ import com.example.haksikmokjang.dto.member.UserSignupRequest;
 import com.example.haksikmokjang.service.member.MemberSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberSignupController {
+
     private final MemberSignupService memberSignupService;
 
-    @GetMapping("/api/members/check-login-id")
+    // 아이디 중복 확인
+    @GetMapping("/check-login-id")
     public ApiResponse<DuplicateCheckResponse> checkLoginId(@RequestParam String loginId) {
-        DuplicateCheckResponse response = memberSignupService.checkLoginId(loginId);
-        return ApiResponse.success(response);
+        DuplicateCheckResponse duplicateCheckResponse = memberSignupService.checkLoginId(loginId);
+        return ApiResponse.success(duplicateCheckResponse);
     }
 
-    @GetMapping("/api/members/check-email")
-    public ApiResponse<DuplicateCheckResponse> checkEmail(@RequestParam String email) {
-        DuplicateCheckResponse response = memberSignupService.checkEmail(email);
-        return ApiResponse.success(response);
+    // 학교 이메일 중복 확인
+    @GetMapping("/check-school-email")
+    public ApiResponse<DuplicateCheckResponse> checkSchoolEmail(@RequestParam String schoolEmail) {
+        DuplicateCheckResponse duplicateCheckResponse = memberSignupService.checkSchoolEmail(schoolEmail);
+        return ApiResponse.success(duplicateCheckResponse);
     }
 
-    @GetMapping("/api/users/check-nickname")
+    // 닉네임 중복 확인
+    @GetMapping("/check-nickname")
     public ApiResponse<DuplicateCheckResponse> checkNickname(@RequestParam String nickname) {
-        DuplicateCheckResponse response = memberSignupService.checkNickname(nickname);
-        return ApiResponse.success(response);
+        DuplicateCheckResponse duplicateCheckResponse = memberSignupService.checkNickname(nickname);
+        return ApiResponse.success(duplicateCheckResponse);
     }
 
-    @PostMapping("/api/members/signup/user")
-    public ApiResponse<SignupResponse> signupUser(@Valid @RequestBody UserSignupRequest request) {
-        SignupResponse response = memberSignupService.signupUser(request);
-        return ApiResponse.success(response);
+    // 일반 사용자 회원가입
+    @PostMapping("/signup/user")
+    public ApiResponse<SignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
+                                                  BindingResult bindingResult) throws BindException {
+
+        if (bindingResult.hasErrors()) {
+            throw new BindException(bindingResult);
+        }
+
+        SignupResponse signupResponse = memberSignupService.signupUser(userSignupRequest);
+        return ApiResponse.success(signupResponse);
     }
 }

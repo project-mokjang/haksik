@@ -5,13 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class SignupResponse {
 
     private Long memberId;
-    private MemberRole role;
+    private String loginId;
+    private String schoolEmail;
+    private String nickname;
 
-    public static SignupResponse of(Long memberId, MemberRole role) {
-        return new SignupResponse(memberId, role);
+    public SignupResponse(Long memberId, String loginId, String schoolEmail, String nickname) {
+        this.memberId = memberId;
+        this.loginId = loginId;
+        this.schoolEmail = schoolEmail;
+        this.nickname = nickname;
     }
 }
