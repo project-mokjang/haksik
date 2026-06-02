@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.service.owner;
+package com.example.haksikmokjang.service.member.owner;
 
 import com.example.haksikmokjang.domain.common.exception.CustomException;
 import com.example.haksikmokjang.domain.common.response.ErrorCode;
@@ -8,8 +8,8 @@ import com.example.haksikmokjang.domain.member.MemberRole;
 import com.example.haksikmokjang.domain.owner.ApprovalStatus;
 import com.example.haksikmokjang.domain.owner.OwnerProfile;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.owner.OwnerSignupRequest;
-import com.example.haksikmokjang.dto.owner.OwnerSignupResponse;
+import com.example.haksikmokjang.dto.member.owner.OwnerSignupRequest;
+import com.example.haksikmokjang.dto.member.owner.OwnerSignupResponse;
 import com.example.haksikmokjang.repository.MemberRepository;
 import com.example.haksikmokjang.repository.OwnerProfileRepository;
 import lombok.RequiredArgsConstructor;

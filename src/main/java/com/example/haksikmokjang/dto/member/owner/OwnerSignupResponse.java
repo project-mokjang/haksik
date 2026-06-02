@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.dto.owner;
+package com.example.haksikmokjang.dto.member.owner;
 
 import lombok.Getter;
 
