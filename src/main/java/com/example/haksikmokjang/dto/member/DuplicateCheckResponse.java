@@ -4,12 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class DuplicateCheckResponse {
 
     private boolean available;
 
-    public static DuplicateCheckResponse of(boolean available) {
-        return new DuplicateCheckResponse(available);
+    public DuplicateCheckResponse(boolean available) {
+        this.available = available;
     }
 }
