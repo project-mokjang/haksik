@@ -151,6 +151,7 @@
 
 <script src="/js/auth.js" th:src="@{/js/auth.js}"></script>
 <script>
+  // 1. 이메일 인증번호 전송 (회원님 타점)
   async function sendEmailCode() {
     const email = document.getElementById('schoolEmail').value;
 
@@ -159,15 +160,25 @@
       return;
     }
 
-    await fetch('/api/email-verifications/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, purpose: 'SIGNUP' })
-    });
+    try {
+      const response = await fetch('/api/auth/email/send', { // 팩트: URL 교정 완료
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }) // 팩트: DTO에 맞게 purpose 삭제
+      });
 
-    alert('인증번호가 전송되었습니다.');
+      if (response.ok) {
+        alert('인증번호가 전송되었습니다.');
+      } else {
+        alert('이메일 전송에 실패했습니다. 대학 이메일(ac.kr)인지 확인해주세요.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버 오류가 발생했습니다.');
+    }
   }
 
+  // 2. 이메일 인증번호 검증 (회원님 타점)
   async function verifyEmailCode() {
     const email = document.getElementById('schoolEmail').value;
     const code = document.getElementById('emailCode').value;
@@ -177,25 +188,29 @@
       return;
     }
 
-    const response = await fetch('/api/email-verifications/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code, purpose: 'SIGNUP' })
-    });
+    try {
+      const response = await fetch('/api/auth/email/verify', { // 팩트: URL 교정 완료
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, code: code }) // 팩트: DTO에 맞게 purpose 삭제
+      });
 
-    if (response.ok) {
-      document.getElementById('emailVerified').value = 'true';
-
-      const verifyBtn = document.getElementById('verifyBtn');
-      verifyBtn.innerText = '완료';
-      verifyBtn.classList.add('success');
-
-      alert('본인 인증이 완료되었습니다.');
-    } else {
-      alert('인증번호를 확인해주세요.');
+      if (response.ok) {
+        document.getElementById('emailVerified').value = 'true';
+        const verifyBtn = document.getElementById('verifyBtn');
+        verifyBtn.innerText = '완료';
+        verifyBtn.classList.add('success');
+        alert('본인 인증이 완료되었습니다.');
+      } else {
+        alert('인증번호가 틀리거나 만료되었습니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버 오류가 발생했습니다.');
     }
   }
 
+  // 3. 중복 확인 (팀원 타점)
   async function checkDuplicate(type) {
     const target = document.getElementById(type);
 
@@ -204,18 +219,77 @@
       return;
     }
 
+    // 팩트: 팀원의 MemberSignupController URL에 맞게 교정
     const url = type === 'loginId'
-      ? `/api/members/check-login-id?loginId=${encodeURIComponent(target.value)}`
-      : `/api/members/check-nickname?nickname=${encodeURIComponent(target.value)}`;
+            ? `/api/members/check-login-id?loginId=${encodeURIComponent(target.value)}`
+            : `/api/users/check-nickname?nickname=${encodeURIComponent(target.value)}`;
 
-    const response = await fetch(url);
-
-    if (response.ok) {
-      alert('사용 가능한 값입니다.');
-    } else {
-      alert('이미 사용 중입니다.');
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        alert('사용 가능한 값입니다.');
+      } else {
+        alert('이미 사용 중입니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버 오류가 발생했습니다.');
     }
   }
+
+  // 4. 회원가입 최종 제출 (팀원 타점 - 팩트: JSON 방식으로 완전히 뜯어고침)
+  document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // 기본 form 태그의 화면 이동(Submit) 기능을 강제로 막음
+
+    if (document.getElementById('emailVerified').value !== 'true') {
+      alert('이메일 인증을 먼저 완료해주세요.');
+      return;
+    }
+
+    if (document.getElementById('password').value !== document.getElementById('passwordConfirm').value) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    // 체크된 약관 ID들만 긁어모아서 배열로 만듦 (팀원의 List<Long> termsIds 바구니용)
+    const termsIds = Array.from(document.querySelectorAll('input[name="termsIds"]:checked'))
+            .map(cb => parseInt(cb.value));
+
+    // 팀원의 UserSignupRequest DTO 규격에 정확히 맞춘 거대한 JSON 덤벨 조립
+    const requestData = {
+      loginId: document.getElementById('loginId').value,
+      password: document.getElementById('password').value,
+      name: document.getElementById('name').value,
+      nickname: document.getElementById('nickname').value,
+      schoolId: parseInt(document.getElementById('schoolId').value),
+      department: document.getElementById('department').value,
+      schoolEmail: document.getElementById('schoolEmail').value,
+      birthDate: document.getElementById('birthDate').value,
+      gender: document.getElementById('gender').value,
+      phone: document.getElementById('phone').value,
+      termsIds: termsIds
+    };
+
+    try {
+      const response = await fetch('/api/members/signup/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData) // 조립된 JSON 객체를 문자열로 바꿔서 발사
+      });
+
+      if (response.ok) {
+        alert('회원가입이 완료되었습니다!');
+        window.location.href = '/login'; // 성공 시 로그인 페이지로 이동
+      } else {
+        // 서버에서 터진 에러 메시지(CustomException)를 파싱해서 보여줌
+        const errorData = await response.json();
+        alert('회원가입 실패: ' + (errorData.message || '입력값을 확인해주세요.'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    }
+  });
 </script>
 </body>
 </html>
