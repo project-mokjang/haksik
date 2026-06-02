@@ -37,5 +37,4 @@ public class MemberSignupController {
         SignupResponse response = memberSignupService.signupUser(request);
         return ApiResponse.success(response);
     }
-
 }
