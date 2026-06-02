@@ -9,7 +9,7 @@ import com.example.haksikmokjang.domain.terms.TermsAgreement;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.member.SignupResponse;
+import com.example.haksikmokjang.dto.member.UserSignupResponse;
 import com.example.haksikmokjang.dto.member.UserSignupRequest;
 import com.example.haksikmokjang.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MemberSignupService {
+public class UserSignupService {
 
     private final MemberRepository memberRepository;
     private final UserProfileRepository userProfileRepository;
@@ -59,7 +59,7 @@ public class MemberSignupService {
 
     // 일반 사용자 회원가입
     @Transactional
-    public SignupResponse signupUser(UserSignupRequest userSignupRequest) {
+    public UserSignupResponse signupUser(UserSignupRequest userSignupRequest) {
         validateDuplicateLoginId(userSignupRequest.getLoginId());
         validateDuplicateSchoolEmail(userSignupRequest.getSchoolEmail());
         validateDuplicateNickname(userSignupRequest.getNickname());
@@ -108,7 +108,7 @@ public class MemberSignupService {
             termsAgreementRepository.save(termsAgreement);
         }
 
-        SignupResponse signupResponse = new SignupResponse(
+        UserSignupResponse signupResponse = new UserSignupResponse(
                 savedMember.getMemberId(),
                 savedMember.getLoginId(),
                 savedMember.getEmail(),
