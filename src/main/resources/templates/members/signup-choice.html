@@ -45,7 +45,7 @@
     <div class="bottom-section">
       <div class="error-msg" id="errorMsg">회원 유형을 먼저 선택해 주세요!</div>
       <button type="button" class="next-btn" id="nextBtn" onclick="handleNextStep()">다음 단계로</button>
-      <a href="/api/auth/login" th:href="@{/api/auth/login}" class="login-link">이미 계정이 있으신가요? <span>로그인하기</span></a>
+      <a href="/api/view/login" th:href="@{/api/view/login}" class="login-link">이미 계정이 있으신가요? <span>로그인하기</span></a>
     </div>
   </div>
 </div>
@@ -78,9 +78,9 @@
     }
 
     if (selectedRole === 'USER') {
-      location.href = '/api/auth/signup-user';
+      location.href = '/api/view/signup-user';
     } else if (selectedRole === 'OWNER') {
-      location.href = '/api/auth/signup-owner';
+      location.href = '/api/view/signup-owner';
     }
   }
 </script>
