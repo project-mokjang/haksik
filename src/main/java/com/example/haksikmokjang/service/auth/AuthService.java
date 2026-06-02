@@ -2,11 +2,13 @@ package com.example.haksikmokjang.service.auth;
 
 import com.example.haksikmokjang.domain.common.exception.CustomException;
 import com.example.haksikmokjang.domain.common.response.ErrorCode;
+import com.example.haksikmokjang.domain.school.School;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
 import com.example.haksikmokjang.repository.EmailVerificationRepository;
 import com.example.haksikmokjang.repository.MemberRepository;
 
+import com.example.haksikmokjang.repository.SchoolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -23,10 +25,15 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final EmailVerificationRepository emailVerificationRepository;
     private final MemberRepository memberRepository;
+    private final SchoolRepository schoolRepository;
 
-    //인증번호 발송 로직
     @Transactional
-    public void sendEmailVerification(String email) {
+    public void sendEmailVerification(Long schoolId, String email) {
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHOOL_NOT_FOUND));
+
+        validateSchoolEmailDomain(school, email);
+
         if (memberRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
@@ -45,20 +52,18 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
         }
 
-        //조장의 엔티티 뼈대에 맞춰 Nullable=false 값들을 정확히 주입
         EmailVerification verification = EmailVerification.builder()
                 .email(email)
                 .verificationCode(codeStr)
                 .purpose(EmailPurpose.SIGNUP)
-                .expiresAt(LocalDateTime.now().plusMinutes(5)) // 조장이 만든 expiresAt 활용
-                .verifiedYn("N") // 초기 상태는 미인증이므로 N
-                // createdAt은 CreatedTimeEntity가 알아서 넣어주므로 삭제함
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .verifiedYn("N")
                 .build();
+
         emailVerificationRepository.save(verification);
     }
 
-    // 2. 인증번호 검증 로직
-    @Transactional // DB 업데이트를 위해 readOnly = true 제거
+    @Transactional
     public void verifyEmail(String email, String code) {
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailAndPurposeOrderByCreatedAtDesc(email, EmailPurpose.SIGNUP)
@@ -72,8 +77,26 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
         }
 
-        //모든 검증을 통과했다면 DB의 verified_yn 값을 'Y'로 업데이트
         verification.verifySuccess();
+    }
+
+    private void validateSchoolEmailDomain(School school, String email) {
+        String emailDomain = extractDomain(email);
+        String schoolDomain = school.getEmailDomain().toLowerCase();
+
+        if (!emailDomain.equals(schoolDomain)) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+    }
+
+    private String extractDomain(String email) {
+        int atIndex = email.lastIndexOf("@");
+
+        if (atIndex == -1 || atIndex == email.length() - 1) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+
+        return email.substring(atIndex + 1).toLowerCase();
     }
 
 }

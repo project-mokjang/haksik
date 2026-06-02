@@ -18,7 +18,7 @@ public class AuthController {
     // 1. 이메일 인증번호 발송 API
     @PostMapping("/send")
     public ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailSendRequest request) {
-        authService.sendEmailVerification(request.getEmail()); // 실제 발송 지시
+        authService.sendEmailVerification(request.getSchoolId(),request.getEmail()); // 실제 발송 지시
         return ApiResponse.success("인증번호가 발송되었습니다.", null);
     }
 
