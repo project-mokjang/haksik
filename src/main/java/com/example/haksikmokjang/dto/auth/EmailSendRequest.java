@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmailSendRequest {
 
-    @NotNull(message = "학교 ID는 필수 입력값입니다.")
-    private Long schoolId;
-
     @NotBlank(message = "이메일은 필수 입력값입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;

@@ -23,7 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MemberSignupService {
+public class UserSignupService {
 
     private final MemberRepository memberRepository;
     private final UserProfileRepository userProfileRepository;
@@ -65,6 +65,7 @@ public class MemberSignupService {
         validateDuplicateNickname(userSignupRequest.getNickname());
 
         School school = getSchool(userSignupRequest.getSchoolId());
+        validateSchoolEmailDomain(school, userSignupRequest.getSchoolEmail());
         List<Terms> agreedTerms = getAgreedTerms(userSignupRequest.getTermsIds());
 
         validateRequiredTermsAgreed(userSignupRequest.getTermsIds());
@@ -182,7 +183,26 @@ public class MemberSignupService {
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
         if (!"Y".equals(emailVerification.getVerifiedYn())) {
-            throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
+    }
+
+    private void validateSchoolEmailDomain(School school, String email) {
+        String emailDomain = extractDomain(email);
+        String schoolDomain = school.getEmailDomain().toLowerCase();
+
+        if (!emailDomain.equals(schoolDomain)) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+    }
+
+    private String extractDomain(String email) {
+        int atIndex = email.lastIndexOf("@");
+
+        if (atIndex == -1 || atIndex == email.length() - 1) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+
+        return email.substring(atIndex + 1).toLowerCase();
     }
 }

@@ -4,7 +4,7 @@ import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
 import com.example.haksikmokjang.dto.member.SignupResponse;
 import com.example.haksikmokjang.dto.member.UserSignupRequest;
-import com.example.haksikmokjang.service.member.MemberSignupService;
+import com.example.haksikmokjang.service.member.UserSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindException;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MemberSignupController {
 
-    private final MemberSignupService memberSignupService;
+    private final UserSignupService memberSignupService;
 
     // 아이디 중복 확인
     @GetMapping("/check-login-id")

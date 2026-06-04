@@ -19,10 +19,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/terms/**",
-                                "/api/members/signup/user",
-                                "/api/members/check-login-id",
-                                "/api/members/check-email",
-                                "/api/users/check-nickname",
+                                "/api/view/**",
+                                "/api/members/**",
 
                                 // 정적 리소스 허용
                                 "/css/**",

@@ -509,3 +509,116 @@ select.input-field {
     border-right: none;
   }
 }
+
+.mobile-container {
+  width: 100%;
+  max-width: 390px;
+  height: 844px;
+  background-color: var(--paper);
+  border-radius: 40px;
+  box-shadow: 0 24px 64px rgba(55, 42, 26, 0.18);
+  border: 8px solid var(--forest);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-fixed {
+  padding: 20px 24px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  background-color: var(--paper);
+  z-index: 10;
+}
+
+#signupForm {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
+.bottom-fixed {
+  padding: 16px 24px 24px;
+  background-color: var(--paper);
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+/* 회원가입 화면 전용 */
+.signup-page .mobile-container {
+  height: 844px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 위 상태바 */
+.signup-page .status-bar {
+  height: 40px;
+  flex-shrink: 0;
+}
+
+/* 제목 영역 */
+.signup-page .header-fixed {
+  flex-shrink: 0;
+  padding: 18px 24px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--paper);
+  z-index: 2;
+}
+
+/* form 전체를 남은 공간에 맞춤 */
+.signup-page #signupForm {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 실제 스크롤 되는 부분 */
+.signup-page .scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 24px 28px;
+}
+
+/* 스크롤바 숨김 */
+.signup-page .scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
+.signup-page .scroll-area {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 아래 가입 버튼 영역 */
+.signup-page .bottom-fixed {
+  flex-shrink: 0;
+  padding: 16px 24px 24px;
+  background-color: var(--paper);
+  border-top: 1px solid var(--line);
+}
+
+/* 버튼이 너무 커서 답답하면 이 정도 */
+.signup-page .submit-btn {
+  height: 54px;
+}

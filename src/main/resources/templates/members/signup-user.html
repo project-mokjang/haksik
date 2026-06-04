@@ -5,8 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>학식목장 - 일반 이용자 가입</title>
   <link rel="stylesheet" href="/css/auth.css" th:href="@{/css/auth.css}">
+
+  <style>
+    .verified-box {
+      display: none;
+      background-color: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .verified-box.active {
+      display: block;
+    }
+
+    .verified-text {
+      font-size: 13px;
+      color: var(--forest);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.35);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      background-color: var(--paper);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      border: 2px solid var(--line);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--forest);
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+    }
+
+    .cancel-btn {
+      height: 48px;
+      border: none;
+      border-radius: 14px;
+      background-color: var(--ivory2);
+      color: var(--forest);
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
 </head>
+
 <body class="auth-body signup-page">
+
 <div class="mobile-container">
   <div class="status-bar">
     <span>17:50</span>
@@ -17,42 +93,37 @@
     <h1 class="title">일반 이용자 가입</h1>
   </div>
 
-  <form action="/api/auth/signup-user" method="post" id="signupForm">
-    <input type="hidden" id="emailVerified" name="emailVerified" value="false">
+  <form id="signupForm">
+    <input type="hidden" id="schoolId">
+    <input type="hidden" id="schoolEmail">
+    <input type="hidden" id="emailVerified" value="false">
 
     <div class="scroll-area">
+
       <div class="form-section">
-        <h2 class="section-title">학교 정보</h2>
+        <h2 class="section-title">학교 인증</h2>
 
-        <div class="input-group">
-          <label class="input-label" for="schoolId">소속 학교</label>
-          <select class="input-field" id="schoolId" name="schoolId" required>
-            <option value="">학교를 선택해주세요</option>
-            <option value="1">목장대학교</option>
-            <option value="2">가천대학교</option>
-            <option value="3">경기대학교</option>
-          </select>
-        </div>
+        <button type="button" class="submit-btn" onclick="openEmailModal()">
+          학교 이메일 인증하기
+        </button>
 
-        <div class="input-group">
-          <label class="input-label" for="department">학과</label>
-          <input type="text" class="input-field" id="department" name="department" placeholder="예: 컴퓨터공학과" required />
+        <div class="verified-box" id="verifiedBox">
+          <p class="verified-text" id="verifiedText"></p>
         </div>
       </div>
 
       <div class="form-section">
-        <h2 class="section-title">본인 인증</h2>
+        <h2 class="section-title">학교 정보</h2>
 
         <div class="input-group">
-          <label class="input-label" for="schoolEmail">학교 이메일</label>
-          <div class="input-row">
-            <input type="email" class="input-field" id="schoolEmail" name="schoolEmail" placeholder="학교 이메일을 입력해주세요" required />
-            <button type="button" class="action-btn" onclick="sendEmailCode()">전송</button>
-          </div>
-          <div class="input-row">
-            <input type="text" class="input-field" id="emailCode" name="emailCode" placeholder="인증번호 6자리 입력" />
-            <button type="button" class="action-btn" id="verifyBtn" onclick="verifyEmailCode()">확인</button>
-          </div>
+          <label class="input-label" for="department">학과</label>
+          <input
+                  type="text"
+                  class="input-field"
+                  id="department"
+                  placeholder="예: 컴퓨터공학과"
+                  required
+          />
         </div>
       </div>
 
@@ -62,20 +133,38 @@
         <div class="input-group">
           <label class="input-label" for="loginId">아이디</label>
           <div class="input-row">
-            <input type="text" class="input-field" id="loginId" name="loginId" placeholder="사용할 아이디를 입력해주세요" required />
+            <input
+                    type="text"
+                    class="input-field"
+                    id="loginId"
+                    placeholder="사용할 아이디를 입력해주세요"
+                    required
+            />
             <button type="button" class="action-btn" onclick="checkDuplicate('loginId')">중복</button>
           </div>
         </div>
 
         <div class="input-group">
           <label class="input-label" for="name">이름</label>
-          <input type="text" class="input-field" id="name" name="name" placeholder="실명을 입력해주세요" required />
+          <input
+                  type="text"
+                  class="input-field"
+                  id="name"
+                  placeholder="실명을 입력해주세요"
+                  required
+          />
         </div>
 
         <div class="input-group">
           <label class="input-label" for="nickname">닉네임</label>
           <div class="input-row">
-            <input type="text" class="input-field" id="nickname" name="nickname" placeholder="앱에서 사용할 닉네임" required />
+            <input
+                    type="text"
+                    class="input-field"
+                    id="nickname"
+                    placeholder="앱에서 사용할 닉네임"
+                    required
+            />
             <button type="button" class="action-btn" onclick="checkDuplicate('nickname')">중복</button>
           </div>
         </div>
@@ -83,12 +172,18 @@
         <div class="input-row">
           <div class="input-group" style="flex: 2;">
             <label class="input-label" for="birthDate">생년월일</label>
-            <input type="date" class="input-field" id="birthDate" name="birthDate" required />
+            <input
+                    type="date"
+                    class="input-field"
+                    id="birthDate"
+                    required
+            />
           </div>
 
           <div class="input-group" style="flex: 1;">
             <label class="input-label" for="gender">성별</label>
-            <select class="input-field" id="gender" name="gender" required>
+            <select class="input-field" id="gender" required>
+              <option value="">선택</option>
               <option value="M">남성</option>
               <option value="F">여성</option>
             </select>
@@ -97,7 +192,12 @@
 
         <div class="input-group">
           <label class="input-label" for="phone">전화번호</label>
-          <input type="tel" class="input-field" id="phone" name="phone" placeholder="- 없이 숫자만 입력" />
+          <input
+                  type="tel"
+                  class="input-field"
+                  id="phone"
+                  placeholder="- 없이 숫자만 입력"
+          />
         </div>
       </div>
 
@@ -106,13 +206,25 @@
 
         <div class="input-group">
           <label class="input-label" for="password">비밀번호</label>
-          <input type="password" class="input-field" id="password" name="password" placeholder="비밀번호 입력" required />
-          <div class="pw-rule">※ 영문, 숫자, 특수문자를 포함하여 8~16자리로 입력해주세요.</div>
+          <input
+                  type="password"
+                  class="input-field"
+                  id="password"
+                  placeholder="비밀번호 입력"
+                  required
+          />
+          <div class="pw-rule">※ 8자 이상으로 입력해주세요.</div>
         </div>
 
         <div class="input-group">
           <label class="input-label" for="passwordConfirm">비밀번호 확인</label>
-          <input type="password" class="input-field" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호 다시 입력" required />
+          <input
+                  type="password"
+                  class="input-field"
+                  id="passwordConfirm"
+                  placeholder="비밀번호 다시 입력"
+                  required
+          />
         </div>
       </div>
 
@@ -122,7 +234,7 @@
         <div class="terms-group">
           <div class="term-item">
             <input type="checkbox" id="term1" name="termsIds" value="1" required />
-            <label for="term1"><span>[필수]</span> 학식목장 서비스 이용약관 동의</label>
+            <label for="term1"><span>[필수]</span> 서비스 이용약관</label>
           </div>
 
           <div class="term-item">
@@ -132,90 +244,353 @@
 
           <div class="term-item">
             <input type="checkbox" id="term3" name="termsIds" value="3" required />
-            <label for="term3"><span>[필수]</span> 위치기반 서비스 이용약관 동의</label>
+            <label for="term3"><span>[필수]</span> 위치기반 서비스 이용약관</label>
           </div>
 
           <div class="term-item">
             <input type="checkbox" id="term4" name="termsIds" value="4" required />
-            <label for="term4"><span>[필수]</span> 신고 및 분쟁 처리 목적의 채팅 내역 열람 정책 동의</label>
+            <label for="term4"><span>[필수]</span> 채팅 내역 열람 정책 동의</label>
           </div>
         </div>
       </div>
+
     </div>
 
     <div class="bottom-fixed">
       <button type="submit" class="submit-btn">가입 완료하기</button>
     </div>
   </form>
+
+  <div class="modal-backdrop" id="emailModal">
+    <div class="modal-box">
+      <h2 class="modal-title">학교 이메일 인증</h2>
+
+      <div class="form-section">
+        <div class="input-group">
+          <label class="input-label" for="modalEmail">학교 이메일</label>
+          <div class="input-row">
+            <input
+                    type="email"
+                    class="input-field"
+                    id="modalEmail"
+                    placeholder="학교 이메일 입력"
+            />
+            <button type="button" class="action-btn" onclick="sendEmailCode()">전송</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="modalCode">인증번호</label>
+          <div class="input-row">
+            <input
+                    type="text"
+                    class="input-field"
+                    id="modalCode"
+                    placeholder="인증번호 6자리"
+            />
+            <button type="button" class="action-btn" id="verifyBtn" onclick="verifyEmailCode()">확인</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" onclick="closeEmailModal()">닫기</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="/js/auth.js" th:src="@{/js/auth.js}"></script>
+
 <script>
+  let loginIdChecked = false;
+  let nicknameChecked = false;
+
+  let sentEmail = '';
+  let verifiedSchoolName = '';
+
+  const loginIdInput = document.getElementById('loginId');
+  const nicknameInput = document.getElementById('nickname');
+  const modalEmailInput = document.getElementById('modalEmail');
+
+  loginIdInput.addEventListener('input', function () {
+    loginIdChecked = false;
+  });
+
+  nicknameInput.addEventListener('input', function () {
+    nicknameChecked = false;
+  });
+
+  modalEmailInput.addEventListener('input', function () {
+    resetEmailVerificationState();
+  });
+
+  function openEmailModal() {
+    document.getElementById('emailModal').classList.add('active');
+  }
+
+  function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('active');
+  }
+
+  function resetEmailVerificationState() {
+    document.getElementById('schoolId').value = '';
+    document.getElementById('schoolEmail').value = '';
+    document.getElementById('emailVerified').value = 'false';
+
+    sentEmail = '';
+    verifiedSchoolName = '';
+
+    document.getElementById('verifiedBox').classList.remove('active');
+    document.getElementById('verifiedText').innerText = '';
+
+    const verifyBtn = document.getElementById('verifyBtn');
+    verifyBtn.innerText = '확인';
+    verifyBtn.classList.remove('success');
+  }
+
+  async function safeJson(response) {
+    try {
+      return await response.json();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getErrorMessage(result, fallback) {
+    if (result && result.message) {
+      return result.message;
+    }
+
+    return fallback;
+  }
+
   async function sendEmailCode() {
-    const email = document.getElementById('schoolEmail').value;
+    const email = document.getElementById('modalEmail').value.trim();
 
     if (!email) {
       alert('학교 이메일을 입력해주세요.');
       return;
     }
 
-    await fetch('/api/email-verifications/send', {
+    const response = await fetch('/api/auth/email/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, purpose: 'SIGNUP' })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email
+      })
     });
 
-    alert('인증번호가 전송되었습니다.');
+    const result = await safeJson(response);
+
+    if (!response.ok || !result || result.success === false) {
+      alert(getErrorMessage(result, '등록된 학교 이메일 도메인이 아니거나 이미 사용 중인 이메일입니다.'));
+      return;
+    }
+
+    if (!result.data || !result.data.schoolId) {
+      alert('학교 인증 응답 데이터가 올바르지 않습니다.');
+      return;
+    }
+
+    document.getElementById('schoolId').value = result.data.schoolId;
+    sentEmail = email;
+    verifiedSchoolName = result.data.schoolName;
+
+    alert(`${verifiedSchoolName} 인증번호가 전송되었습니다.`);
   }
 
   async function verifyEmailCode() {
-    const email = document.getElementById('schoolEmail').value;
-    const code = document.getElementById('emailCode').value;
+    const email = document.getElementById('modalEmail').value.trim();
+    const code = document.getElementById('modalCode').value.trim();
+    const schoolId = document.getElementById('schoolId').value;
 
     if (!email || !code) {
       alert('이메일과 인증번호를 모두 입력해주세요.');
       return;
     }
 
-    const response = await fetch('/api/email-verifications/verify', {
+    if (!schoolId || sentEmail !== email) {
+      alert('먼저 현재 이메일로 인증번호 전송을 해주세요.');
+      return;
+    }
+
+    const response = await fetch('/api/auth/email/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code, purpose: 'SIGNUP' })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        code: code
+      })
     });
 
-    if (response.ok) {
-      document.getElementById('emailVerified').value = 'true';
+    const result = await safeJson(response);
 
-      const verifyBtn = document.getElementById('verifyBtn');
-      verifyBtn.innerText = '완료';
-      verifyBtn.classList.add('success');
-
-      alert('본인 인증이 완료되었습니다.');
-    } else {
-      alert('인증번호를 확인해주세요.');
+    if (!response.ok || (result && result.success === false)) {
+      alert(getErrorMessage(result, '인증번호를 확인해주세요.'));
+      return;
     }
+
+    document.getElementById('schoolEmail').value = email;
+    document.getElementById('emailVerified').value = 'true';
+
+    document.getElementById('verifiedText').innerText =
+            `${verifiedSchoolName} / ${email} 인증 완료`;
+
+    document.getElementById('verifiedBox').classList.add('active');
+
+    const verifyBtn = document.getElementById('verifyBtn');
+    verifyBtn.innerText = '완료';
+    verifyBtn.classList.add('success');
+
+    alert('학교 이메일 인증이 완료되었습니다.');
+    closeEmailModal();
   }
 
   async function checkDuplicate(type) {
     const target = document.getElementById(type);
+    const value = target.value.trim();
 
-    if (!target.value) {
+    if (!value) {
       alert('값을 입력해주세요.');
       return;
     }
 
     const url = type === 'loginId'
-      ? `/api/members/check-login-id?loginId=${encodeURIComponent(target.value)}`
-      : `/api/members/check-nickname?nickname=${encodeURIComponent(target.value)}`;
+            ? `/api/members/check-login-id?loginId=${encodeURIComponent(value)}`
+            : `/api/members/check-nickname?nickname=${encodeURIComponent(value)}`;
 
     const response = await fetch(url);
+    const result = await safeJson(response);
 
-    if (response.ok) {
+    if (!response.ok || !result || result.success === false) {
+      alert(getErrorMessage(result, '중복 확인 중 오류가 발생했습니다.'));
+      return;
+    }
+
+    if (!result.data || typeof result.data.available !== 'boolean') {
+      alert('중복 확인 응답 데이터가 올바르지 않습니다.');
+      return;
+    }
+
+    if (result.data.available) {
       alert('사용 가능한 값입니다.');
+
+      if (type === 'loginId') {
+        loginIdChecked = true;
+      }
+
+      if (type === 'nickname') {
+        nicknameChecked = true;
+      }
     } else {
       alert('이미 사용 중입니다.');
+
+      if (type === 'loginId') {
+        loginIdChecked = false;
+      }
+
+      if (type === 'nickname') {
+        nicknameChecked = false;
+      }
     }
   }
+
+  document.getElementById('signupForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const loginId = document.getElementById('loginId').value.trim();
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('passwordConfirm').value;
+    const name = document.getElementById('name').value.trim();
+    const nickname = document.getElementById('nickname').value.trim();
+    const schoolId = document.getElementById('schoolId').value;
+    const department = document.getElementById('department').value.trim();
+    const schoolEmail = document.getElementById('schoolEmail').value.trim();
+    const birthDate = document.getElementById('birthDate').value;
+    const gender = document.getElementById('gender').value;
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!loginId || !password || !name || !nickname || !department || !birthDate || !gender) {
+      alert('필수 입력값을 모두 입력해주세요.');
+      return;
+    }
+
+    if (!loginIdChecked) {
+      alert('아이디 중복 확인을 해주세요.');
+      return;
+    }
+
+    if (!nicknameChecked) {
+      alert('닉네임 중복 확인을 해주세요.');
+      return;
+    }
+
+    if (document.getElementById('emailVerified').value !== 'true') {
+      alert('학교 이메일 인증을 완료해주세요.');
+      return;
+    }
+
+    if (!schoolId || !schoolEmail) {
+      alert('학교 이메일 인증 정보가 없습니다. 다시 인증해주세요.');
+      return;
+    }
+
+    if (password.length < 8) {
+      alert('비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const termsIds = Array.from(document.querySelectorAll('input[name="termsIds"]:checked'))
+            .map(item => Number(item.value));
+
+    if (termsIds.length === 0) {
+      alert('필수 약관에 동의해주세요.');
+      return;
+    }
+
+    const requestData = {
+      loginId: loginId,
+      password: password,
+      name: name,
+      nickname: nickname,
+      schoolId: Number(schoolId),
+      department: department,
+      schoolEmail: schoolEmail,
+      birthDate: birthDate,
+      gender: gender,
+      phone: phone,
+      termsIds: termsIds
+    };
+
+    const response = await fetch('/api/members/signup/user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    const result = await safeJson(response);
+
+    if (!response.ok || !result || result.success === false) {
+      alert(getErrorMessage(result, '회원가입에 실패했습니다.'));
+      return;
+    }
+
+    alert('회원가입이 완료되었습니다.');
+    location.href = '/api/view/login';
+  });
 </script>
+
 </body>
 </html>
