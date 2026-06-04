@@ -12,7 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/signup/users")
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class UserSignupController {
 
@@ -40,9 +40,9 @@ public class UserSignupController {
     }
 
     // 일반 사용자 회원가입
-    @PostMapping("")
+    @PostMapping("/signup/user")
     public ApiResponse<UserSignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
-                                                      BindingResult bindingResult) throws BindException {
+                                                  BindingResult bindingResult) throws BindException {
 
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);

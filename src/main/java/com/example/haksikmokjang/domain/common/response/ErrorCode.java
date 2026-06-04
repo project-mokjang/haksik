@@ -29,7 +29,8 @@ public enum ErrorCode {
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_005", "이메일 발송에 실패했습니다."),
 
     // Terms
-    REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "TERMS_001", "필수 약관에 동의해야 합니다.");
+    REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "TERMS_001", "필수 약관에 동의해야 합니다."),
+    TERMS_NOT_FOUND(HttpStatus.BAD_REQUEST, "TERMS_002", "존재하지 않는 약관입니다.");
 
     private final HttpStatus status;
     private final String code;

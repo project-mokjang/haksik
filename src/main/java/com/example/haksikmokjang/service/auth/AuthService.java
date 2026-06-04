@@ -5,6 +5,7 @@ import com.example.haksikmokjang.domain.common.response.ErrorCode;
 import com.example.haksikmokjang.domain.school.School;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
+import com.example.haksikmokjang.dto.auth.EmailSendResponse;
 import com.example.haksikmokjang.repository.EmailVerificationRepository;
 import com.example.haksikmokjang.repository.MemberRepository;
 
@@ -28,11 +29,11 @@ public class AuthService {
     private final SchoolRepository schoolRepository;
 
     @Transactional
-    public void sendEmailVerification(Long schoolId, String email) {
-        School school = schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new CustomException(ErrorCode.SCHOOL_NOT_FOUND));
+    public EmailSendResponse sendEmailVerification(String email) {
+        String emailDomain = extractDomain(email);
 
-        validateSchoolEmailDomain(school, email);
+        School school = schoolRepository.findByEmailDomain(emailDomain)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN));
 
         if (memberRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
@@ -61,6 +62,11 @@ public class AuthService {
                 .build();
 
         emailVerificationRepository.save(verification);
+
+        return new EmailSendResponse(
+                school.getSchoolId(),
+                school.getSchoolName()
+        );
     }
 
     @Transactional
@@ -80,15 +86,6 @@ public class AuthService {
         verification.verifySuccess();
     }
 
-    private void validateSchoolEmailDomain(School school, String email) {
-        String emailDomain = extractDomain(email);
-        String schoolDomain = school.getEmailDomain().toLowerCase();
-
-        if (!emailDomain.equals(schoolDomain)) {
-            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
-        }
-    }
-
     private String extractDomain(String email) {
         int atIndex = email.lastIndexOf("@");
 
@@ -98,5 +95,4 @@ public class AuthService {
 
         return email.substring(atIndex + 1).toLowerCase();
     }
-
 }

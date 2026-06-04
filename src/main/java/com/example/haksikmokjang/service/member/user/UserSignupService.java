@@ -65,6 +65,7 @@ public class UserSignupService {
         validateDuplicateNickname(userSignupRequest.getNickname());
 
         School school = getSchool(userSignupRequest.getSchoolId());
+        validateSchoolEmailDomain(school, userSignupRequest.getSchoolEmail());
         List<Terms> agreedTerms = getAgreedTerms(userSignupRequest.getTermsIds());
 
         validateRequiredTermsAgreed(userSignupRequest.getTermsIds());
@@ -148,7 +149,7 @@ public class UserSignupService {
     // 학교 조회
     private School getSchool(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학교입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHOOL_NOT_FOUND));
 
         return school;
     }
@@ -158,7 +159,7 @@ public class UserSignupService {
         List<Terms> agreedTerms = termsRepository.findAllById(termsIds);
 
         if (agreedTerms.size() != termsIds.size()) {
-            throw new IllegalArgumentException("존재하지 않는 약관이 포함되어 있습니다.");
+            throw new CustomException(ErrorCode.TERMS_NOT_FOUND);
         }
 
         return agreedTerms;
@@ -170,7 +171,7 @@ public class UserSignupService {
 
         for (Terms terms : requiredTerms) {
             if ("Y".equals(terms.getRequiredYn()) && !termsIds.contains(terms.getTermsId())) {
-                throw new IllegalArgumentException("필수 약관에 모두 동의해야 합니다.");
+                throw new CustomException(ErrorCode.REQUIRED_TERMS_NOT_AGREED);
             }
         }
     }
@@ -182,7 +183,26 @@ public class UserSignupService {
                 .orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 
         if (!"Y".equals(emailVerification.getVerifiedYn())) {
-            throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
+    }
+
+    private void validateSchoolEmailDomain(School school, String email) {
+        String emailDomain = extractDomain(email);
+        String schoolDomain = school.getEmailDomain().toLowerCase();
+
+        if (!emailDomain.equals(schoolDomain)) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+    }
+
+    private String extractDomain(String email) {
+        int atIndex = email.lastIndexOf("@");
+
+        if (atIndex == -1 || atIndex == email.length() - 1) {
+            throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
+        }
+
+        return email.substring(atIndex + 1).toLowerCase();
     }
 }

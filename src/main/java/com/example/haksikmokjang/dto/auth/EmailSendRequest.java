@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmailSendRequest {
 
-    @NotNull(message = "학교 ID는 필수 입력값입니다.")
-    private Long schoolId;
-
     @NotBlank(message = "이메일은 필수 입력값입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.ac\\.kr$", message = "대학교 이메일(ac.kr)만 인증이 가능합니다.")
