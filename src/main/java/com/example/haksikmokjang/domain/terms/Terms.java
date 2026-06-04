@@ -1,9 +1,7 @@
 package com.example.haksikmokjang.domain.terms;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +9,8 @@ import java.time.LocalDateTime;
 @Table(name = "TERMS")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Terms {
 
     @Id

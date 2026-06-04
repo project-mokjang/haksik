@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.service.member;
+package com.example.haksikmokjang.service.member.user;
 
 import com.example.haksikmokjang.domain.common.exception.CustomException;
 import com.example.haksikmokjang.domain.common.response.ErrorCode;
@@ -9,8 +9,8 @@ import com.example.haksikmokjang.domain.terms.TermsAgreement;
 import com.example.haksikmokjang.domain.verification.EmailPurpose;
 import com.example.haksikmokjang.domain.verification.EmailVerification;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.member.SignupResponse;
-import com.example.haksikmokjang.dto.member.UserSignupRequest;
+import com.example.haksikmokjang.dto.member.user.UserSignupResponse;
+import com.example.haksikmokjang.dto.member.user.UserSignupRequest;
 import com.example.haksikmokjang.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,7 +59,7 @@ public class UserSignupService {
 
     // 일반 사용자 회원가입
     @Transactional
-    public SignupResponse signupUser(UserSignupRequest userSignupRequest) {
+    public UserSignupResponse signupUser(UserSignupRequest userSignupRequest) {
         validateDuplicateLoginId(userSignupRequest.getLoginId());
         validateDuplicateSchoolEmail(userSignupRequest.getSchoolEmail());
         validateDuplicateNickname(userSignupRequest.getNickname());
@@ -109,7 +109,7 @@ public class UserSignupService {
             termsAgreementRepository.save(termsAgreement);
         }
 
-        SignupResponse signupResponse = new SignupResponse(
+        UserSignupResponse signupResponse = new UserSignupResponse(
                 savedMember.getMemberId(),
                 savedMember.getLoginId(),
                 savedMember.getEmail(),
@@ -149,7 +149,7 @@ public class UserSignupService {
     // 학교 조회
     private School getSchool(Long schoolId) {
         School school = schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학교입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHOOL_NOT_FOUND));
 
         return school;
     }
@@ -159,7 +159,7 @@ public class UserSignupService {
         List<Terms> agreedTerms = termsRepository.findAllById(termsIds);
 
         if (agreedTerms.size() != termsIds.size()) {
-            throw new IllegalArgumentException("존재하지 않는 약관이 포함되어 있습니다.");
+            throw new CustomException(ErrorCode.TERMS_NOT_FOUND);
         }
 
         return agreedTerms;
@@ -171,7 +171,7 @@ public class UserSignupService {
 
         for (Terms terms : requiredTerms) {
             if ("Y".equals(terms.getRequiredYn()) && !termsIds.contains(terms.getTermsId())) {
-                throw new IllegalArgumentException("필수 약관에 모두 동의해야 합니다.");
+                throw new CustomException(ErrorCode.REQUIRED_TERMS_NOT_AGREED);
             }
         }
     }

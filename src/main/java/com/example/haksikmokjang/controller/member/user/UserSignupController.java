@@ -1,10 +1,10 @@
-package com.example.haksikmokjang.controller.member;
+package com.example.haksikmokjang.controller.member.user;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.dto.member.DuplicateCheckResponse;
-import com.example.haksikmokjang.dto.member.SignupResponse;
-import com.example.haksikmokjang.dto.member.UserSignupRequest;
-import com.example.haksikmokjang.service.member.UserSignupService;
+import com.example.haksikmokjang.dto.member.user.UserSignupResponse;
+import com.example.haksikmokjang.dto.member.user.UserSignupRequest;
+import com.example.haksikmokjang.service.member.user.UserSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindException;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
-public class MemberSignupController {
+public class UserSignupController {
 
     private final UserSignupService memberSignupService;
 
@@ -41,14 +41,14 @@ public class MemberSignupController {
 
     // 일반 사용자 회원가입
     @PostMapping("/signup/user")
-    public ApiResponse<SignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
+    public ApiResponse<UserSignupResponse> signupUser(@Valid @RequestBody UserSignupRequest userSignupRequest,
                                                   BindingResult bindingResult) throws BindException {
 
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
 
-        SignupResponse signupResponse = memberSignupService.signupUser(userSignupRequest);
+        UserSignupResponse signupResponse = memberSignupService.signupUser(userSignupRequest);
         return ApiResponse.success(signupResponse);
     }
 }
