@@ -119,7 +119,7 @@ public class UniversityDomainSetupTest {
                 {"원광대학교", "wonkwang.ac.kr"}, {"원광대학교", "wku.ac.kr"}, {"우송대학교", "wsu.ac.kr"},
                 {"우석대학교", "woosuk.ac.kr"}, {"영남대학교", "yeungnam.ac.kr"}, {"예원예술대학교", "yewon.ac.kr"},
                 {"용인대학교", "yongin.ac.kr"}, {"연세대학교", "yonsei.ac.kr"}, {"여수대학교", "yosu.ac.kr"},
-                {"영산대학교", "ysu.ac.kr"}, {"영산대학교", "youngsan.ac.kr"}
+                {"영산대학교", "ysu.ac.kr"}, {"영산대학교", "youngsan.ac.kr"}, {"인덕대학교", "induk.ac.kr"}
         };
 
         // 3. 배열을 순회하며 엔티티로 조립
