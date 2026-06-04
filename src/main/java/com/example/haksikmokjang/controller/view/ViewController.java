@@ -31,10 +31,8 @@ public class ViewController {
     public String findPwPage() {
         return "members/find-pw";
     }
-    @GetMapping("/admin")
-    public String adminPage(){
-        return "members/admin-users";
-    }
+    @GetMapping("/owner-pending")
+    public String ownerPending() { return "members/owner-pending"; }
 
 }
 
