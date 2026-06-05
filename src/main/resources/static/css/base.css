@@ -1,0 +1,26 @@
+/* haksik base css */
+
+/* 프로젝트 공통 색상 변수 */
+:root {
+    --ivory: #fff7e8;
+    --ivory2: #f3e7d3;
+    --paper: #fffdf8;
+    --card: #fffaf0;
+    --green: #126b4f;
+    --green2: #168a62;
+    --forest: #173f35;
+    --soil: #9b622e;
+    --muted: #766f65;
+    --line: #d9e9d9;
+    --red: #d85f4f;
+    --shadow: 0 12px 32px rgba(55, 42, 26, 0.1);
+    --radius: 20px;
+}
+
+/* 전체 기본값 초기화 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
