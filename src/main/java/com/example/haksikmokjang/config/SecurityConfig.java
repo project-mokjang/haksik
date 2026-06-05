@@ -33,6 +33,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_VIEW_URLS = {
             "/",
+            "api/view/main",
             "/api/view/login",
             "/api/view/signup-choice",
             "/api/view/signup-user",

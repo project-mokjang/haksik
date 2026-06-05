@@ -42,11 +42,13 @@ public class Member extends BaseEntity {
     @Column(name = "withdrawn_at")
     private LocalDateTime withdrawnAt;
 
+    @Builder.Default
     @Column(name = "login_fail_count", nullable = false)
-    private int loginFailCount;
+    private int loginFailCount = 0;
 
+    @Builder.Default
     @Column(name = "locked_yn", nullable = false, length = 1)
-    private String lockedYn;
+    private String lockedYn = "N";
 
     @Column(name = "locked_at")
     private LocalDateTime lockedAt;
