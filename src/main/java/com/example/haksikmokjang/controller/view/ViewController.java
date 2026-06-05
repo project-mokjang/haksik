@@ -13,7 +13,7 @@ public class ViewController {
     }
     @GetMapping("/signup-user")
     public String signupPage() {
-        return "/members/signup-user";
+        return "/members/user/signup-user";
     }
     @GetMapping("/signup-owner")
     public String signupOwnerPage() {
@@ -31,6 +31,22 @@ public class ViewController {
     public String findPwPage() {
         return "members/find-pw";
     }
+    @GetMapping("/user/main")
+    public String userMainPage() {
+        return "main/user-main";
+    }
+    @GetMapping("/owner/main")
+    public String ownerMainPage() {
+        return "main/owner-main";
+    }
+    @GetMapping("/owner/pending")
+    public String ownerPendingPage() {
+        return "members/owner/owner-pending";
+    }
 
+    @GetMapping("/owner/rejected")
+    public String ownerRejectedPage() {
+        return "members/owner/owner-rejected";
+    }
 }
 

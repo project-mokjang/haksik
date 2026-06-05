@@ -12,7 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/signup/owners")
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class OwnerSignupController {
 
@@ -26,7 +26,7 @@ public class OwnerSignupController {
     }
 
     // 점주 회원가입
-    @PostMapping("")
+    @PostMapping("/signup/owner")
     public ApiResponse<OwnerSignupResponse> signupOwner(@Valid @RequestBody OwnerSignupRequest ownerSignupRequest,
                                                         BindingResult bindingResult) throws BindException {
         if (bindingResult.hasErrors()) {
