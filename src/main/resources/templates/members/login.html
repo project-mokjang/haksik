@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>학식목장 - 로그인</title>
+  <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
   <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
 </head>
 <body class="auth-body login-page">
@@ -19,18 +20,37 @@
       <h1 class="title">학식목장</h1>
     </div>
 
-    <form class="form-section" action="/api/auth/login" method="post">
+    <form class="form-section" action="/api/auth/login" method="post" id="loginForm">
       <div class="input-group">
         <label class="input-label" for="loginId">아이디</label>
-        <input type="text" class="input-field" id="loginId" name="loginId" placeholder="아이디를 입력해주세요" required />
+        <input
+                type="text"
+                class="input-field"
+                id="loginId"
+                name="loginId"
+                placeholder="아이디를 입력해주세요"
+                required
+        />
       </div>
 
       <div class="input-group">
         <label class="input-label" for="password">비밀번호</label>
-        <input type="password" class="input-field" id="password" name="password" placeholder="비밀번호를 입력해주세요" required />
+        <input
+                type="password"
+                class="input-field"
+                id="password"
+                name="password"
+                placeholder="비밀번호를 입력해주세요"
+                required
+        />
       </div>
 
-      <div class="error-msg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
+      <label class="remember-row">
+        <input type="checkbox" name="rememberMe">
+        로그인 상태 유지
+      </label>
+
+      <div class="error-msg" id="loginError"></div>
 
       <button type="submit" class="login-btn">로그인</button>
     </form>
@@ -44,5 +64,17 @@
     </div>
   </div>
 </div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const errorMessage = params.get('error');
+
+  if (errorMessage) {
+    const loginError = document.getElementById('loginError');
+    loginError.innerText = decodeURIComponent(errorMessage);
+    loginError.classList.add('visible');
+  }
+</script>
+
 </body>
 </html>

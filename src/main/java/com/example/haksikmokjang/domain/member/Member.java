@@ -41,4 +41,32 @@ public class Member extends BaseEntity {
 
     @Column(name = "withdrawn_at")
     private LocalDateTime withdrawnAt;
+
+    @Column(name = "login_fail_count", nullable = false)
+    private int loginFailCount;
+
+    @Column(name = "locked_yn", nullable = false, length = 1)
+    private String lockedYn;
+
+    @Column(name = "locked_at")
+    private LocalDateTime lockedAt;
+
+    public void increaseLoginFailCount() {
+        this.loginFailCount++;
+
+        if (this.loginFailCount >= 5) {
+            this.lockedYn = "Y";
+            this.lockedAt = LocalDateTime.now();
+        }
+    }
+
+    public void resetLoginFailCount() {
+        this.loginFailCount = 0;
+        this.lockedYn = "N";
+        this.lockedAt = null;
+    }
+
+    public boolean isLocked() {
+        return "Y".equals(this.lockedYn);
+    }
 }

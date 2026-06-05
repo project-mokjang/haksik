@@ -1,0 +1,81 @@
+/* haksik signup form css */
+
+/* 회원가입 화면 공통 레이아웃 */
+
+/* 회원가입 화면 컨테이너 */
+.signup-page .mobile-container {
+    height: 844px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 위 상태바 */
+.signup-page .status-bar {
+    height: 40px;
+    flex-shrink: 0;
+}
+
+/* 제목 영역 */
+.signup-page .header-fixed {
+    flex-shrink: 0;
+    padding: 18px 24px 14px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+    z-index: 2;
+}
+
+/* form 전체를 남은 공간에 맞춤 */
+.signup-page .signup-form,
+.signup-page #signupForm {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 실제 스크롤 되는 부분 */
+.signup-page .signup-scroll-area,
+.signup-page .scroll-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px 24px 28px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* 스크롤바 숨김 */
+.signup-page .signup-scroll-area::-webkit-scrollbar,
+.signup-page .scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+/* 아래 가입 버튼 영역 */
+.signup-page .bottom-fixed {
+    flex-shrink: 0;
+    padding: 16px 24px 24px;
+    background-color: var(--paper);
+    border-top: 1px solid var(--line);
+}
+
+/* 가입 버튼 높이 보정 */
+.signup-page .submit-btn {
+    height: 54px;
+}
+
+/* 모바일 화면에서 스크롤 영역 안정화 */
+@media (max-width: 420px) {
+    .signup-page .signup-form,
+    .signup-page #signupForm {
+        min-height: 0;
+    }
+
+    .signup-page .signup-scroll-area,
+    .signup-page .scroll-area {
+        min-height: 0;
+    }
+}

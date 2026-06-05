@@ -16,6 +16,8 @@ public enum ErrorCode {
     DUPLICATED_NICKNAME(HttpStatus.CONFLICT, "MEMBER_003", "이미 사용 중인 닉네임입니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_004", "회원을 찾을 수 없습니다."),
 
+    //Owner
+    DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),
     // School
     SCHOOL_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHOOL_001", "학교를 찾을 수 없습니다."),
     INVALID_SCHOOL_EMAIL_DOMAIN(HttpStatus.BAD_REQUEST, "SCHOOL_002", "학교 이메일 도메인이 일치하지 않습니다."),
