@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/api/view")
 public class ViewController {
+    @GetMapping("/main")
+    public String goIndex() {return "index";}
     @GetMapping("/signup-choice")
     public String signupChoicePage() {
         return "members/signup-choice";
@@ -17,7 +19,7 @@ public class ViewController {
     }
     @GetMapping("/signup-owner")
     public String signupOwnerPage() {
-        return "members/signup-owner";
+        return "members/owner/signup-owner";
     }
     @GetMapping("/login")
     public String loginPage() {
