@@ -31,10 +31,24 @@ public class ViewController {
     public String findPwPage() {
         return "members/find-pw";
     }
-    @GetMapping("/admin")
-    public String adminPage(){
-        return "members/admin-users";
-    }
 
+    //관리자 전용 화면
+    @GetMapping("/admin/users")
+    public String adminUsersPage() { return "members/admin/admin-users"; }
+
+    @GetMapping("/admin/reports")
+    public String adminReportsPage() { return "members/admin/admin-reports"; }
+
+    @GetMapping("/admin/boards")
+    public String adminBoardsPage() { return "members/admin/admin-boards"; }
+
+    @GetMapping("/admin/owners")
+    public String adminOwnersPage() { return "members/admin/admin-owners"; }
+
+    @GetMapping("/admin/restaurants")
+    public String adminRestaurantsPage() { return "members/admin/admin-restaurants"; }
+
+    @GetMapping("/admin/stats")
+    public String adminStatsPage() { return "members/admin/admin-stats"; }
 }
 

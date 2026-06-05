@@ -20,7 +20,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/terms/**",
                                 "/api/view/**",
-                                "/api/signup/**",
+                                "/api/members/**",
 
                                 // 정적 리소스 허용
                                 "/css/**",
