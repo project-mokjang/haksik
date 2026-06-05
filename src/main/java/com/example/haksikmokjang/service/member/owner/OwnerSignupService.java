@@ -99,7 +99,7 @@ public class OwnerSignupService {
         boolean exist = ownerProfileRepository.existsByBusinessNumber(businessNumber);
 
         if (exist) {
-            throw new IllegalArgumentException("이미 사용 중인 사업자등록번호입니다.");
+            throw new CustomException(ErrorCode.DUPLICATED_BUSINESS_NUMBER);
         }
     }
 }

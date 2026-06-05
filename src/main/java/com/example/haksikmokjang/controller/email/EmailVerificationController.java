@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.controller.auth;
+package com.example.haksikmokjang.controller.email;
 
 import com.example.haksikmokjang.domain.common.response.ApiResponse;
 import com.example.haksikmokjang.dto.auth.EmailSendRequest;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth/email")
 @RequiredArgsConstructor
-public class AuthController {
+public class EmailVerificationController {
 
     private final AuthService authService; // 서비스랑 연결
 
