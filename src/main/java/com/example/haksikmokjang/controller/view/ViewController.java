@@ -34,5 +34,6 @@ public class ViewController {
     @GetMapping("/owner-pending")
     public String ownerPending() { return "members/owner-pending"; }
 
+
 }
 
