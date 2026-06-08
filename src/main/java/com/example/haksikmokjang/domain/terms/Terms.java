@@ -24,13 +24,15 @@ public class Terms {
     @Column(name = "version", nullable = false, length = 20)
     private String version;
 
-    @Lob
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, length = 3000) // 3000자 정도로 넉넉하게!
     private String content;
+
 
     @Column(name = "required_yn", nullable = false, length = 1)
     private String requiredYn;
 
     @Column(name = "effective_at", nullable = false)
     private LocalDateTime effectiveAt;
+
+
 }

@@ -68,5 +68,7 @@ public class ViewController {
     public String ownerRejectedPage() {
         return "members/owner/owner-rejected";
     }
+    @GetMapping("/members/profile/update")
+    public String profileUpdateForm() {return "members/user/profile-update";}
 }
 
