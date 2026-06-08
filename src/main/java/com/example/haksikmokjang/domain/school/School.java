@@ -2,14 +2,14 @@ package com.example.haksikmokjang.domain.school;
 
 import com.example.haksikmokjang.domain.common.CreatedTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "SCHOOL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class School extends CreatedTimeEntity {
 
     @Id

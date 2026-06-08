@@ -32,8 +32,7 @@ public class AuthService {
     public EmailSendResponse sendEmailVerification(String email) {
         String emailDomain = extractDomain(email);
 
-        School school = schoolRepository.findByEmailDomain(emailDomain)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN));
+        School school = findSchoolByEmailDomain(email);
 
         if (memberRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
@@ -94,5 +93,19 @@ public class AuthService {
         }
 
         return email.substring(atIndex + 1).toLowerCase();
+    }
+
+    private School findSchoolByEmailDomain(String email) {
+        String emailDomain = extractDomain(email);
+
+        return schoolRepository.findAll().stream()
+                .filter(school -> {
+                    String schoolDomain = school.getEmailDomain().toLowerCase();
+
+                    return emailDomain.equals(schoolDomain)
+                            || emailDomain.endsWith("." + schoolDomain);
+                })
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN));
     }
 }

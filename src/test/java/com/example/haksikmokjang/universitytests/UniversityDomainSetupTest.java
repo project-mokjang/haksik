@@ -1,6 +1,8 @@
 package com.example.haksikmokjang.universitytests;
 
+import com.example.haksikmokjang.domain.school.School;
 import com.example.haksikmokjang.domain.school.UniversityDomain;
+import com.example.haksikmokjang.repository.SchoolRepository;
 import com.example.haksikmokjang.repository.UniversityDomainRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +17,14 @@ import java.util.List;
 public class UniversityDomainSetupTest {
 
     @Autowired
-    private UniversityDomainRepository universityDomainRepository;
+    private SchoolRepository schoolRepository;
 
     @Test
     @Commit
     @DisplayName("팀원 로컬 DB 동기화용: 전국 대학교 도메인 150+개 주입")
-    void insertUniversityDomains() {
+    void insertSchoolDomains() {
         // 1. 이미 데이터가 있으면 중복 삽입 방지 (근손실 방지)
-        if (universityDomainRepository.count() > 0) {
+        if (schoolRepository.count() > 2) {
             System.out.println("✅ 이미 대학교 도메인 데이터가 존재합니다. 주입을 생략합니다.");
             return;
         }
@@ -123,16 +125,16 @@ public class UniversityDomainSetupTest {
         };
 
         // 3. 배열을 순회하며 엔티티로 조립
-        List<UniversityDomain> domains = new ArrayList<>();
+        List<School> domains = new ArrayList<>();
         for (String[] data : domainData) {
-            domains.add(UniversityDomain.builder()
-                    .universityName(data[0])
+            domains.add(School.builder()
+                    .schoolName(data[0])
                     .emailDomain(data[1])
                     .build());
         }
 
         // 4. DB 창고에 한방에 Insert (벌크 인서트)
-        universityDomainRepository.saveAll(domains);
+        schoolRepository.saveAll(domains);
 
         System.out.println("🚀 완벽하게 " + domains.size() + "개의 대학 도메인 데이터가 로컬 DB에 꽂혔습니다!");
     }
