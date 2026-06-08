@@ -336,6 +336,6 @@ async function submitOwnerSignup(event) {
         return;
     }
 
-    alert('점주 회원가입 신청이 완료되었습니다. 관리자 승인 후 이용할 수 있습니다.');
-    window.location.href = '/api/view/owner/pending';
+    alert('점주 회원가입 신청이 완료되었습니다. 로그인 후 승인 상태를 확인해주세요.');
+    window.location.href = '/api/view/login';
 }
