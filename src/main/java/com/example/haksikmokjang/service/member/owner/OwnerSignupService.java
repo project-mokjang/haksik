@@ -33,6 +33,22 @@ public class OwnerSignupService {
         return new DuplicateCheckResponse(available);
     }
 
+    // 아이디 중복 확인
+    @Transactional(readOnly = true)
+    public DuplicateCheckResponse checkLoginId(String loginId) {
+        boolean available = !memberRepository.existsByLoginId(loginId);
+
+        return new DuplicateCheckResponse(available);
+    }
+
+    // 이메일 중복 확인
+    @Transactional(readOnly = true)
+    public DuplicateCheckResponse checkEmail(String email) {
+        boolean available = !memberRepository.existsByEmail(email);
+
+        return new DuplicateCheckResponse(available);
+    }
+
     // 점주 회원가입
     @Transactional
     public OwnerSignupResponse signupOwner(OwnerSignupRequest ownerSignupRequest) {
