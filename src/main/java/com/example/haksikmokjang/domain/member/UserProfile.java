@@ -68,4 +68,6 @@ public class UserProfile extends BaseEntity {
     public void updateProfileImage(FileAttachment profileImage) {
         this.profileImage = profileImage;
     }
+
+
 }

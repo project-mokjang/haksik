@@ -22,5 +22,8 @@ public class ProfileUpdateRequest {
 
     // 사진 파일은 선택 사항이므로 @NotBlank를 붙이지 않았어!
     private MultipartFile profileImage;
+
+    @NotBlank(message = "학교는 필수입니다.")
+    private String schoolName;
 }
 
