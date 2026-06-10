@@ -3,14 +3,14 @@ package com.example.haksikmokjang.domain.fileattachment;
 import com.example.haksikmokjang.domain.common.CreatedTimeEntity;
 import com.example.haksikmokjang.domain.member.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "FILE_ATTACHMENT")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class FileAttachment extends CreatedTimeEntity {
 
     @Id

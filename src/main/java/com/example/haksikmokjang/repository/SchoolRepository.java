@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Long> {
     Optional<School> findByEmailDomain(String emailDomain);
+
+    Optional<School> findBySchoolName(String schoolName);
 }
