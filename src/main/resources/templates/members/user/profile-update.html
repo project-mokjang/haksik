@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로필 수정</title>
+
+    <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
+    <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+    <link rel="stylesheet" href="/css/members/signup-form.css" th:href="@{/css/members/signup-form.css}">
+
+    <style>
+        /* 💖 정사각형 프로필 업로드 박스 스타일 */
+        .profile-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .image-preview-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px; /* 살짝 둥근 정사각형 */
+            border: 2px dashed var(--line);
+            background-color: var(--paper, white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 11px;
+            text-align: center;
+            padding: 4px 0;
+        }
+        .form-section { padding: 0 24px; }
+    </style>
+</head>
+
+<body class="auth-body signup-page">
+
+<div class="mobile-container">
+
+    <div class="header-fixed" style="display: flex; justify-content: space-between; align-items: center; padding: 0 24px; height: 60px;">
+        <a href="javascript:history.back()" style="text-decoration: none; color: var(--forest); font-size: 22px; font-weight: 800;">&lt;</a>
+        <h1 class="title" style="margin: 0; font-size: 18px; text-align: center; flex: 1;">프로필 수정</h1>
+        <div style="width: 22px;"></div>
+    </div>
+
+    <form id="profileUpdateForm" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="scroll-area">
+
+            <h2 class="section-title" style="padding: 0 24px; margin-top: 10px;">내 정보 수정</h2>
+            <hr style="border: 0; border-top: 1px solid var(--line); margin: 0 24px 24px;">
+
+            <div class="profile-upload-container">
+                <label for="profileImage" class="image-preview-box">
+                    <img id="imagePreview"
+                         th:src="${myPage.profileImageUrl != null ? myPage.profileImageUrl : '/images/default-profile.png'}"
+                         alt="프로필 미리보기">
+                    <div class="upload-overlay">📷 사진 변경</div>
+                </label>
+                <input type="file" id="profileImage" accept="image/*" style="display: none;" onchange="previewImage(this)">
+            </div>
+
+            <div class="form-section">
+                <div class="input-group">
+                    <label class="input-label" for="nickname">닉네임</label>
+                    <div class="input-row">
+                        <input type="text" class="input-field" id="nickname" th:value="${myPage.nickname}" placeholder="새로운 닉네임 입력" required />
+                        <button type="button" class="action-btn" onclick="checkNickname()">중복</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="school">학교</label>
+                    <input type="text" class="input-field" id="school" th:value="${myPage.schoolName}" placeholder="예: 인덕대학교" required />
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="department">학과</label>
+                    <input type="text" class="input-field" id="department" th:value="${myPage.department}" placeholder="예: 컴퓨터공학과" required />
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-fixed">
+            <button type="submit" class="submit-btn">수정 완료하기</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 기존 닉네임은 수정 안 해도 쓸 수 있도록 초기값 세팅
+    let originalNickname = document.getElementById('nickname').value;
+    let isNicknameChecked = true; // 처음엔 기존 닉네임이므로 true
+
+    // 닉네임이 바뀌면 다시 중복확인 하도록
+    document.getElementById('nickname').addEventListener('input', function() {
+        if (this.value !== originalNickname) {
+            isNicknameChecked = false;
+        } else {
+            isNicknameChecked = true; // 원래 닉네임으로 돌려놓으면 패스
+        }
+    });
+
+    // 1. 프로필 이미지 미리보기 기능
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 2. 닉네임 중복 확인 API 호출 (회원가입과 동일)
+    async function checkNickname() {
+        const nickname = document.getElementById('nickname').value.trim();
+        if (!nickname) {
+            alert('닉네임을 입력해주세요.');
+            return;
+        }
+        if (nickname === originalNickname) {
+            alert('현재 사용 중인 닉네임입니다.');
+            isNicknameChecked = true;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/members/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+            const result = await response.json();
+            if (result.success && result.data.available) {
+                alert('사용 가능한 닉네임입니다.');
+                isNicknameChecked = true;
+            } else {
+                alert('이미 사용 중인 닉네임입니다.');
+                isNicknameChecked = false;
+            }
+        } catch (error) {
+            alert('중복 확인 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 3. 백엔드로 데이터 전송! (사진 파일이 있어서 FormData 사용)
+    document.getElementById('profileUpdateForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // 기본 폼 제출 막기 (새로고침 방지)
+
+        if (!isNicknameChecked) {
+            alert('닉네임 중복 확인을 진행해주세요.');
+            return;
+        }
+
+        const formData = new FormData();
+
+        // 텍스트 데이터 담기
+        formData.append('nickname', document.getElementById('nickname').value.trim());
+        formData.append('schoolName', document.getElementById('school').value.trim());
+        formData.append('department', document.getElementById('department').value.trim());
+
+        // 이미지 파일이 선택되었다면 담기
+        const imageFile = document.getElementById('profileImage').files[0];
+        if (imageFile) {
+            formData.append('profileImage', imageFile);
+        }
+
+        try {
+            // 백엔드 API 주소로 쏘기
+            const response = await fetch('/api/members/profile-update', {
+                method: 'POST', // 정보 수정
+                body: formData // 파일이 있으므로 JSON 대신 FormData 전송
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert('프로필이 성공적으로 수정되었습니다!');
+                location.href = '/api/view/user/my-page'; // 마이페이지로 돌려보내기
+            } else {
+                alert(result.message || '프로필 수정에 실패했습니다.');
+            }
+        } catch (error) {
+            alert('서버와의 통신에 실패했습니다.');
+        }
+    });
+</script>
+
+</body>
+</html>

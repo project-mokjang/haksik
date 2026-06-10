@@ -191,7 +191,10 @@ public class UserSignupService {
         String emailDomain = extractDomain(email);
         String schoolDomain = school.getEmailDomain().toLowerCase();
 
-        if (!emailDomain.equals(schoolDomain)) {
+        boolean matched = emailDomain.equals(schoolDomain)
+                || emailDomain.endsWith("." + schoolDomain);
+
+        if (!matched) {
             throw new CustomException(ErrorCode.INVALID_SCHOOL_EMAIL_DOMAIN);
         }
     }

@@ -18,6 +18,20 @@ public class OwnerSignupController {
 
     private final OwnerSignupService ownerSignupService;
 
+    // 점주 아이디 중복 확인
+    @GetMapping("/check-owner-login-id")
+    public ApiResponse<DuplicateCheckResponse> checkOwnerLoginId(@RequestParam String loginId) {
+        DuplicateCheckResponse duplicateCheckResponse = ownerSignupService.checkLoginId(loginId);
+        return ApiResponse.success(duplicateCheckResponse);
+    }
+
+    // 점주 이메일 중복 확인
+    @GetMapping("/check-owner-email")
+    public ApiResponse<DuplicateCheckResponse> checkOwnerEmail(@RequestParam String email) {
+        DuplicateCheckResponse duplicateCheckResponse = ownerSignupService.checkEmail(email);
+        return ApiResponse.success(duplicateCheckResponse);
+    }
+
     // 사업자등록번호 중복 확인
     @GetMapping("/check-business-number")
     public ApiResponse<DuplicateCheckResponse> checkBusinessNumber(@RequestParam String businessNumber) {

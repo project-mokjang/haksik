@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>학식목장 - 점주 회원가입</title>
     <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
-    <link rel="stylesheet" href="/css/auth.css" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
     <link rel="stylesheet" href="/css/members/signup-form.css" th:href="@{/css/members/signup-form.css}">
     <link rel="stylesheet" href="/css/members/owner-signup.css" th:href="@{/css/members/owner-signup.css}">
 </head>
@@ -20,7 +20,7 @@
         <h1 class="title">점주 회원가입</h1>
     </div>
 
-    <form action="/api/signup/owners" method="post" id="ownerSignupForm" class="signup-form">
+    <form id="ownerSignupForm" class="signup-form">
         <div class="scroll-area signup-scroll-area">
             <div class="form-section">
                 <h2 class="section-title">가입 안내</h2>
@@ -36,12 +36,18 @@
 
                 <div class="input-group">
                     <label class="input-label" for="loginId">아이디</label>
-                    <input type="text" class="input-field" id="loginId" name="loginId" placeholder="사용할 아이디를 입력해주세요" required />
+                    <div class="input-row">
+                        <input type="text" class="input-field" id="loginId" name="loginId" placeholder="사용할 아이디를 입력해주세요" required />
+                        <button type="button" class="action-btn" id="loginIdCheckBtn" onclick="checkLoginId()">중복</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label class="input-label" for="email">이메일</label>
-                    <input type="email" class="input-field" id="email" name="email" placeholder="이메일을 입력해주세요" required />
+                    <div class="input-row">
+                        <input type="email" class="input-field" id="email" name="email" placeholder="이메일을 입력해주세요" required />
+                        <button type="button" class="action-btn" id="emailCheckBtn" onclick="checkEmail()">중복</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
