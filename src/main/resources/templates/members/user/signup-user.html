@@ -233,24 +233,15 @@
         <h2 class="section-title">약관 동의</h2>
 
         <div class="terms-group">
-          <div class="term-item">
-            <input type="checkbox" id="term1" name="termsIds" value="1" required />
-            <label for="term1"><span>[필수]</span> 서비스 이용약관</label>
-          </div>
-
-          <div class="term-item">
-            <input type="checkbox" id="term2" name="termsIds" value="2" required />
-            <label for="term2"><span>[필수]</span> 개인정보 수집 및 이용 동의</label>
-          </div>
-
-          <div class="term-item">
-            <input type="checkbox" id="term3" name="termsIds" value="3" required />
-            <label for="term3"><span>[필수]</span> 위치기반 서비스 이용약관</label>
-          </div>
-
-          <div class="term-item">
-            <input type="checkbox" id="term4" name="termsIds" value="4" required />
-            <label for="term4"><span>[필수]</span> 채팅 내역 열람 정책 동의</label>
+          <div class="term-item" th:each="term : ${termsList}">
+            <input type="checkbox"
+                   th:id="'term' + ${term.termsId}"
+                   name="termsIds"
+                   th:value="${term.termsId}" required />
+            <label th:for="'term' + ${term.termsId}">
+              <span th:text="${term.requiredYn == 'Y' ? '[필수]' : '[선택]'}">[필수]</span>
+              <span th:text="${term.title}">약관 제목</span>
+            </label>
           </div>
         </div>
       </div>
