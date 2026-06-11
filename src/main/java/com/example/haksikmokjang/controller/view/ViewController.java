@@ -113,6 +113,8 @@ public class ViewController {
 
         model.addAttribute("myPage", myPageDto);
 
+        model.addAttribute("termsList", termsService.getTermsList());
+
         return "members/user/user-mypage";
     }
 
