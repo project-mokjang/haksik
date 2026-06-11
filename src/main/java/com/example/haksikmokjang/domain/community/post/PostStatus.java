@@ -1,4 +1,5 @@
 package com.example.haksikmokjang.domain.community.post;
 
-public class PostStatus {
+public enum PostStatus {
+    ACTIVE, DELETE, HIDDEN
 }

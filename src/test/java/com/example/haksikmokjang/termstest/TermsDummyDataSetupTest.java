@@ -33,7 +33,7 @@ public class TermsDummyDataSetupTest {
         Terms term1 = Terms.builder()
                 .title("학식목장 서비스 이용약관 동의")
                 .version("v1.0")
-                .content("제1조 (목적)\n" +
+                .content("제1조 (목적)" +
                         "본 약관은 '학식목장'이 제공하는 대학생 간 매칭 및 식사 커뮤니티 서비스의 이용 조건, 절차 및 회원과 회사 간의 권리, 의무를 규정함을 목적으로 합니다.\n" +
                         "\n" +
                         "제2조 (이용 자격 및 인증)\n" +
@@ -55,7 +55,7 @@ public class TermsDummyDataSetupTest {
         Terms term2 = Terms.builder()
                 .title("개인정보 수집 및 이용 동의")
                 .version("v1.0")
-                .content("1. 수집하는 개인정보 항목\n" +
+                .content("1. 수집하는 개인정보 항목" +
                         "[필수] 소속 학교, 학과, 대학교 이메일, 아이디, 비밀번호, 이름, 닉네임, 생년월일, 성별, 전화번호\n" +
                         "\n" +
                         "2. 수집 및 이용 목적\n" +
@@ -78,7 +78,7 @@ public class TermsDummyDataSetupTest {
         Terms term3 = Terms.builder()
                 .title("위치기반 서비스 이용약관 동의")
                 .version("v1.0")
-                .content("제1조 (위치정보 수집 및 목적)\n" +
+                .content("제1조 (위치정보 수집 및 목적)" +
                         "학식목장은 스마트폰 등 단말기의 위치 측정 기술(GPS 등)을 활용하여 다음과 같은 서비스를 제공하기 위해 위치정보를 수집합니다.\n" +
                         "\n" +
                         "사용자의 현재 위치를 기반으로 한 주변 대학가 식당 및 맛집 정보 제공\n" +

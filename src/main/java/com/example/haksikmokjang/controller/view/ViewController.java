@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 public class ViewController {
     private final MyPageService myPageService;
+    private final com.example.haksikmokjang.service.terms.TermsService termsService;
 
 
     @GetMapping("/main")
@@ -29,8 +30,9 @@ public class ViewController {
     }
 
     @GetMapping("/signup-user")
-    public String signupPage() {
-        return "/members/user/signup-user";
+    public String signupPage(Model model) {
+        model.addAttribute("termsList", termsService.getTermsList());
+        return "members/user/signup-user";
     }
 
     @GetMapping("/signup-owner")
