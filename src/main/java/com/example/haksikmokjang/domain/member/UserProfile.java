@@ -58,4 +58,16 @@ public class UserProfile extends BaseEntity {
 
     @Column(name = "no_show_count", nullable = false)
     private Integer noShowCount;
+
+    public void updateInfo(String nickname, String department, String preferredFoodCategory) {
+        this.nickname = nickname;
+        this.department = department;
+        this.preferredFoodCategory = preferredFoodCategory;
+    }
+
+    public void updateProfileImage(FileAttachment profileImage) {
+        this.profileImage = profileImage;
+    }
+
+
 }
