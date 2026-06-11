@@ -17,6 +17,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 
     Optional<UserProfile> findByMember(Member member);
 
+    Optional<UserProfile> findByMember_MemberId(Long memberId);
+
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query
             ("UPDATE UserProfile u SET u.school = :school WHERE u.member = :member")

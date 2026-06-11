@@ -4,9 +4,14 @@ import com.example.haksikmokjang.domain.common.exception.CustomException; // �
 import com.example.haksikmokjang.dto.member.user.PasswordUpdateRequest;
 import com.example.haksikmokjang.security.CustomUserDetails;
 import com.example.haksikmokjang.service.member.user.PasswordService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +25,18 @@ import java.util.Map;
 public class PasswordUpdateController {
 
     private final PasswordService passwordService;
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        // 현재 로그인한 사람의 인증 정보 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 인증 정보가 있다면 시큐리티가 제공하는 로그아웃 핸들러를 실행
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+
+        return "/api/view/login";
+    }
 
     //  비밀번호 변경 화면 띄워줌
     @GetMapping("/api/view/user/password-update")
