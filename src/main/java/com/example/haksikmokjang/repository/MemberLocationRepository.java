@@ -12,4 +12,6 @@ public interface MemberLocationRepository extends JpaRepository<MemberLocation, 
     Optional<MemberLocation> findByUserProfile(UserProfile userProfile);
 
     Optional<MemberLocation> findByUserProfile_UserProfileId(Long userProfileId);
+
+    void deleteByUserProfile(com.example.haksikmokjang.domain.member.UserProfile userProfile);
 }
