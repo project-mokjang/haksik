@@ -4,6 +4,8 @@ import com.example.haksikmokjang.domain.common.CreatedTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "SCHOOL")
 @Getter
@@ -22,4 +24,10 @@ public class School extends CreatedTimeEntity {
 
     @Column(name = "email_domain", nullable = false, unique = true, length = 100)
     private String emailDomain;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
 }
