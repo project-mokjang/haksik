@@ -3,6 +3,7 @@ package com.example.haksikmokjang.controller.view;
 import com.example.haksikmokjang.dto.member.user.MyPageResponse;
 import com.example.haksikmokjang.security.CustomUserDetails;
 import com.example.haksikmokjang.service.member.user.MyPageService;
+import com.example.haksikmokjang.service.member.user.PasswordService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 public class ViewController {
     private final MyPageService myPageService;
+
 
     @GetMapping("/main")
     public String goIndex() {

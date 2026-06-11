@@ -17,6 +17,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_004", "회원을 찾을 수 없습니다."),
 
     USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_005", "프로필 정보를 찾을 수 없습니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER_006", "비밀번호가 일치하지 않습니다."),
 
     //Owner
     DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),

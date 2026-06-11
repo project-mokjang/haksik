@@ -1,0 +1,49 @@
+.profile-card {
+    background-color: var(--paper, white);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+}
+.profile-avatar img {
+    width: 60px; height: 60px; border-radius: 50%; margin-right: 16px; object-fit: cover;
+    border: 1px solid var(--line);
+}
+.profile-info-wrap { flex: 1; }
+.profile-name { font-size: 18px; font-weight: 800; color: var(--forest); margin-bottom: 4px; }
+.profile-school { font-size: 13px; color: #666; }
+.edit-profile-btn {
+    background-color: var(--ivory2);
+    color: var(--forest);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+}
+
+.menu-group {
+    background-color: var(--paper, white);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    color: var(--forest);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+}
+.menu-item:last-child { border-bottom: none; }
