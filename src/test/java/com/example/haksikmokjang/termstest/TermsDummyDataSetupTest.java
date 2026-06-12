@@ -1,7 +1,7 @@
 package com.example.haksikmokjang.termstest;
 
-import com.example.haksikmokjang.domain.terms.Terms;
-import com.example.haksikmokjang.repository.TermsRepository;
+import com.example.haksikmokjang.member.terms.domain.Terms;
+import com.example.haksikmokjang.member.terms.repository.TermsRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
