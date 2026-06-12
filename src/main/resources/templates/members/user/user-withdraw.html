@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원 탈퇴</title>
+
+    <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
+    <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+    <link rel="stylesheet" href="/css/members/user/user-withdraw.css" th:href="@{/css/members/user/user-withdraw.css}">
+</head>
+
+<body class="auth-body signup-page">
+
+<div class="mobile-container">
+
+    <div class="header-fixed" style="display: flex; justify-content: space-between; align-items: center; padding: 0 24px; height: 60px;">
+        <a href="javascript:history.back()" style="text-decoration: none; color: var(--forest); font-size: 22px; font-weight: 800;">&lt;</a>
+        <h1 class="title" style="margin: 0; font-size: 18px; text-align: center; flex: 1;">회원 탈퇴</h1>
+        <div style="width: 22px;"></div>
+    </div>
+
+    <div class="scroll-area" style="padding: 24px;">
+
+        <div class="warning-box">
+            <p><strong>🚨 탈퇴 전 반드시 확인해 주세요!</strong></p>
+            <p>1. 탈퇴 즉시 오빠의 모든 데이터(프로필, 위치 정보, 매칭 내역 등)가 <strong>영구적으로 삭제</strong>됩니다.</p>
+            <p>2. 삭제된 데이터는 절대 복구할 수 없습니다.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="passwordInput">본인 확인을 위해 비밀번호를 입력해 주세요.</label>
+            <input type="password" id="passwordInput" placeholder="비밀번호 입력">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 40px;">
+            <button type="button" onclick="window.history.back()" style="flex: 1; padding: 14px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; background-color: #f1f1f1; color: #555; cursor: pointer;">취소</button>
+            <button type="button" onclick="processWithdrawal()" style="flex: 1; padding: 14px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; background-color: #d9534f; color: #fff; cursor: pointer;">탈퇴하기</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function processWithdrawal() {
+        const password = document.getElementById("passwordInput").value;
+
+        if(!password) {
+            alert("비밀번호를 입력해 주세요.");
+            return;
+        }
+
+        if(confirm("정말 탈퇴하시겠습니까?\n탈퇴 즉시 모든 데이터가 영구적으로 삭제되며 절대 복구할 수 없습니다.")) {
+            fetch('/api/members/withdraw', {
+                method: 'POST',
+                body: JSON.stringify({ password: password }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        alert(data.message);
+                        window.location.href = '/api/view/login'; // 완료 후 로그인 창으로 슝!
+                    } else {
+                        alert(data.message); // 비밀번호 틀렸을 때 등
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("서버와 통신 중 문제가 발생했습니다.");
+                });
+        }
+    }
+</script>
+
+</body>
+</html>

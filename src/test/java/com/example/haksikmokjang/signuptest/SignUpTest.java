@@ -69,7 +69,7 @@ class SignUpTest {
                                   "password": "password123!",
                                   "name": "홍길동",
                                   "nickname": "양치기",
-                                  "schoolId": 1,
+                                  "schoolId": 273,
                                   "department": "컴퓨터공학과",
                                   "schoolEmail": "test@induk.ac.kr",
                                   "birthDate": "2000-01-01",

@@ -24,4 +24,6 @@ public interface MatchingWaitingRepository extends JpaRepository<MatchingWaiting
             MatchingWaitingStatus status,
             LocalDateTime now
     );
+
+    void deleteByUserProfile(UserProfile userProfile);
 }

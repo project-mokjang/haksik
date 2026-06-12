@@ -1,0 +1,105 @@
+/* 회원 탈퇴 컨테이너 */
+.withdraw-container {
+    max-width: 450px;
+    margin: 80px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* 제목 스타일 */
+.withdraw-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 15px;
+}
+
+/* 경고 메시지 박스 */
+.warning-box {
+    background-color: #fff0f0;
+    border: 1px solid #ffcaca;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.warning-box p {
+    color: #d9534f;
+    font-size: 14px;
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+.warning-box p strong {
+    font-weight: bold;
+}
+
+/* 비밀번호 입력 그룹 */
+.input-group {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    color: #555555;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #dddddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #d9534f;
+    outline: none;
+}
+
+/* 버튼 그룹 */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* 취소 버튼 */
+.btn-cancel {
+    background-color: #f1f1f1;
+    color: #555555;
+}
+
+.btn-cancel:hover {
+    background-color: #e4e4e4;
+}
+
+/* 탈퇴 버튼 (빨간색 강조!) */
+.btn-withdraw {
+    background-color: #d9534f;
+    color: #ffffff;
+}
+
+.btn-withdraw:hover {
+    background-color: #c9302c;
+}

@@ -5,118 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>마이페이지</title>
 
-
     <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
     <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
     <link rel="stylesheet" href="/css/members/signup-form.css" th:href="@{/css/members/signup-form.css}">
+    <link rel="stylesheet" href="/css/members/user/user-mypage.css" th:href="@{/css/members/user/user-mypage.css}">
 
-    <style>
-        /* 회원가입 폼 디자인 규칙을 가져온 마이페이지 전용 스타일 */
-        .profile-card {
-            background-color: var(--paper, white);
-            border: 2px solid var(--line);
-            border-radius: 24px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-        }
-        .profile-avatar img {
-            width: 60px; height: 60px; border-radius: 50%; margin-right: 16px; object-fit: cover;
-            border: 1px solid var(--line);
-        }
-        .profile-info-wrap { flex: 1; }
-        .profile-name { font-size: 18px; font-weight: 800; color: var(--forest); margin-bottom: 4px; }
-        .profile-school { font-size: 13px; color: #666; }
-        .edit-profile-btn {
-            background-color: var(--ivory2);
-            color: var(--forest);
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            border: none;
-        }
-
-        .menu-group {
-            background-color: var(--paper, white);
-            border: 2px solid var(--line);
-            border-radius: 24px;
-            margin-bottom: 24px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        .menu-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--line);
-            color: var(--forest);
-            font-weight: 700;
-            font-size: 15px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .menu-item:last-child { border-bottom: none; }
-    </style>
 </head>
 
 <body class="auth-body signup-page">
 
 <div class="mobile-container">
 
-    <!-- 회원가입과 똑같은 헤더 구조 -->
     <div class="header-fixed" style="display: flex; justify-content: space-between; align-items: center; padding: 0 24px; height: 60px;">
         <a href="javascript:history.back()" style="text-decoration: none; color: var(--forest); font-size: 22px; font-weight: 800;">&lt;</a>
         <h1 class="title" style="margin: 0; font-size: 18px; text-align: center; flex: 1;">내 정보</h1>
         <div style="width: 22px;"></div>
     </div>
 
-    <!-- 스크롤 영역 -->
     <div class="scroll-area">
 
-        <!-- 프로필 정보 -->
         <div class="profile-card">
             <div class="profile-avatar">
                 <img th:if="${myPage.profileImageUrl != null}" th:src="${myPage.profileImageUrl}" alt="프로필">
                 <img th:unless="${myPage.profileImageUrl != null}" src="/images/default-profile.png" alt="기본">
             </div>
             <div class="profile-info-wrap">
-                <div class="profile-name" th:text="${myPage.nickname}">원태규</div>
+                <div class="profile-name" th:text="${myPage.nickname}">사용자</div>
                 <div class="profile-school">
-                    <span th:text="${myPage.schoolName}">인덕대</span> /
-                    <span th:text="${myPage.department}">정보통신공학과</span>
+                    <span th:text="${myPage.schoolName}">학교명</span> /
+                    <span th:text="${myPage.department}">학과명</span>
                 </div>
             </div>
             <a href="/members/profile-update" class="edit-profile-btn">수정</a>
         </div>
 
-        <!-- 메뉴 목록  -->
         <div class="menu-group">
             <div class="menu-item">
                 <span>아이디</span>
-                <span style="color: #333;" th:text="${myPage.loginId}">dnjsxorb</span>
+                <span style="color: #333;" th:text="${myPage.loginId}">userid</span>
             </div>
-            <a href="/members/reset-pw" class="menu-item">
+            <a href="/api/view/user/password-update" class="menu-item">
                 <span>비밀번호 변경</span>
                 <span style="color: #999;">&gt;</span>
             </a>
         </div>
 
-        <!-- 메뉴 목록  -->
         <div class="menu-group">
-            <div class="menu-item" onclick="alert('준비중입니다.')">
-                <span>이용약관 동의 설정</span>
+            <div class="menu-item" onclick="openTermsModal()">
+                <span>이용약관 동의 내역</span>
                 <span style="color: #999;">&gt;</span>
             </div>
-            <div class="menu-item" onclick="location.href='/logout'">
+
+            <div class="menu-item" onclick="location.href='/api/auth/logout'">
                 <span>로그아웃</span>
                 <span style="color: #999;">&gt;</span>
             </div>
-            <div class="menu-item" onclick="location.href='/members/withdraw'">
+
+            <div class="menu-item" onclick="location.href='/api/view/user/withdraw'">
                 <span style="color: #d9534f;">회원 탈퇴</span>
                 <span style="color: #999;">&gt;</span>
             </div>
@@ -124,6 +69,31 @@
 
     </div>
 </div>
+
+<div id="termsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin: 0; font-size: 16px; font-weight: bold; color: #333;">이용약관 동의 내역</h2>
+            <button class="close-btn" onclick="closeTermsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="terms-text">
+                <div th:each="term : ${termsList}" style="margin-bottom: 20px;">
+                    <strong style="display: block; color: #333; margin-bottom: 5px;"
+                            th:text="${term.title}">약관 제목</strong>
+                    <span style="color: #666; font-size: 13px; line-height: 1.5; display: block;"
+                          th:utext="${term.content}">약관 내용</span>
+                </div>
+
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; text-align: center;">
+                    <span style="color: #d9534f; font-weight: bold;">※  위 약관에 모두 동의하셨습니다.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/members/user/user-mypage.js"></script>
 
 </body>
 </html>

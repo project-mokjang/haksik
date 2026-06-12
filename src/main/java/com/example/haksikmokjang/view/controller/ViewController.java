@@ -3,6 +3,7 @@ package com.example.haksikmokjang.view.controller;
 import com.example.haksikmokjang.member.signup.user.dto.MyPageResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.member.signup.user.service.MyPageService;
+import com.example.haksikmokjang.member.terms.service.TermsService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 public class ViewController {
     private final MyPageService myPageService;
+    private final TermsService termsService;
 
     @GetMapping("/main")
     public String goIndex() {
@@ -27,8 +29,9 @@ public class ViewController {
     }
 
     @GetMapping("/signup-user")
-    public String signupPage() {
-        return "/members/user/signup-user";
+    public String signupPage(Model model) {
+        model.addAttribute("termsList", termsService.getTermsList());
+        return "members/user/signup-user";
     }
 
     @GetMapping("/signup-owner")
@@ -108,6 +111,8 @@ public class ViewController {
         MyPageResponse myPageDto = myPageService.getMyPageInfo(userDetails.getMember());
 
         model.addAttribute("myPage", myPageDto);
+
+        model.addAttribute("termsList", termsService.getTermsList());
 
         return "members/user/user-mypage";
     }

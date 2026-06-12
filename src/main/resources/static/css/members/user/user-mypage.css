@@ -1,0 +1,109 @@
+.profile-card {
+    background-color: var(--paper, white);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+}
+.profile-avatar img {
+    width: 60px; height: 60px; border-radius: 50%; margin-right: 16px; object-fit: cover;
+    border: 1px solid var(--line);
+}
+.profile-info-wrap { flex: 1; }
+.profile-name { font-size: 18px; font-weight: 800; color: var(--forest); margin-bottom: 4px; }
+.profile-school { font-size: 13px; color: #666; }
+.edit-profile-btn {
+    background-color: var(--ivory2);
+    color: var(--forest);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+}
+
+.menu-group {
+    background-color: var(--paper, white);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    color: var(--forest);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+}
+.menu-item:last-child { border-bottom: none; }
+
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+
+.modal-content {
+    background-color: #ffffff;
+    width: 85%;
+    max-width: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.close-btn {
+    background: none; border: none; font-size: 26px; color: #999; cursor: pointer; line-height: 1; padding: 0;
+}
+
+.close-btn:hover { color: #333; }
+
+/* 모달 본문 텍스트 영역 */
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.terms-text {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+    border: 1px solid #eaeaea;
+}

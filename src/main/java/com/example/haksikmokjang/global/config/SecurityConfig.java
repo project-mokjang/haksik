@@ -58,6 +58,7 @@ public class SecurityConfig {
             "/api/members/check-owner-email",
             "/api/members/signup/user",
             "/api/members/signup/owner"
+
     };
 
     @Bean

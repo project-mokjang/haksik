@@ -14,6 +14,7 @@ import java.util.Optional;
 
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
 
+
     boolean existsByNickname(String nickname);
 
     Optional<UserProfile> findByMember(Member member);
@@ -32,6 +33,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @Query("UPDATE UserProfile u SET u.profileImage = :profileImage WHERE u.member = :member")
     void updateProfileImageByMember(@Param("member") Member member,
                                     @Param("profileImage") FileAttachment profileImage);
+
 
 
 }
