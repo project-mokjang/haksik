@@ -1,7 +1,7 @@
 package com.example.haksikmokjang.universitytests;
 
-import com.example.haksikmokjang.domain.school.School;
-import com.example.haksikmokjang.repository.SchoolRepository;
+import com.example.haksikmokjang.school.domain.School;
+import com.example.haksikmokjang.school.repository.SchoolRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
