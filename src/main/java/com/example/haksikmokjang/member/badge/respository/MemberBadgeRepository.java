@@ -18,7 +18,4 @@ public interface MemberBadgeRepository extends JpaRepository<MemberBadge, Long> 
 
     // 회원의 특정 뱃지 조회
     Optional<MemberBadge> findByMemberAndBadge(Member member, Badge badge);
-
-    // 회원의 특정 대표 순서 뱃지 조회
-    Optional<MemberBadge> findByMemberAndRepresentativeOrder(Member member, Integer representativeOrder);
 }

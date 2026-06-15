@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class MyPageResponse {
     // 프로필 정보
+    private Long memberId;
     private String name;
     private String nickname;
     private String schoolName;

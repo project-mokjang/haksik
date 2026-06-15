@@ -22,8 +22,8 @@ public class MyPageService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
         return MyPageResponse.builder()
+                .memberId(member.getMemberId())
                 .name(profile.getName())
-
                 .nickname(profile.getNickname())
                 .schoolName(profile.getSchool().getSchoolName())
                 .department(profile.getDepartment())

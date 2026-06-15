@@ -1,6 +1,5 @@
 package com.example.haksikmokjang.member.badge.service;
 
-
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.badge.domain.Badge;
@@ -58,48 +57,54 @@ public class BadgeService {
         return BadgeResponse.from(savedMemberBadge);
     }
 
-    // 대표 뱃지 설정
+    // 대표 뱃지 목록 변경
     @Transactional
-    public BadgeResponse setRepresentativeBadge(Long memberId, Long badgeId, Integer representativeOrder) {
-        validateRepresentativeOrder(representativeOrder);
-
+    public List<BadgeResponse> updateRepresentativeBadges(Long memberId, List<Long> badgeIds) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Badge badge = badgeRepository.findById(badgeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+        if (badgeIds == null) {
+            badgeIds = List.of();
+        }
 
-        MemberBadge selectedMemberBadge = memberBadgeRepository.findByMemberAndBadge(member, badge)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+        validateBadgeIds(badgeIds);
 
-        memberBadgeRepository.findByMemberAndRepresentativeOrder(member, representativeOrder)
-                .ifPresent(MemberBadge::clearRepresentativeOrder);
+        List<MemberBadge> memberBadges = memberBadgeRepository.findAllByMember(member);
 
-        selectedMemberBadge.setRepresentativeOrder(representativeOrder);
+        memberBadges.forEach(MemberBadge::clearRepresentativeOrder);
 
-        return BadgeResponse.from(selectedMemberBadge);
+        for (int i = 0; i < badgeIds.size(); i++) {
+            Long badgeId = badgeIds.get(i);
+
+            Badge badge = badgeRepository.findById(badgeId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+
+            MemberBadge memberBadge = memberBadgeRepository.findByMemberAndBadge(member, badge)
+                    .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+
+            memberBadge.setRepresentativeOrder(i + 1);
+        }
+
+        return memberBadgeRepository.findAllByMember(member).stream()
+                .map(BadgeResponse::from)
+                .toList();
     }
 
-    // 대표 뱃지 해제
-    @Transactional
-    public BadgeResponse clearRepresentativeBadge(Long memberId, Long badgeId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    // 대표 뱃지 개수 및 중복 검증
+    private void validateBadgeIds(List<Long> badgeIds) {
+        if (badgeIds == null) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
 
-        Badge badge = badgeRepository.findById(badgeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+        if (badgeIds.size() > 3) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
 
-        MemberBadge memberBadge = memberBadgeRepository.findByMemberAndBadge(member, badge)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+        long distinctCount = badgeIds.stream()
+                .distinct()
+                .count();
 
-        memberBadge.clearRepresentativeOrder();
-
-        return BadgeResponse.from(memberBadge);
-    }
-
-    // 대표 뱃지 순서 검증
-    private void validateRepresentativeOrder(Integer representativeOrder) {
-        if (representativeOrder == null || representativeOrder < 1 || representativeOrder > 3) {
+        if (distinctCount != badgeIds.size()) {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
     }
