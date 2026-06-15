@@ -13,6 +13,7 @@ public class BadgeResponse {
     private Long badgeId;
     private String badgeName;
     private String conditionText;
+    private String emoji;
     private Integer representativeOrder;
     private LocalDateTime earnedAt;
 
@@ -22,6 +23,7 @@ public class BadgeResponse {
                 .badgeId(memberBadge.getBadge().getBadgeId())
                 .badgeName(memberBadge.getBadge().getBadgeName())
                 .conditionText(memberBadge.getBadge().getConditionText())
+                .emoji(memberBadge.getBadge().getEmoji())
                 .representativeOrder(memberBadge.getRepresentativeOrder())
                 .earnedAt(memberBadge.getEarnedAt())
                 .build();

@@ -57,4 +57,9 @@ public class Post extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private PostStatus status = PostStatus.ACTIVE;
+
+    // 게시글 진입 시 조회수를 1 올리기
+    public void addViewCount() {
+        this.viewCount++;
+    }
 }

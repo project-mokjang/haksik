@@ -4,7 +4,6 @@ import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.school.domain.School;
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +19,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     Optional<UserProfile> findByMember(Member member);
 
     Optional<UserProfile> findByMember_MemberId(Long memberId);
+
+    Optional<UserProfile> findByMember_LoginId(String loginId); // 이거는 커뮤니티 게시판에서 유저 프로필좀 쓰려고 박아놨어옹 -진우
 
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query

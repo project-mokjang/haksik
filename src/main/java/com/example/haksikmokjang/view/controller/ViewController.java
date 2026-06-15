@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -25,6 +26,24 @@ public class ViewController {
     @GetMapping("/main")
     public String goIndex() {
         return "index";
+    }
+
+    //커뮤니티 게시판 메인
+    @GetMapping("/community")
+    public String communityPage() {
+        return "community/board-list";
+    }
+
+    //커뮤니티 글쓰기 화면
+    @GetMapping("/community/write")
+    public String communityWritePage() {
+        return "community/board-write";
+    }
+
+    @GetMapping("/community/{postId}")
+    public String communityDetailPage(@PathVariable Long postId, org.springframework.ui.Model model) {
+        model.addAttribute("postId", postId);
+        return "community/board-detail";
     }
 
     @GetMapping("/signup-choice")

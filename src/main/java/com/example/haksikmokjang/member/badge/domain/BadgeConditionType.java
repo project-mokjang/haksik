@@ -1,0 +1,18 @@
+package com.example.haksikmokjang.member.badge.domain;
+
+public enum BadgeConditionType {
+
+    SIGNUP,
+    MATCHING_COUNT,
+    MEAL_APPOINTMENT_COUNT,
+    DIFFERENT_MEMBER_COUNT,
+    MANNER_TEMPERATURE,
+    GOOD_REVIEW_COUNT,
+    PRAISE_COUNT,
+    NO_SHOW_FREE_COUNT,
+    ON_TIME_COUNT,
+    DIFFERENT_MENU_COUNT,
+    SAME_SCHOOL_MATCHING_COUNT,
+    DIFFERENT_SCHOOL_MATCHING_COUNT,
+    NO_REPORT_COUNT
+}

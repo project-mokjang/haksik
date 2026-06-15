@@ -1,10 +1,14 @@
 package com.example.haksikmokjang.member.badge.controller;
 
 
+import com.example.haksikmokjang.global.exception.CustomException;
+import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.global.response.ApiResponse;
+import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.member.badge.dto.BadgeResponse;
 import com.example.haksikmokjang.member.badge.service.BadgeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,26 +41,28 @@ public class BadgeController {
         return ApiResponse.success("회원에게 뱃지를 지급했습니다.", response);
     }
 
-    // 대표 뱃지 설정
-    @PatchMapping("/users/{memberId}/badges/{badgeId}/representative/{representativeOrder}")
-    public ApiResponse<BadgeResponse> setRepresentativeBadge(
+    // 대표 뱃지 목록 변경
+    @PutMapping("/users/{memberId}/representatives")
+    public ApiResponse<List<BadgeResponse>> updateRepresentativeBadges(
             @PathVariable Long memberId,
-            @PathVariable Long badgeId,
-            @PathVariable Integer representativeOrder) {
+            @RequestParam(required = false) List<Long> badgeIds,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        BadgeResponse response = badgeService.setRepresentativeBadge(memberId, badgeId, representativeOrder);
+        validateMyBadgeRequest(memberId, userDetails);
 
-        return ApiResponse.success("대표 뱃지로 설정했습니다.", response);
+        List<BadgeResponse> response = badgeService.updateRepresentativeBadges(memberId, badgeIds);
+
+        return ApiResponse.success("대표 뱃지 목록을 변경했습니다.", response);
     }
 
-    // 대표 뱃지 해제
-    @PatchMapping("/users/{memberId}/badges/{badgeId}/representative/clear")
-    public ApiResponse<BadgeResponse> clearRepresentativeBadge(
-            @PathVariable Long memberId,
-            @PathVariable Long badgeId) {
+    // 본인 뱃지 수정 요청인지 확인
+    private void validateMyBadgeRequest(Long memberId, CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
 
-        BadgeResponse response = badgeService.clearRepresentativeBadge(memberId, badgeId);
-
-        return ApiResponse.success("대표 뱃지를 해제했습니다.", response);
+        if (!memberId.equals(userDetails.getMemberId())) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
     }
 }
