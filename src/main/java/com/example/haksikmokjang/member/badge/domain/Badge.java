@@ -24,13 +24,32 @@ public class Badge {
     @Column(name = "condition_text", nullable = false, length = 255)
     private String conditionText;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "condition_type", nullable = false, length = 50)
+    private BadgeConditionType conditionType;
+
+    @Column(name = "condition_value", nullable = false)
+    private Integer conditionValue;
+
+    @Column(name = "emoji", nullable = false, length = 10)
+    private String emoji;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     // 뱃지 생성
-    public Badge(String badgeName, String conditionText) {
+    public Badge(
+            String badgeName,
+            String conditionText,
+            BadgeConditionType conditionType,
+            Integer conditionValue,
+            String emoji
+    ) {
         this.badgeName = badgeName;
         this.conditionText = conditionText;
+        this.conditionType = conditionType;
+        this.conditionValue = conditionValue;
+        this.emoji = emoji;
         this.createdAt = LocalDateTime.now();
     }
 }

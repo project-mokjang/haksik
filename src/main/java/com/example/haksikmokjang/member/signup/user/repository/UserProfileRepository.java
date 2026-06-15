@@ -4,7 +4,6 @@ import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.school.domain.School;
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
