@@ -1,8 +1,10 @@
-package com.example.haksikmokjang.repository;
+package com.example.haksikmokjang.community.post.repository;
 
-import com.example.haksikmokjang.domain.community.post.BoardType;
-import com.example.haksikmokjang.domain.community.post.PostCategory;
-import com.example.haksikmokjang.dto.community.post.PostListResponse;
+
+
+import com.example.haksikmokjang.community.post.domain.BoardType;
+import com.example.haksikmokjang.community.post.domain.PostCategory;
+import com.example.haksikmokjang.community.post.dto.PostListResponse;
 
 import java.util.List;
 

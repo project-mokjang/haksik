@@ -1,13 +1,13 @@
-package com.example.haksikmokjang.dto.community.post;
+package com.example.haksikmokjang.community.post.dto;
 
-import com.example.haksikmokjang.domain.community.post.BoardType;
-import com.example.haksikmokjang.domain.community.post.PostCategory;
+import com.example.haksikmokjang.community.post.domain.BoardType;
+import com.example.haksikmokjang.community.post.domain.PostCategory;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter

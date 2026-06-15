@@ -1,18 +1,18 @@
-package com.example.haksikmokjang.controller.community;
+package com.example.haksikmokjang.community.post.controller;
 
-import com.example.haksikmokjang.domain.community.post.BoardType;
-import com.example.haksikmokjang.domain.community.post.PostCategory;
-import com.example.haksikmokjang.dto.community.post.PostCreateRequest;
-import com.example.haksikmokjang.dto.community.post.PostDetailResponse;
-import com.example.haksikmokjang.dto.community.post.PostListResponse;
-import com.example.haksikmokjang.service.community.post.PostService;
+
+import com.example.haksikmokjang.community.post.domain.BoardType;
+import com.example.haksikmokjang.community.post.domain.PostCategory;
+import com.example.haksikmokjang.community.post.dto.PostCreateRequest;
+import com.example.haksikmokjang.community.post.dto.PostDetailResponse;
+import com.example.haksikmokjang.community.post.dto.PostListResponse;
+import com.example.haksikmokjang.community.post.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 

@@ -35,7 +35,14 @@ public enum ErrorCode {
 
     // Terms
     REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "TERMS_001", "필수 약관에 동의해야 합니다."),
-    TERMS_NOT_FOUND(HttpStatus.BAD_REQUEST, "TERMS_002", "존재하지 않는 약관입니다.");
+    TERMS_NOT_FOUND(HttpStatus.BAD_REQUEST, "TERMS_002", "존재하지 않는 약관입니다."),
+
+    //File Attachment
+    FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "FILE_001", "업로드에 실패했습니다."),
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FILE_002", "파일을 찾을 수 없습니다."),
+    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_002", "게시물을 찾을 수 없습니다.");
+
+
 
     private final HttpStatus status;
     private final String code;

@@ -1,9 +1,10 @@
-package com.example.haksikmokjang.repository;
+package com.example.haksikmokjang.community.post.repository;
 
-import com.example.haksikmokjang.domain.community.post.BoardType;
-import com.example.haksikmokjang.domain.community.post.PostCategory;
-import com.example.haksikmokjang.domain.community.post.PostStatus;
-import com.example.haksikmokjang.dto.community.post.PostListResponse;
+
+import com.example.haksikmokjang.community.post.domain.BoardType;
+import com.example.haksikmokjang.community.post.domain.PostCategory;
+import com.example.haksikmokjang.community.post.domain.PostStatus;
+import com.example.haksikmokjang.community.post.dto.PostListResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -13,12 +14,12 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
+import static com.example.haksikmokjang.community.post.domain.QPost.post;
+import static com.example.haksikmokjang.member.core.domain.QMember.member;
+import static com.example.haksikmokjang.member.signup.user.domain.QUserProfile.userProfile;
+
 
 // Q클래스 설계도 import
-import static com.example.haksikmokjang.domain.member.QMember.member;
-import static com.example.haksikmokjang.domain.community.post.QPost.post;
-import static com.example.haksikmokjang.domain.member.QUserProfile.userProfile;
 
 @RequiredArgsConstructor
 public class PostRepositoryImpl implements PostRepositoryCustom {

@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.dto.community.post;
+package com.example.haksikmokjang.community.post.dto;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;

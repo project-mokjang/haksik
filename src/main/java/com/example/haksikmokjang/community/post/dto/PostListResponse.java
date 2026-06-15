@@ -1,6 +1,6 @@
-package com.example.haksikmokjang.dto.community.post;
+package com.example.haksikmokjang.community.post.dto;
 
-import com.example.haksikmokjang.domain.community.post.PostCategory;
+import com.example.haksikmokjang.community.post.domain.PostCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

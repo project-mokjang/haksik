@@ -21,6 +21,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 
     Optional<UserProfile> findByMember_MemberId(Long memberId);
 
+    Optional<UserProfile> findByMember_LoginId(String loginId); // 이거는 커뮤니티 게시판에서 유저 프로필좀 쓰려고 박아놨어옹 -진우
+
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query
             ("UPDATE UserProfile u SET u.school = :school WHERE u.member = :member")
