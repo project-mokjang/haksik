@@ -1,8 +1,11 @@
 package com.example.haksikmokjang.matching.matchingwaiting.service;
 
+import com.example.haksikmokjang.global.exception.CustomException;
+import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaitingStatus;
+import com.example.haksikmokjang.matching.matchingwaiting.dto.LocationUpdateRequest;
 import com.example.haksikmokjang.member.core.domain.MemberLocation;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.matching.matchingwaiting.dto.MatchingWaitingEnterRequest;
@@ -29,9 +32,13 @@ import java.util.Objects;
 
         public void enterWaiting(Long memberId, MatchingWaitingEnterRequest request) {
 
+            System.out.println("서비스 진입 memberId = " + memberId); //테스트 코드
+
             // 로그인한 회원 ID로 일반 사용자 프로필을 조회
             UserProfile userProfile = userProfileRepository.findByMember_MemberId(memberId)
-                    .orElseThrow(() -> new IllegalArgumentException("사용자 프로필이 존재하지 않습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+            System.out.println("userProfileId = " + userProfile.getUserProfileId()); // 테스트 코드
 
             // 기존 위치 정보가 있으면 가져오고, 없으면 새 위치 객체를 생성
             MemberLocation location = memberLocationRepository.findByUserProfile(userProfile)
@@ -73,11 +80,11 @@ import java.util.Objects;
     @Transactional(readOnly = true)
     public List<MatchingWaitingMarkerResponse> getMarkers(MatchingMode mode, Long memberId) {
 
-        // 로그인한 회원의 UserProfile을 조회한다.
+        // 로그인한 회원의 UserProfile을 조회
         UserProfile loginUserProfile = userProfileRepository.findByMember_MemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 프로필이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
-        // 선택한 매칭 모드에서 WAITING 상태이고, 아직 만료되지 않은 대기 목록만 조회한다.
+        // 선택한 매칭 모드에서 WAITING 상태이고, 아직 만료되지 않은 대기 목록만 조회
         List<MatchingWaiting> waitings =
                 matchingWaitingRepository.findByModeAndStatusAndExpiredAtAfter(
                         mode,
@@ -85,7 +92,7 @@ import java.util.Objects;
                         LocalDateTime.now()
                 );
 
-        // 대기 목록을 지도 마커 응답 DTO로 변환한다.
+        // 대기 목록을 지도 마커 응답 DTO로 변환한
         return waitings.stream()
                 .map(waiting -> {
                     UserProfile userProfile = waiting.getUserProfile();
@@ -115,4 +122,52 @@ import java.util.Objects;
                 .filter(Objects::nonNull)
                 .toList();
     }
+
+    public void cancelWaiting(Long memberId) {
+
+        // 로그인한 회원 ID로 일반 사용자 프로필을 조회
+        UserProfile userProfile = userProfileRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 현재 WAITING 상태인 매칭 대기 정보를 조회
+        MatchingWaiting waiting = matchingWaitingRepository.findByUserProfileAndStatus(
+                        userProfile,
+                        MatchingWaitingStatus.WAITING
+                )
+                .orElseThrow(() -> new CustomException(ErrorCode.MATCHING_WAITING_NOT_FOUND));
+
+        // 매칭 대기 상태를 CANCELED로 변경
+        waiting.cancel();
     }
+
+    public void expireOldWaitings() {
+
+        // 만료된 WAITING 목록 조회
+        List<MatchingWaiting> expiredWaitings =
+                matchingWaitingRepository.findByStatusAndExpiredAtBefore(
+                        MatchingWaitingStatus.WAITING,
+                        LocalDateTime.now()
+                );
+
+        // EXPIRED 상태로 변경
+        expiredWaitings.forEach(MatchingWaiting::expire);
+    }
+
+    public void updateLocation(Long memberId, LocationUpdateRequest request) {
+
+        // 사용자 프로필 조회
+        UserProfile userProfile = userProfileRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 위치 정보 조회
+        MemberLocation location = memberLocationRepository.findByUserProfile(userProfile)
+                .orElseThrow(() -> new CustomException(ErrorCode.LOCATION_NOT_FOUND));
+
+        // 현재 위치 갱신
+        location.updateLocation(
+                request.getLatitude(),
+                request.getLongitude(),
+                request.getAccuracyRangeM()
+        );
+    }
+}

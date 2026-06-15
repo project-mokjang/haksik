@@ -37,6 +37,16 @@ public enum ErrorCode {
     REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "TERMS_001", "필수 약관에 동의해야 합니다."),
     TERMS_NOT_FOUND(HttpStatus.BAD_REQUEST, "TERMS_002", "존재하지 않는 약관입니다."),
 
+    //Matching
+    MATCHING_WAITING_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCHING_002", "매칭 대기 정보를 찾을 수 없습니다."),
+    MATCHING_WAITING_ALREADY_EXISTS(HttpStatus.CONFLICT, "MATCHING_003", "이미 매칭 대기 중입니다."),
+    INVALID_MATCHING_MODE(HttpStatus.BAD_REQUEST, "MATCHING_004", "올바르지 않은 매칭 모드입니다."),
+    MATCHING_WAITING_EXPIRED(HttpStatus.BAD_REQUEST, "MATCHING_005", "매칭 대기 시간이 만료되었습니다."),
+
+    //Location
+    LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "LOCATION_001", "위치 정보를 찾을 수 없습니다."),
+    INVALID_LOCATION_VALUE(HttpStatus.BAD_REQUEST, "LOCATION_002", "올바르지 않은 위치 값입니다."),
+
     //File Attachment
     FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "FILE_001", "업로드에 실패했습니다."),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FILE_002", "파일을 찾을 수 없습니다."),

@@ -1,13 +1,139 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>사용자 메인</title>
+    <title>학식목장 메인</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/user-main.css}">
 </head>
-<body>
-<h1>사용자 메인 페이지</h1>
-<form action="/api/auth/logout" method="post">
-    <button type="submit">로그아웃</button>
-</form>
+<body class="app-body">
+
+<div class="app-page">
+    <main class="app-shell">
+
+        <header class="app-header">
+            <button class="app-header-btn">☰</button>
+            <div class="app-header-title">학식목장</div>
+            <button class="app-header-btn">🔔</button>
+        </header>
+
+        <section class="app-content">
+            <div class="ui-hero-card">
+                <h2>오늘 같이 밥 먹을<br>친구를 찾아볼까요?</h2>
+                <p>매칭 모드를 선택하면 현재 위치를 기준으로 지도에서 대기 중인 사용자를 확인할 수 있습니다.</p>
+            </div>
+
+            <div class="ui-section-title">매칭 모드</div>
+
+            <article class="mode-card" onclick="enterMatchingMode('MEAL')">
+                <div class="mode-icon">🍚</div>
+                <div class="mode-info">
+                    <div class="mode-title">학식메이트</div>
+                    <div class="mode-desc">밥 먹을 사람을 지도에서 찾아요.</div>
+                </div>
+            </article>
+
+            <article class="mode-card" onclick="enterMatchingMode('BLIND_DATE')">
+                <div class="mode-icon">💚</div>
+                <div class="mode-info">
+                    <div class="mode-title">소개팅</div>
+                    <div class="mode-desc">1:1 매칭 상대를 지도에서 확인해요.</div>
+                </div>
+            </article>
+
+            <article class="mode-card" onclick="enterMatchingMode('GROUP')">
+                <div class="mode-icon">👥</div>
+                <div class="mode-info">
+                    <div class="mode-title">과팅</div>
+                    <div class="mode-desc">그룹 단위 매칭 상대를 찾아요.</div>
+                </div>
+            </article>
+
+            <div class="ui-section-title">빠른 메뉴</div>
+
+            <div class="quick-grid">
+                <a href="#" class="quick-card">
+                    💬 채팅
+                    <span>진행 중인 대화</span>
+                </a>
+                <a href="#" class="quick-card">
+                    👤 마이
+                    <span>내 정보 관리</span>
+                </a>
+            </div>
+        </section>
+
+        <nav class="bottom-nav">
+            <nav class="bottom-nav">
+                <a th:href="@{/api/view/user/main}" class="on">🏠<br>홈</a>
+                <a th:href="@{/api/view/user/matching}">💚<br>매칭</a>
+                <a th:href="@{/api/view/user/chat}">💬<br>채팅</a>
+                <a th:href="@{/api/view/user/my-page}">👤<br>마이</a>
+            </nav>
+        </nav>
+
+    </main>
+</div>
+
+<script>
+    // 매칭 모드 입장
+    function enterMatchingMode(mode) {
+        if (!navigator.geolocation) {
+            alert('현재 브라우저에서 위치 기능을 지원하지 않습니다.');
+            return;
+        }
+
+        // 현재 위치 요청
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const accuracyRangeM = Math.round(position.coords.accuracy);
+
+                // 매칭 대기 입장 요청
+                fetch('/api/matching/waiting/enter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mode: mode,
+                        latitude: latitude,
+                        longitude: longitude,
+                        accuracyRangeM: accuracyRangeM,
+                        message: getDefaultMessage(mode)
+                    })
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (!result.success) {
+                            alert(result.message);
+                            return;
+                        }
+
+                        location.href = `/api/view/user/matching-map?mode=${mode}`;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        alert('매칭 모드 입장 중 오류가 발생했습니다.');
+                    });
+            },
+            function () {
+                alert('매칭 지도를 사용하려면 위치 권한이 필요합니다.');
+            }
+        );
+    }
+
+    // 기본 메시지
+    function getDefaultMessage(mode) {
+        if (mode === 'MEAL') return '밥 먹을 사람 구해요';
+        if (mode === 'BLIND_DATE') return '소개팅 대기 중이에요';
+        if (mode === 'GROUP') return '과팅할 팀 구해요';
+        return '매칭 대기 중이에요';
+    }
+</script>
+
 </body>
 </html>

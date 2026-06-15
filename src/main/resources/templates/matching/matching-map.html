@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>매칭 지도</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/matching-map.css}">
+</head>
+<body class="app-body">
+
+<div class="app-page">
+    <main class="app-shell">
+
+        <header class="app-header">
+            <button class="app-header-btn" onclick="history.back()">←</button>
+            <div class="app-header-title">상대 찾기 지도</div>
+            <button class="app-header-btn">필터</button>
+        </header>
+
+        <section class="app-content">
+            <div class="match-tabs">
+                <button class="match-tab" data-mode="MEAL" onclick="changeMode('MEAL')">학식</button>
+                <button class="match-tab" data-mode="BLIND_DATE" onclick="changeMode('BLIND_DATE')">소개팅</button>
+                <button class="match-tab" data-mode="GROUP" onclick="changeMode('GROUP')">과팅</button>
+            </div>
+
+            <div class="map-box">
+                <div id="matchingMap"></div>
+            </div>
+
+            <article id="selectedProfile" class="ui-card selected-profile">
+                <div class="ui-card-title" id="selectedNickname">상대 정보</div>
+                <p class="ui-card-desc" id="selectedMessage">마커를 선택하면 상대 정보가 표시됩니다.</p>
+
+                <div class="ui-two" style="margin-top: 14px;">
+                    <button class="ui-btn sub" type="button">프로필</button>
+                    <button class="ui-btn" type="button" id="requestBtn" onclick="requestMatching()">매칭 신청</button>
+                </div>
+            </article>
+        </section>
+
+        <nav class="bottom-nav">
+            <a th:href="@{/api/view/user/main}" class="on">🏠<br>홈</a>
+            <a th:href="@{/api/view/user/matching}">💚<br>매칭</a>
+            <a th:href="@{/api/view/user/chat}">💬<br>채팅</a>
+            <a th:href="@{/api/view/user/my-page}">👤<br>마이</a>
+        </nav>
+
+    </main>
+</div>
+
+<script th:src="'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId}"></script>
+
+<script th:inline="javascript">
+    // 서버 전달 모드
+    let matchingMode = /*[[${mode}]]*/ 'MEAL';
+
+    // 기본 지도 중심 좌표
+    const defaultPosition = new naver.maps.LatLng(37.6299, 127.0548);
+
+    // 지도 생성
+    const map = new naver.maps.Map('matchingMap', {
+        center: defaultPosition,
+        zoom: 16
+    });
+
+    // 마커 배열
+    const markerList = [];
+
+    // 탭 활성화
+    function activateTab() {
+        document.querySelectorAll('.match-tab').forEach(tab => {
+            tab.classList.toggle('on', tab.dataset.mode === matchingMode);
+        });
+    }
+
+    // 모드 변경
+    function changeMode(mode) {
+        matchingMode = mode;
+        activateTab();
+        loadMatchingMarkers();
+
+        const url = `/api/view/user/matching-map?mode=${mode}`;
+        history.replaceState(null, '', url);
+    }
+
+    // 마커 제거
+    function clearMarkers() {
+        markerList.forEach(marker => marker.setMap(null));
+        markerList.length = 0;
+    }
+
+    // 선택 프로필 표시
+    function showSelectedProfile(markerData) {
+        const profile = document.getElementById('selectedProfile');
+        const nickname = document.getElementById('selectedNickname');
+        const message = document.getElementById('selectedMessage');
+        const requestBtn = document.getElementById('requestBtn');
+
+        profile.classList.add('active');
+
+        nickname.textContent = markerData.mine
+            ? `${markerData.nickname} · 내 위치`
+            : markerData.nickname;
+
+        message.textContent = markerData.message || '매칭 대기 중입니다.';
+
+        requestBtn.disabled = markerData.mine;
+        requestBtn.textContent = markerData.mine ? '내 위치' : '매칭 신청';
+
+        // 선택한 대기 ID 저장
+        requestBtn.dataset.waitingId = markerData.waitingId;
+        requestBtn.dataset.userProfileId = markerData.userProfileId;
+    }
+
+    // 매칭 신청 버튼 클릭
+    function requestMatching() {
+        const requestBtn = document.getElementById('requestBtn');
+
+        const waitingId = requestBtn.dataset.waitingId;
+        const userProfileId = requestBtn.dataset.userProfileId;
+
+        if (!waitingId || requestBtn.disabled) {
+            return;
+        }
+
+        console.log('선택한 waitingId:', waitingId);
+        console.log('선택한 userProfileId:', userProfileId);
+
+        alert(`매칭 신청 대상 waitingId: ${waitingId}`);
+    }
+
+    // 정보창 생성
+    function createInfoWindow(markerData) {
+        return new naver.maps.InfoWindow({
+            content: `
+                <div class="info-window">
+                    <strong>${markerData.nickname}</strong>
+                    <p>${markerData.message ?? ''}</p>
+                    ${markerData.mine
+                ? '<button disabled>내 위치</button>'
+                : '<button type="button">매칭 요청</button>'}
+                </div>
+            `
+        });
+    }
+
+    // 마커 그리기
+    function drawMarkers(markers) {
+        clearMarkers();
+
+        markers.forEach(markerData => {
+            const position = new naver.maps.LatLng(markerData.latitude, markerData.longitude);
+
+            const marker = new naver.maps.Marker({
+                position: position,
+                map: map,
+                icon: {
+                    content: markerData.mine
+                        ? '<div class="my-marker">나</div>'
+                        : '<div class="user-marker">✋</div>',
+                    anchor: new naver.maps.Point(17, 17)
+                }
+            });
+
+            const infoWindow = createInfoWindow(markerData);
+
+            naver.maps.Event.addListener(marker, 'click', function () {
+                infoWindow.open(map, marker);
+                showSelectedProfile(markerData);
+            });
+
+            markerList.push(marker);
+
+            // 내 위치 기준으로 지도 중심 이동
+            if (markerData.mine) {
+                map.setCenter(position);
+                showSelectedProfile(markerData);
+            }
+        });
+    }
+
+    // 마커 조회
+    function loadMatchingMarkers() {
+        fetch(`/api/matching/waiting/markers?mode=${matchingMode}`)
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    alert(result.message);
+                    return;
+                }
+
+                drawMarkers(result.data);
+            })
+            .catch(error => {
+                console.error(error);
+                alert('마커 조회 중 오류가 발생했습니다.');
+            });
+    }
+
+    // 초기 실행
+    activateTab();
+    loadMatchingMarkers();
+</script>
+
+</body>
+</html>
