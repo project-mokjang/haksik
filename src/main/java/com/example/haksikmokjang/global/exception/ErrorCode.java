@@ -50,9 +50,11 @@ public enum ErrorCode {
     //File Attachment
     FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "FILE_001", "업로드에 실패했습니다."),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FILE_002", "파일을 찾을 수 없습니다."),
-    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_002", "게시물을 찾을 수 없습니다.");
-
-
+    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_002", "게시물을 찾을 수 없습니다."),
+    //남의 글을 수정/삭제하려고 할 때 뱉어낼 에러
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "COMMON_403", "해당 작업을 수행할 권한이 없습니다."),
+    // Comment 추가
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "댓글을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

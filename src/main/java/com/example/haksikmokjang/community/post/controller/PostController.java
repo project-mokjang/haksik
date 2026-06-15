@@ -6,6 +6,7 @@ import com.example.haksikmokjang.community.post.domain.PostCategory;
 import com.example.haksikmokjang.community.post.dto.PostCreateRequest;
 import com.example.haksikmokjang.community.post.dto.PostDetailResponse;
 import com.example.haksikmokjang.community.post.dto.PostListResponse;
+import com.example.haksikmokjang.community.post.dto.PostUpdateRequest;
 import com.example.haksikmokjang.community.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +65,29 @@ public class PostController {
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.getPostDetail(postId));
+    }
+    // 게시글 수정 (PUT)
+    @PutMapping("/{postId}")
+    public ResponseEntity<String> updatePost(
+            @PathVariable Long postId,
+            Authentication authentication,
+            @Valid @RequestBody PostUpdateRequest request) {
+
+        String loginId = authentication.getName();
+        postService.updatePost(postId, loginId, request);
+
+        return ResponseEntity.ok("게시글이 성공적으로 수정되었습니다.");
+    }
+
+    //게시글 삭제 (DELETE)
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<String> deletePost(
+            @PathVariable Long postId,
+            Authentication authentication) {
+
+        String loginId = authentication.getName();
+        postService.deletePost(postId, loginId);
+
+        return ResponseEntity.ok("게시글이 성공적으로 삭제되었습니다.");
     }
 }

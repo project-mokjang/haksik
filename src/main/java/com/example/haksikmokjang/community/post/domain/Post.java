@@ -62,4 +62,16 @@ public class Post extends BaseEntity {
     public void addViewCount() {
         this.viewCount++;
     }
+
+    //게시글 수정/삭제
+
+    public void updatePost(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    public void deletePost() {
+        // DB에서 날리지 않고 상태만 DELETE로 바꿔 화면에 안 보이게
+        this.status = PostStatus.DELETE;
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.haksikmokjang.community.post.service;
 
+import com.example.haksikmokjang.community.post.dto.PostUpdateRequest;
 import com.example.haksikmokjang.community.post.domain.BoardType;
 import com.example.haksikmokjang.community.post.domain.Post;
 import com.example.haksikmokjang.community.post.domain.PostCategory;
@@ -162,5 +163,33 @@ public class PostService {
         response.setImageUrls(imageUrls);
 
         return response;
+    }
+
+    @Transactional
+    public void updatePost(Long postId, String loginId, PostUpdateRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        // 작성자 검증
+        if (!post.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 엔티티 내부 메서드(Dirty Checking)를 통한 업데이트
+        post.updatePost(request.getTitle(), request.getContent());
+    }
+
+    @Transactional
+    public void deletePost(Long postId, String loginId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        // 🚨 작성자 검증 방어벽
+        if (!post.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 상태값을 DELETED로 변경 (Soft Delete)
+        post.deletePost();
     }
 }
