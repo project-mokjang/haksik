@@ -2,10 +2,7 @@ package com.example.haksikmokjang.member.signup.user.service;
 
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
-import com.example.haksikmokjang.member.badge.domain.Badge;
-import com.example.haksikmokjang.member.badge.domain.MemberBadge;
-import com.example.haksikmokjang.member.badge.respository.BadgeRepository;
-import com.example.haksikmokjang.member.badge.respository.MemberBadgeRepository;
+import com.example.haksikmokjang.member.badge.service.BadgeAwardService;
 import com.example.haksikmokjang.member.terms.repository.TermsAgreementRepository;
 import com.example.haksikmokjang.member.terms.repository.TermsRepository;
 import com.example.haksikmokjang.school.domain.School;
@@ -45,8 +42,7 @@ public class UserSignupService {
     private final TermsAgreementRepository termsAgreementRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final PasswordEncoder passwordEncoder;
-    private final BadgeRepository badgeRepository;
-    private final MemberBadgeRepository memberBadgeRepository;
+    private final BadgeAwardService badgeAwardService;
 
     // 아이디 중복 확인
     @Transactional(readOnly = true)
@@ -125,7 +121,7 @@ public class UserSignupService {
         }
 
         // 회원가입 기본 뱃지 지급
-        giveSignupBadge(savedMember);
+        badgeAwardService.awardSignupBadge(savedMember);
 
         UserSignupResponse signupResponse = new UserSignupResponse(
                 savedMember.getMemberId(),
@@ -227,20 +223,5 @@ public class UserSignupService {
         }
 
         return email.substring(atIndex + 1).toLowerCase();
-    }
-
-    // 회원가입 기본 뱃지 지급
-    private void giveSignupBadge(Member member) {
-        Badge badge = badgeRepository.findByBadgeName("새싹 메이트")
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
-
-        boolean exists = memberBadgeRepository.existsByMemberAndBadge(member, badge);
-
-        if (exists) {
-            return;
-        }
-
-        MemberBadge memberBadge = new MemberBadge(member, badge);
-        memberBadgeRepository.save(memberBadge);
     }
 }

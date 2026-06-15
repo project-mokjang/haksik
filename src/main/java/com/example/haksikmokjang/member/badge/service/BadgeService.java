@@ -32,7 +32,7 @@ public class BadgeService {
         List<MemberBadge> memberBadges = memberBadgeRepository.findAllByMember(member);
 
         return memberBadges.stream()
-                .map(BadgeResponse::from)
+                .map(this::createBadgeResponse)
                 .toList();
     }
 
@@ -54,7 +54,7 @@ public class BadgeService {
         MemberBadge memberBadge = new MemberBadge(member, badge);
         MemberBadge savedMemberBadge = memberBadgeRepository.save(memberBadge);
 
-        return BadgeResponse.from(savedMemberBadge);
+        return createBadgeResponse(savedMemberBadge);
     }
 
     // 대표 뱃지 목록 변경
@@ -86,7 +86,7 @@ public class BadgeService {
         }
 
         return memberBadgeRepository.findAllByMember(member).stream()
-                .map(BadgeResponse::from)
+                .map(this::createBadgeResponse)
                 .toList();
     }
 
@@ -107,5 +107,17 @@ public class BadgeService {
         if (distinctCount != badgeIds.size()) {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
+    }
+
+    // MemberBadge를 BadgeResponse로 변환
+    private BadgeResponse createBadgeResponse(MemberBadge memberBadge) {
+        return BadgeResponse.builder()
+                .badgeId(memberBadge.getBadge().getBadgeId())
+                .badgeName(memberBadge.getBadge().getBadgeName())
+                .conditionText(memberBadge.getBadge().getConditionText())
+                .emoji(memberBadge.getBadge().getEmoji())
+                .representativeOrder(memberBadge.getRepresentativeOrder())
+                .earnedAt(memberBadge.getEarnedAt())
+                .build();
     }
 }
