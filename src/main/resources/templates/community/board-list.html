@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학식목장 - 커뮤니티</title>
+  <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+  <style>
+    .board-header { padding: 16px; background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+    .filter-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .filter-select, .search-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .search-input { flex: 1; }
+    .btn-search { padding: 8px 16px; background: #126b4f; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+    .post-list { list-style: none; padding: 0; margin: 0; }
+    .post-item { padding: 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+    .post-item:hover { background: #fafafa; }
+    .post-meta { font-size: 12px; color: #888; margin-bottom: 4px; display: flex; gap: 8px; }
+    .post-title { font-size: 16px; font-weight: bold; color: #333; margin: 0 0 8px 0; }
+    .post-info { font-size: 12px; color: #666; display: flex; justify-content: space-between; }
+
+    #loading { text-align: center; padding: 20px; color: #888; font-size: 14px; display: none; }
+    #observer-target { height: 20px; } /* 🚨 이 투명한 박스가 화면에 보이면 다음 데이터를 불러옵니다. */
+  </style>
+</head>
+<body>
+
+<div class="board-header">
+  <div class="filter-row">
+    <select id="boardType" class="filter-select" onchange="resetAndFetch()">
+      <option value="GLOBAL">전국구</option>
+      <option value="SCHOOL">우리학교</option>
+    </select>
+    <select id="category" class="filter-select" onchange="resetAndFetch()">
+      <option value="">말머리 전체</option>
+      <option value="FREE">자유</option>
+      <option value="FOOD">맛집추천</option>
+      <option value="QUESTION">질문</option>
+      <option value="MEETUP">만남</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <input type="text" id="keyword" class="search-input" placeholder="검색어를 입력하세요" onkeypress="if(event.key==='Enter') resetAndFetch()">
+    <button class="btn-search" onclick="resetAndFetch()">검색</button>
+  </div>
+</div>
+
+<ul id="postContainer" class="post-list">
+</ul>
+
+<div id="loading">로딩 중...</div>
+<div id="observer-target"></div>
+
+<script>
+  let lastPostId = null; // 마지막으로 불러온 게시글 번호
+  let isLoading = false; // 현재 데이터를 가져오는 중인지 (중복 호출 방지)
+  let isEnd = false;     // 더 이상 가져올 데이터가 없는지
+
+  // 1. 초기 렌더링 및 필터 변경 시 호출 (목록 싹 비우고 처음부터 다시)
+  function resetAndFetch() {
+    document.getElementById('postContainer').innerHTML = '';
+    lastPostId = null;
+    isEnd = false;
+    fetchPosts();
+  }
+
+  // 2. 백엔드 API 찌르기
+  async function fetchPosts() {
+    if (isLoading || isEnd) return; // 로딩 중이거나 끝났으면 막음 (부상 방지)
+
+    isLoading = true;
+    document.getElementById('loading').style.display = 'block';
+
+    const boardType = document.getElementById('boardType').value;
+    const category = document.getElementById('category').value;
+    const keyword = document.getElementById('keyword').value;
+
+    // 🚨 팩트: Query String 조립 (값이 있는 것만 파라미터로 넘김)
+    let url = `/api/posts?boardType=${boardType}&size=10`;
+    if (category) url += `&category=${category}`;
+    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    if (lastPostId) url += `&lastPostId=${lastPostId}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('데이터를 불러오지 못했습니다.');
+
+      const posts = await response.json();
+
+      // 가져온 데이터가 10개 미만이면 다음 데이터는 없다고 판단 (무한 스크롤 종료)
+      if (posts.length < 10) {
+        isEnd = true;
+      }
+
+      renderPosts(posts);
+
+    } catch (error) {
+      console.error(error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    } finally {
+      isLoading = false;
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  // 3. 화면에 HTML 그리기
+  function renderPosts(posts) {
+    const container = document.getElementById('postContainer');
+
+    posts.forEach(post => {
+      const li = document.createElement('li');
+      li.className = 'post-item';
+      // 🚨 나중에 상세 보기 페이지로 넘어가도록 onclick 이벤트 연동
+      li.onclick = () => location.href = `/api/view/community/${post.postId}`;
+
+      // 날짜 포맷 (예: 2026-06-11)
+      const dateStr = post.createdAt ? post.createdAt.split('T')[0] : '';
+      const categoryStr = post.category || '일반';
+
+      li.innerHTML = `
+          <div class="post-meta">
+            <span style="color: #126b4f; font-weight: bold;">[${categoryStr}]</span>
+          </div>
+          <h3 class="post-title">${post.title}</h3>
+          <div class="post-info">
+            <span>${post.authorName}</span>
+            <span>조회 ${post.viewCount} · ${dateStr}</span>
+          </div>
+        `;
+      container.appendChild(li);
+
+      // 가장 마지막 데이터의 ID를 기억해둠 (다음 스크롤 때 써먹기 위해)
+      lastPostId = post.postId;
+    });
+  }
+
+  // 4. 교차 관찰자 (Intersection Observer) 세팅: 바닥에 닿으면 다음 데이터 호출
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        fetchPosts();
+      }
+    });
+  });
+
+  // 페이지 켜지면 빈 박스(observer-target)를 주시하기 시작
+  observer.observe(document.getElementById('observer-target'));
+
+</script>
+</body>
+</html>
