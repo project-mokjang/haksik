@@ -1,7 +1,7 @@
 package com.example.haksikmokjang.community.post.service;
 
 import com.example.haksikmokjang.community.post.domain.BoardType;
-import com.example.haksikmokjang.community.post.domain.Post; // 🚨 깔끔하게 import로 뺐습니다.
+import com.example.haksikmokjang.community.post.domain.Post;
 import com.example.haksikmokjang.community.post.domain.PostCategory;
 import com.example.haksikmokjang.community.post.dto.PostCreateRequest;
 import com.example.haksikmokjang.community.post.dto.PostDetailResponse;
@@ -13,7 +13,7 @@ import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
-import com.example.haksikmokjang.school.domain.School; // 🚨 School 엔티티도 import로 뺐습니다. (경로 다르면 Alt+Enter로 맞추십시오)
+import com.example.haksikmokjang.school.domain.School;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
-// 🚨 조장님이 만든 공통 Exception과 ErrorCode 임포트 (패키지 경로가 다르면 Alt+Enter로 자동완성 하십시오)
 
 @Service
 @RequiredArgsConstructor
