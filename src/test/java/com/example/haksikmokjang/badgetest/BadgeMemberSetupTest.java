@@ -34,7 +34,7 @@ public class BadgeMemberSetupTest {
     @DisplayName("팀원 로컬 DB 동기화용: 특정 회원에게 모든 배지 지급")
     void insertAllBadgesToMember() {
         // 여기서 배지를 지급할 회원 ID 설정
-        Long memberId = 7L;
+        Long memberId = 1L;
 
         // 회원 조회
         Member member = memberRepository.findById(memberId)
