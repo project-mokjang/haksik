@@ -1,19 +1,23 @@
 package com.example.haksikmokjang.view.controller;
 
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
 import com.example.haksikmokjang.member.signup.user.dto.MyPageResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.member.signup.user.service.MyPageService;
 import com.example.haksikmokjang.member.terms.service.TermsService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/api/view")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ViewController {
     private final MyPageService myPageService;
     private final TermsService termsService;
@@ -117,7 +121,25 @@ public class ViewController {
         return "members/user/user-mypage";
     }
 
+    @Value("${naver.map.client-id}")
+    private String naverMapClientId;
+
+    @GetMapping("/user/matching-map")
+    public String matchingMap(
+            @RequestParam(defaultValue = "MEAL") MatchingMode mode,
+            Model model
+    ) {
+        // 매칭 모드 전달
+        model.addAttribute("mode", mode);
+
+        // 네이버 지도 Client ID 전달
+        model.addAttribute("naverMapClientId", naverMapClientId);
+
+        // 지도 페이지 반환
+        return "matching/matching-map";
     }
+
+}
 
 
 

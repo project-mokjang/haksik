@@ -1,0 +1,75 @@
+/* haksik user main css */
+
+.mode-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.mode-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--green);
+}
+
+.mode-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    background-color: var(--ivory2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+.mode-info {
+    flex: 1;
+}
+
+.mode-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--forest);
+    margin-bottom: 5px;
+}
+
+.mode-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.quick-card {
+    min-height: 88px;
+    padding: 16px;
+    border-radius: 20px;
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--forest);
+    font-weight: 800;
+    box-shadow: 0 8px 18px rgba(55, 42, 26, 0.06);
+}
+
+.quick-card span {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}

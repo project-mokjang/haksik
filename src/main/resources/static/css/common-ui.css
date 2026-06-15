@@ -1,0 +1,295 @@
+/* haksik common ui css */
+
+/* 전체 배경 */
+.app-body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 0%, #fffdf8 0, var(--ivory) 55%, var(--ivory2) 100%);
+    color: var(--forest);
+}
+
+/* 모바일 앱 화면 바깥 */
+.app-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+}
+
+/* 모바일 화면 박스 */
+.app-shell {
+    width: 100%;
+    max-width: 420px;
+    min-height: 760px;
+    background-color: var(--paper);
+    border-radius: 32px;
+    box-shadow: 0 24px 64px rgba(55, 42, 26, 0.16);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    position: relative;
+}
+
+/* 상단 헤더 */
+.app-header {
+    height: 72px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--paper);
+    border-bottom: 1px solid var(--line);
+}
+
+.app-header-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--forest);
+    letter-spacing: -0.04em;
+}
+
+.app-header-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* 본문 */
+.app-content {
+    padding: 22px 22px 96px;
+}
+
+/* 본문 여백 작은 버전 */
+.app-content.compact {
+    padding-bottom: 28px;
+}
+
+/* 카드 공통 */
+.ui-card {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+.ui-card-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--forest);
+    margin-bottom: 8px;
+    letter-spacing: -0.03em;
+}
+
+.ui-card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+/* 강조 카드 */
+.ui-hero-card {
+    background: linear-gradient(135deg, #fffdf8 0%, var(--card) 55%, #edf6ed 100%);
+    border: 2px solid var(--line);
+    border-radius: 28px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+}
+
+.ui-hero-card h2 {
+    font-size: 27px;
+    line-height: 1.25;
+    color: var(--forest);
+    letter-spacing: -0.06em;
+    margin-bottom: 10px;
+}
+
+.ui-hero-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+/* 섹션 제목 */
+.ui-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 14px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--forest);
+    letter-spacing: -0.04em;
+}
+
+.ui-section-title::before {
+    content: "";
+    width: 5px;
+    height: 24px;
+    border-radius: 999px;
+    background-color: var(--green);
+}
+
+/* 버튼 공통 */
+.ui-btn {
+    width: 100%;
+    min-height: 52px;
+    border: none;
+    border-radius: 18px;
+    background-color: var(--green);
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.ui-btn:hover {
+    background-color: var(--green2);
+    transform: translateY(-1px);
+}
+
+.ui-btn.sub {
+    background-color: var(--ivory2);
+    color: var(--forest);
+}
+
+.ui-btn.soil {
+    background-color: var(--soil);
+    color: white;
+}
+
+.ui-btn:disabled {
+    background-color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 2열 */
+.ui-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* 3열 */
+.ui-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* 입력 공통 */
+.ui-field {
+    margin-bottom: 16px;
+}
+
+.ui-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 8px;
+}
+
+.ui-input,
+.ui-select {
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    outline: none;
+}
+
+.ui-input:focus,
+.ui-select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(18, 107, 79, 0.1);
+}
+
+/* 메뉴 그룹 */
+.ui-menu-group {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.ui-menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    color: var(--forest);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ui-menu-item:last-child {
+    border-bottom: none;
+}
+
+/* 하단 네비 */
+.bottom-nav {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    background-color: rgba(255, 253, 248, 0.96);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 8px;
+    box-shadow: 0 10px 24px rgba(51, 40, 27, 0.12);
+}
+
+.bottom-nav a {
+    text-align: center;
+    padding: 8px 3px;
+    border-radius: 14px;
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.bottom-nav a.on {
+    background-color: var(--ivory2);
+    color: var(--green);
+}
+
+/* 모바일 */
+@media (max-width: 420px) {
+    .app-page {
+        padding: 0;
+    }
+
+    .app-shell {
+        max-width: none;
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+
+    .bottom-nav {
+        position: fixed;
+    }
+}

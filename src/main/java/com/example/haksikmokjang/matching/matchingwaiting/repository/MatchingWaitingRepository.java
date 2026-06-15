@@ -26,4 +26,10 @@ public interface MatchingWaitingRepository extends JpaRepository<MatchingWaiting
     );
 
     void deleteByUserProfile(UserProfile userProfile);
+
+    // 만료된 대기 목록 조회
+    List<MatchingWaiting> findByStatusAndExpiredAtBefore(
+            MatchingWaitingStatus status,
+            LocalDateTime now
+    );
 }
