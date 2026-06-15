@@ -1,6 +1,5 @@
 package com.example.haksikmokjang.member.badge.dto;
 
-import com.example.haksikmokjang.member.badge.domain.MemberBadge;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,16 +15,4 @@ public class BadgeResponse {
     private String emoji;
     private Integer representativeOrder;
     private LocalDateTime earnedAt;
-
-    // MemberBadge를 뱃지 응답 DTO로 변환
-    public static BadgeResponse from(MemberBadge memberBadge) {
-        return BadgeResponse.builder()
-                .badgeId(memberBadge.getBadge().getBadgeId())
-                .badgeName(memberBadge.getBadge().getBadgeName())
-                .conditionText(memberBadge.getBadge().getConditionText())
-                .emoji(memberBadge.getBadge().getEmoji())
-                .representativeOrder(memberBadge.getRepresentativeOrder())
-                .earnedAt(memberBadge.getEarnedAt())
-                .build();
-    }
 }
