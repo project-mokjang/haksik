@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학식목장 - 게시글 상세</title>
+    <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+    <style>
+        .detail-container { padding: 20px; background: #fff; max-width: 800px; margin: 0 auto; }
+        .post-header { border-bottom: 2px solid #126b4f; padding-bottom: 16px; margin-bottom: 20px; }
+        .category-badge { color: #126b4f; font-weight: bold; margin-bottom: 8px; display: inline-block; }
+        .post-title { font-size: 24px; font-weight: bold; margin: 0 0 12px 0; color: #333; }
+        .post-meta { font-size: 14px; color: #666; display: flex; justify-content: space-between; }
+        .post-content { font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px; white-space: pre-wrap; }
+
+        /*업로드된 이미지들이 비율에 맞게 예쁘게 출력되도록 강제하는 CSS */
+        .image-gallery img { max-width: 100%; border-radius: 8px; margin-bottom: 16px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .btn-list { display: block; width: 100%; text-align: center; padding: 14px; background: #eee; color: #333; text-decoration: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .btn-list:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="detail-container">
+    <input type="hidden" id="postId" th:value="${postId}">
+
+    <div class="post-header">
+        <span class="category-badge" id="categoryBadge"></span>
+        <h1 class="post-title" id="postTitle">데이터를 불러오는 중입니다...</h1>
+        <div class="post-meta">
+            <span id="authorName"></span>
+            <span>조회수 <span id="viewCount"></span> · <span id="createdAt"></span></span>
+        </div>
+    </div>
+
+    <div class="post-content" id="postContent"></div>
+
+    <div class="image-gallery" id="imageGallery">
+    </div>
+
+    <a href="/api/view/community" class="btn-list">목록으로 돌아가기</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const postId = document.getElementById('postId').value;
+        fetchPostDetail(postId);
+    });
+
+    async function fetchPostDetail(postId) {
+        try {
+            // 1. 방금 완성한 백엔드 상세 조회 API 찌르기
+            const response = await fetch(`/api/posts/${postId}`);
+
+            if (!response.ok) {
+                // 백엔드에서 CustomException(POST_NOT_FOUND)이 터지면 여기서 걸러집니다.
+                throw new Error('게시글을 불러오지 못했습니다.');
+            }
+
+            const post = await response.json();
+
+            // 2. 텍스트 데이터 화면에 꽂아 넣기
+            document.getElementById('categoryBadge').innerText = `[${post.category}]`;
+            document.getElementById('postTitle').innerText = post.title;
+            document.getElementById('authorName').innerText = post.authorName;
+            document.getElementById('viewCount').innerText = post.viewCount;
+            document.getElementById('createdAt').innerText = post.createdAt.split('T')[0];
+            document.getElementById('postContent').innerText = post.content;
+
+            // 3. 🚨 가장 중요한 사진 렌더링 로직
+            const gallery = document.getElementById('imageGallery');
+            if (post.imageUrls && post.imageUrls.length > 0) {
+                post.imageUrls.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url; // 백엔드의 ImageController(/api/images/{fileId})를 다시 찌름
+                    gallery.appendChild(img);
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            alert('존재하지 않거나 삭제된 게시글입니다.');
+            location.href = '/api/view/community'; // 에러 시 리스트 화면으로 강제 추방
+        }
+    }
+</script>
+</body>
+</html>
