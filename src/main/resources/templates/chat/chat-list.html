@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>채팅</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
+</head>
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell chat-list-shell">
+
+    <header class="app-header">
+      <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/main'">‹</button>
+      <div class="app-header-title">채팅</div>
+      <div class="app-header-right"></div>
+    </header>
+
+    <main class="app-scroll chat-list-scroll">
+      <section class="chat-page-title">
+        <h2>내 채팅방</h2>
+        <p>매칭된 친구들과 대화를 이어가요.</p>
+      </section>
+
+      <div id="chatRoomList" class="chat-room-list">
+        <!-- JS로 채팅방 목록 추가 -->
+      </div>
+
+      <div id="emptyChatRoom" class="empty-message hidden">
+        <div class="empty-icon">💬</div>
+        <p>참여 중인 채팅방이 없습니다.</p>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script th:src="@{/js/chat/chat.js}"></script>
+</body>
+</html>

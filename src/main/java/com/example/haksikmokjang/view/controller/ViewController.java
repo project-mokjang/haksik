@@ -95,6 +95,17 @@ public class ViewController {
         return "main/user-main";
     }
 
+    @GetMapping("/user/chat")
+    public String chatListPage() {
+        return "chat/chat-list";
+    }
+
+    @GetMapping("/user/chat/rooms/{chatRoomId}")
+    public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
+        model.addAttribute("chatRoomId", chatRoomId);
+        return "chat/chat-room";
+    }
+
     @GetMapping("/owner/main")
     public String ownerMainPage() {
         return "main/owner-main";

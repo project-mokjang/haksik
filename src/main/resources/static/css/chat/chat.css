@@ -1,0 +1,365 @@
+.hidden {
+    display: none;
+}
+
+/* 채팅 목록 */
+.chat-list-scroll {
+    padding: 24px;
+}
+
+.chat-page-title {
+    margin-bottom: 18px;
+}
+
+.chat-page-title h2 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--forest);
+    letter-spacing: -0.05em;
+    margin-bottom: 6px;
+}
+
+.chat-page-title p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.chat-room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-room-item {
+    width: 100%;
+    padding: 17px 16px;
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--paper) 0%, var(--card) 100%);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    text-align: left;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.chat-room-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--green);
+    box-shadow: 0 14px 34px rgba(55, 42, 26, 0.14);
+}
+
+.chat-room-name {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--forest);
+    letter-spacing: -0.03em;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.last-message {
+    margin-top: 7px;
+    max-width: 230px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.chat-room-right {
+    min-width: 48px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 9px;
+}
+
+.last-time {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.unread-count {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background-color: var(--red);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-type {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.empty-message {
+    margin-top: 110px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 22px;
+    background-color: var(--card);
+    border: 2px solid var(--line);
+    font-size: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-message p {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* 채팅방 내부 */
+.chat-shell {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-list {
+    flex: 1;
+    min-height: 0;
+    padding: 18px 16px 84px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #fffdf8 0%, #fff7e8 100%);
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.message-list::-webkit-scrollbar {
+    display: none;
+}
+
+.message-row {
+    max-width: 78%;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-row.mine {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message-row.other {
+    align-self: flex-start;
+    align-items: flex-start;
+    max-width: 90%;
+}
+
+/* 닉네임 */
+.sender-name {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: -0.03em;
+}
+
+.message-row.mine .sender-name {
+    align-self: flex-end;
+    margin-right: 8px;
+}
+
+.message-row.other .sender-name {
+    align-self: flex-start;
+    margin-left: 2px;
+}
+
+/* 상대 메시지 프로필 */
+.other-message-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.other-message-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile-image,
+.profile-default,
+.profile-placeholder {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.profile-image {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    background-color: var(--card);
+}
+
+.profile-default {
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-placeholder {
+    visibility: hidden;
+}
+
+/* 메시지 */
+.message-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.message-bubble {
+    max-width: 230px;
+    padding: 10px 13px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.45;
+    word-break: break-word;
+    letter-spacing: -0.02em;
+}
+
+.mine .message-bubble {
+    background-color: var(--green);
+    color: white;
+    border-bottom-right-radius: 7px;
+}
+
+.other .message-bubble {
+    background-color: var(--paper);
+    color: var(--forest);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 7px;
+}
+
+.message-info {
+    min-width: 38px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.25;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.message-row.mine .message-info {
+    align-items: flex-end;
+}
+
+.message-row.other .message-info {
+    align-items: flex-start;
+}
+
+.message-unread {
+    color: var(--soil);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+/* 입력창 */
+.message-form {
+    height: 66px;
+    padding: 10px 12px;
+    background-color: rgba(255, 253, 248, 0.98);
+    border-top: 1px solid var(--line);
+
+    display: flex;
+    gap: 8px;
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.message-input {
+    flex: 1;
+    height: 46px;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 0 16px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    outline: none;
+}
+
+.message-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(18, 107, 79, 0.08);
+}
+
+.send-button {
+    width: 62px;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.send-button:hover {
+    background-color: var(--green2);
+    transform: translateY(-1px);
+}
+
+/* 모바일 */
+@media (max-width: 420px) {
+    .message-bubble {
+        max-width: 220px;
+    }
+
+    .last-message {
+        max-width: 210px;
+    }
+}
