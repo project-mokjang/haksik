@@ -2,28 +2,9 @@
     display: none;
 }
 
-/* 공통 */
-.header-empty {
-    width: 40px;
-    height: 40px;
-}
-
-.chat-header {
-    background-color: rgba(255, 253, 248, 0.98);
-}
-
-.chat-header .app-header-btn {
-    font-size: 22px;
-    line-height: 1;
-}
-
-/* 채팅방 목록 */
-.chat-list-shell {
-    min-height: 760px;
-}
-
-.chat-list-content {
-    padding-top: 24px;
+/* 채팅 목록 */
+.chat-list-scroll {
+    padding: 24px;
 }
 
 .chat-page-title {
@@ -87,14 +68,14 @@
 
 .last-message {
     margin-top: 7px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
-
-    max-width: 250px;
+    max-width: 230px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
 }
 
 .chat-room-right {
@@ -163,14 +144,13 @@
 
 /* 채팅방 내부 */
 .chat-shell {
-    height: 760px;
-    min-height: 760px;
     display: flex;
     flex-direction: column;
 }
 
 .message-list {
     flex: 1;
+    min-height: 0;
     padding: 18px 16px 84px;
     overflow-y: auto;
     background: linear-gradient(180deg, #fffdf8 0%, #fff7e8 100%);
@@ -267,7 +247,7 @@
     visibility: hidden;
 }
 
-/* 메시지 줄 */
+/* 메시지 */
 .message-line {
     display: flex;
     align-items: flex-end;
@@ -275,7 +255,7 @@
 }
 
 .message-bubble {
-    max-width: 240px;
+    max-width: 230px;
     padding: 10px 13px;
     border-radius: 18px;
     font-size: 14px;
@@ -375,17 +355,11 @@
 
 /* 모바일 */
 @media (max-width: 420px) {
-    .chat-shell,
-    .chat-list-shell {
-        height: 100vh;
-        min-height: 100vh;
-    }
-
     .message-bubble {
-        max-width: 230px;
+        max-width: 220px;
     }
 
     .last-message {
-        max-width: 220px;
+        max-width: 210px;
     }
 }
