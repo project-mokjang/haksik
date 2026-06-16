@@ -59,7 +59,7 @@ public class PostService {
             schoolId = userProfile.getSchool().getSchoolId();
         }
 
-        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize);
+        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize, loginId);
     }
 
     @Transactional

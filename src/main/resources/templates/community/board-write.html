@@ -2,73 +2,75 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>학식목장 - 글쓰기</title>
-    <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
     <style>
-        .write-container { padding: 16px; background: #fff; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
-        textarea.form-control { height: 200px; resize: vertical; }
-        .btn-submit { width: 100%; padding: 14px; background: #126b4f; color: #fff; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-submit:disabled { background: #999; cursor: not-allowed; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); }
+        textarea.ui-input { height: 240px; padding: 16px; resize: none; font-family: inherit; line-height: 1.5; }
     </style>
 </head>
-<body>
+<body class="app-body">
 
-<div class="write-container">
-    <h2 style="margin-top: 0;">게시글 작성</h2>
+<div class="app-page">
+    <main class="app-shell">
+        <header class="app-header">
+            <button class="app-header-btn" onclick="history.back()">◀</button>
+            <div class="app-header-title">게시글 작성</div>
+            <div style="width: 40px;"></div> </header>
 
-    <form id="writeForm">
+        <section class="app-content">
+            <form id="writeForm">
+                <div class="ui-field">
+                    <label class="ui-label">게시판 선택</label>
+                    <select name="boardType" class="ui-select" required>
+                        <option value="GLOBAL">전국구 게시판</option>
+                        <option value="SCHOOL">우리학교 게시판</option>
+                    </select>
+                </div>
 
-        <div class="form-group">
-            <label>게시판 선택</label>
-            <select name="boardType" class="form-control" required>
-                <option value="GLOBAL">전국구 게시판</option>
-                <option value="SCHOOL">우리학교 게시판</option>
-            </select>
-        </div>
+                <div class="ui-field">
+                    <label class="ui-label">말머리</label>
+                    <select name="category" class="ui-select" required>
+                        <option value="FREE">자유</option>
+                        <option value="FOOD">맛집추천</option>
+                        <option value="QUESTION">질문</option>
+                        <option value="MEETUP">만남</option>
+                    </select>
+                </div>
 
-        <div class="form-group">
-            <label>말머리</label>
-            <select name="category" class="form-control" required>
-                <option value="FREE">자유</option>
-                <option value="FOOD">맛집추천</option>
-                <option value="QUESTION">질문</option>
-                <option value="MEETUP">만남</option>
-            </select>
-        </div>
+                <div class="ui-field">
+                    <label class="ui-label">제목</label>
+                    <input type="text" name="title" class="ui-input" placeholder="제목을 입력하세요" required>
+                </div>
 
-        <div class="form-group">
-            <label>제목</label>
-            <input type="text" name="title" class="form-control" placeholder="제목을 입력하세요 (최대 200자)" required>
-        </div>
+                <div class="ui-field">
+                    <label class="ui-label">내용</label>
+                    <textarea name="content" class="ui-input" placeholder="타인을 비방하거나 욕설이 포함된 글은 경고 없이 삭제될 수 있습니다." required></textarea>
+                </div>
 
-        <div class="form-group">
-            <label>내용</label>
-            <textarea name="content" class="form-control" placeholder="타인을 비방하거나 욕설이 포함된 글은 경고 없이 삭제될 수 있습니다." required></textarea>
-        </div>
+                <div class="ui-field">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="anonymousCheck">
+                        <label for="anonymousCheck" style="margin: 0; font-size: 14px; font-weight: 700; color: var(--forest);">익명으로 작성하기</label>
+                        <input type="hidden" name="anonymousYn" id="anonymousYn" value="N">
+                    </div>
+                </div>
 
-        <div class="form-group checkbox-group">
-            <input type="checkbox" id="anonymousCheck">
-            <label for="anonymousCheck" style="margin: 0;">익명으로 작성하기</label>
-            <input type="hidden" name="anonymousYn" id="anonymousYn" value="N">
-        </div>
+                <div class="ui-field">
+                    <label class="ui-label">사진 첨부 (다중 선택 가능)</label>
+                    <input type="file" name="images" class="ui-input" style="padding-top: 12px;" accept="image/*" multiple>
+                </div>
 
-        <div class="form-group">
-            <label>사진 첨부 (다중 선택 가능)</label>
-            <input type="file" name="images" class="form-control" accept="image/*" multiple>
-        </div>
-
-        <button type="button" id="submitBtn" class="btn-submit" onclick="submitPost()">등록하기</button>
-
-    </form>
+                <button type="button" id="submitBtn" class="ui-btn" style="margin-top: 24px;" onclick="submitPost()">등록하기</button>
+            </form>
+        </section>
+    </main>
 </div>
 
 <script>
-    // 익명 체크박스 클릭 시 숨겨진 input 값(Y/N)을 바꿔주는 로직
     document.getElementById('anonymousCheck').addEventListener('change', function() {
         document.getElementById('anonymousYn').value = this.checked ? 'Y' : 'N';
     });
@@ -76,36 +78,23 @@
     async function submitPost() {
         const btn = document.getElementById('submitBtn');
         const form = document.getElementById('writeForm');
-
-        // 필수값 팩트 체크 (브라우저 자체 검증)
         if (!form.reportValidity()) return;
 
-        // FormData 객체에 폼 안의 모든 데이터(텍스트 + 파일)를 쓸어 담습니다.
         const formData = new FormData(form);
 
         try {
             btn.disabled = true;
             btn.innerText = '업로드 중...';
-
-            // 🚨 핵심 팩트: FormData를 보낼 때는 headers에 'Content-Type'을 절대 수동으로 적으면 안 됩니다.
-            // 브라우저가 알아서 파일의 경계선(boundary)을 계산해서 헤더에 넣어줍니다.
-            const response = await fetch('/api/posts', {
-                method: 'POST',
-                body: formData
-            });
+            const response = await fetch('/api/posts', { method: 'POST', body: formData });
 
             if (response.ok) {
-                alert('게시글이 성공적으로 등록되었습니다.');
-                // 작성 성공 시, 커뮤니티 목록(메인)으로 강제 이동
-                location.href = '/api/view/community';
+                alert('게시글이 등록되었습니다.');
+                location.replace('/api/view/community');
             } else {
-                // 서버에서 유효성 검사 등에 걸려 에러를 뱉었을 경우
-                const errorMsg = await response.text();
-                alert('등록 실패: ' + errorMsg);
+                alert('등록 실패');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('서버와 통신 중 오류가 발생했습니다.');
         } finally {
             btn.disabled = false;
             btn.innerText = '등록하기';

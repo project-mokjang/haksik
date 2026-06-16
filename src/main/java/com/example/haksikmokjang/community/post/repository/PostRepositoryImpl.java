@@ -32,7 +32,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
             PostCategory category,
             String keyword,
             Long lastPostId,
-            int pageSize) {
+            int pageSize,
+            String loginId) {
 
         return queryFactory
                 .select(Projections.constructor(PostListResponse.class,
@@ -43,7 +44,10 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                                 .when(post.anonymousYn.eq("Y")).then("익명")
                                 .otherwise(userProfile.nickname),
                         post.viewCount,
-                        post.createdAt
+                        post.createdAt,
+                        new CaseBuilder()
+                                .when(post.member.loginId.eq(loginId)).then(true)
+                                .otherwise(false)
                 ))
                 .from(post)
                 .join(post.member, member)// 작성자 찾고
