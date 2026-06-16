@@ -1,216 +1,81 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>학식목장 - 커뮤니티</title>
+
   <link rel="stylesheet" th:href="@{/css/base.css}">
   <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-  <style>
-    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
-    .post-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
-
-    .post-card { background-color: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; box-shadow: 0 4px 12px rgba(55, 42, 26, 0.04); cursor: pointer; transition: transform 0.2s; }
-    .post-card:active { transform: scale(0.98); }
-    .post-card-category { font-size: 12px; font-weight: 800; color: var(--green); margin-bottom: 6px; }
-    .post-card-title { font-size: 16px; font-weight: 800; color: var(--forest); margin-bottom: 8px; line-height: 1.4; word-break: break-all; }
-    .post-card-meta { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
-
-    #loading { text-align: center; padding: 20px; color: var(--muted); font-size: 14px; display: none; }
-    #observer-target { height: 20px; }
-
-    .list-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-
-    .list-options-wrap { position: relative; display: inline-block; }
-    .list-options-btn { background: none; border: none; font-size: 18px; font-weight: bold; color: var(--muted); cursor: pointer; padding: 0 4px; }
-    .list-options-dropdown { display: none; position: absolute; right: 0; top: 100%; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); z-index: 100; min-width: 80px; overflow: hidden; }
-    .list-options-dropdown.show { display: block; }
-    .list-options-dropdown button { width: 100%; text-align: center; padding: 10px; background: none; border: none; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: bold; color: var(--forest); cursor: pointer; }
-    .list-options-dropdown button:last-child { border-bottom: none; }
-    .delete-text { color: var(--red) !important; }
-
-    /*브라우저 전체 스크롤을 차단하고 스마트폰 껍데기를 박제. */
-    html, body { height: 100%; overflow: hidden; margin: 0; }
-    .app-page { height: 100vh; box-sizing: border-box; overflow: hidden; display: flex; align-items: center; }
-    .app-shell { height: 100%; max-height: 850px; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
-
-    /*이 안에서만 스크롤이 발생. */
-    .app-content { flex: 1; overflow-y: auto; padding-bottom: 90px; } /* 하단 네비게이션 공간 확보 */
-  </style>
-
+  <link rel="stylesheet" th:href="@{/css/community/board.css}">
 </head>
+
 <body class="app-body">
 
 <div class="app-page">
-  <main class="app-shell">
+  <div class="app-shell">
+
     <header class="app-header">
-      <button class="app-header-btn" onclick="history.back()">◀</button>
+      <button type="button" class="app-header-btn" onclick="history.back()">
+        &lt;
+      </button>
+
       <div class="app-header-title">커뮤니티</div>
-      <button class="app-header-btn" onclick="location.href='/api/view/community/write'">✏️</button>
+
+      <button type="button" class="app-header-btn" id="writePostBtn">
+        ✏️
+      </button>
     </header>
 
-    <section class="app-content compact">
-      <div class="filter-row">
-        <select id="boardType" class="ui-select" onchange="resetAndFetch()">
-          <option value="GLOBAL">전국구</option>
-          <option value="SCHOOL">우리학교</option>
-        </select>
-        <select id="category" class="ui-select" onchange="resetAndFetch()">
-          <option value="">말머리 전체</option>
-          <option value="FREE">자유</option>
-          <option value="FOOD">맛집추천</option>
-          <option value="QUESTION">질문</option>
-          <option value="MEETUP">만남</option>
-        </select>
-      </div>
-      <div class="search-row">
-        <input type="text" id="keyword" class="ui-input" placeholder="검색어 입력" onkeypress="if(event.key==='Enter') resetAndFetch()">
-        <button class="ui-btn" style="width: 80px; min-height: 50px;" onclick="resetAndFetch()">검색</button>
+    <main class="app-scroll has-bottom-nav board-list-scroll">
+
+      <section class="board-filter-section">
+
+        <div class="board-filter-row">
+          <select id="boardType" class="board-select">
+            <option value="GLOBAL">전국구</option>
+            <option value="SCHOOL">우리학교</option>
+          </select>
+
+          <select id="category" class="board-select">
+            <option value="">말머리 전체</option>
+            <option value="FREE">자유</option>
+            <option value="FOOD">맛집추천</option>
+            <option value="QUESTION">질문</option>
+            <option value="MEETUP">만남</option>
+          </select>
+        </div>
+
+        <div class="board-search-row">
+          <input type="text"
+                 id="keyword"
+                 class="board-input"
+                 placeholder="검색어 입력">
+
+          <button type="button" class="board-search-btn" id="searchBtn">
+            검색
+          </button>
+        </div>
+
+      </section>
+
+      <ul id="postContainer" class="board-post-list"></ul>
+
+      <div id="loading" class="board-loading">
+        데이터를 불러오는 중...
       </div>
 
-      <ul id="postContainer" class="post-list"></ul>
-      <div id="loading">데이터를 불러오는 중...</div>
-      <div id="observer-target"></div>
-    </section>
+      <div id="observerTarget" class="board-observer-target"></div>
 
-    <nav class="bottom-nav">
-      <a th:href="@{/api/view/user/main}">🏠<br>홈</a>
-      <a th:href="@{/api/view/user/matching}">💚<br>매칭</a>
-      <a th:href="@{/api/view/user/chat}">💬<br>채팅</a>
-      <a th:href="@{/api/view/community}" class="on"> =3= <br>커뮤니티</a>
-      <a th:href="@{/api/view/user/my-page}">👤<br>마이</a>
-    </nav>
-  </main>
+    </main>
+
+    <nav th:replace="~{fragments/mobile-layout :: bottomNav('community')}"></nav>
+
+  </div>
 </div>
 
-<script>
-  let lastPostId = null;
-  let isLoading = false;
-  let isEnd = false;
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/community/board-list.js}"></script>
 
-  function resetAndFetch() {
-    document.getElementById('postContainer').innerHTML = '';
-    lastPostId = null;
-    isEnd = false;
-    fetchPosts();
-  }
-
-  async function fetchPosts() {
-    if (isLoading || isEnd) return;
-
-    isLoading = true;
-    document.getElementById('loading').style.display = 'block';
-
-    const boardType = document.getElementById('boardType').value;
-    const category = document.getElementById('category').value;
-    const keyword = document.getElementById('keyword').value;
-
-    let url = `/api/posts?boardType=${boardType}&size=10`;
-    if (category) url += `&category=${category}`;
-    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
-    if (lastPostId) url += `&lastPostId=${lastPostId}`;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('데이터 로드 실패');
-      const posts = await response.json();
-
-      if (posts.length < 10) isEnd = true;
-      renderPosts(posts);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      isLoading = false;
-      document.getElementById('loading').style.display = 'none';
-    }
-  }
-
-  function renderPosts(posts) {
-    const container = document.getElementById('postContainer');
-    posts.forEach(post => {
-      const li = document.createElement('li');
-      li.className = 'post-card';
-      li.onclick = () => location.href = `/api/view/community/${post.postId}`;
-
-      const dateStr = post.createdAt ? post.createdAt.split('T')[0] : '';
-
-      //내 글일 때만 케밥 메뉴 HTML 생성 (이벤트 버블링 방지)
-      const optionsHtml = post.mine ? `
-                <div class="list-options-wrap" onclick="event.stopPropagation();">
-                    <button class="list-options-btn" onclick="toggleListOptions(${post.postId})">⋮</button>
-                    <div class="list-options-dropdown" id="listDropdown-${post.postId}">
-                        <button onclick="editPost(${post.postId})">수정</button>
-                        <button class="delete-text" onclick="deletePost(${post.postId})">삭제</button>
-                    </div>
-                </div>
-            ` : '';
-
-      li.innerHTML = `
-                <div class="list-header-row">
-                    <div class="post-card-category">[${post.category || '일반'}]</div>
-                    ${optionsHtml}
-                </div>
-                <div class="post-card-title">${post.title}</div>
-                <div class="post-card-meta">
-                    <span>${post.authorName}</span>
-                    <span>조회 ${post.viewCount} · ${dateStr}</span>
-                </div>
-            `;
-      container.appendChild(li);
-      lastPostId = post.postId;
-    });
-  }
-  // 드롭다운 토글 기능
-  function toggleListOptions(postId) {
-    const dropdown = document.getElementById(`listDropdown-${postId}`);
-    dropdown.classList.toggle('show');
-  }
-
-  // 여백 클릭 시 드롭다운 닫기
-  window.addEventListener('click', function(event) {
-    if (!event.target.matches('.list-options-btn')) {
-      document.querySelectorAll('.list-options-dropdown.show').forEach(el => {
-        el.classList.remove('show');
-      });
-    }
-  });
-
-  // 목록에서 바로 삭제
-  async function deletePost(postId) {
-    if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
-    try {
-      const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
-      if (res.ok) {
-        alert('삭제되었습니다.');
-        resetAndFetch(); // 목록 갱신
-      } else {
-        alert('삭제 권한이 없습니다.');
-      }
-    } catch (e) { console.error(e); }
-  }
-
-  // 목록에서 바로 수정 화면으로 진입
-  function editPost(postId) {
-    location.href = `/api/view/community/write?postId=${postId}`;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        fetchPosts();
-      }
-    });
-  }, {
-    root: document.querySelector('.app-content'), // 스크롤되는 부모 요소 지정
-    rootMargin: '0px',
-    threshold: 0.1
-  });
-
-  // 페이지 켜지면 관찰 시작. 최초 로딩 시 데이터 호출 보장을 위해 수동 1회 찌르기 추가
-  observer.observe(document.getElementById('observer-target'));
-  document.addEventListener('DOMContentLoaded', resetAndFetch);
-
-</script>
 </body>
 </html>

@@ -1,53 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>학식목장 - 회원가입 유형 선택</title>
-  <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
-  <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/members/auth.css}">
 </head>
-<body class="auth-body">
-<div class="mobile-container">
-  <div class="status-bar">
-    <span>17:26</span>
-    <span>🌾 학식목장</span>
-  </div>
 
-  <div class="content content-between">
-    <div class="header-section main">
-      <div class="logo bounce">🐑</div>
-      <h1 class="title small">학식목장</h1>
-      <p class="subtitle">캠퍼스 라이프의 모든 맛과 만남<br>당신은 어떤 회원인가요?</p>
-    </div>
+<body class="app-body">
 
-    <div class="type-section">
-      <label class="type-card" for="roleUser" onclick="selectRole('USER', this)">
-        <div class="icon-box">🎓</div>
-        <div class="text-box">
-          <h3 class="role-name">일반 이용자 가입</h3>
-          <p class="role-desc">오늘의 학식 추천부터 밥친구 매칭, 과팅, 커뮤니티까지 즐겨보세요!</p>
+<div class="app-page">
+  <div class="app-shell">
+
+    <main class="app-scroll signup-choice-scroll">
+
+      <section class="signup-choice-header">
+        <div class="signup-choice-logo">🐑</div>
+        <h1 class="signup-choice-title">학식목장</h1>
+        <p class="signup-choice-subtitle">
+          캠퍼스 라이프의 모든 맛과 만남<br>
+          당신은 어떤 회원인가요?
+        </p>
+      </section>
+
+      <section class="signup-choice-section">
+
+        <label class="signup-choice-card" for="roleUser" onclick="selectRole('USER', this)">
+          <div class="signup-choice-icon">🎓</div>
+
+          <div class="signup-choice-text">
+            <h3>일반 이용자 가입</h3>
+            <p>오늘의 학식 추천부터 밥친구 매칭, 과팅, 커뮤니티까지 즐겨보세요!</p>
+          </div>
+
+          <input type="radio" id="roleUser" name="role" value="USER" hidden>
+          <div class="signup-choice-radio"></div>
+        </label>
+
+        <label class="signup-choice-card" for="roleOwner" onclick="selectRole('OWNER', this)">
+          <div class="signup-choice-icon">👨‍🍳</div>
+
+          <div class="signup-choice-text">
+            <h3>식당 사장님 가입</h3>
+            <p>매장 등록, 메뉴 관리, 예약 및 실시간 웨이팅을 효율적으로 관리하세요!</p>
+          </div>
+
+          <input type="radio" id="roleOwner" name="role" value="OWNER" hidden>
+          <div class="signup-choice-radio"></div>
+        </label>
+
+      </section>
+
+      <section class="signup-choice-bottom">
+        <div class="signup-choice-error" id="errorMsg">
+          회원 유형을 먼저 선택해 주세요!
         </div>
-        <input type="radio" id="roleUser" name="role" value="USER" hidden>
-        <div class="radio-circle"></div>
-      </label>
 
-      <label class="type-card" for="roleOwner" onclick="selectRole('OWNER', this)">
-        <div class="icon-box">👨‍🍳</div>
-        <div class="text-box">
-          <h3 class="role-name">식당 사장님 가입</h3>
-          <p class="role-desc">매장 등록, 메뉴 관리, 예약 및 실시간 웨이팅을 효율적으로 관리하세요!</p>
-        </div>
-        <input type="radio" id="roleOwner" name="role" value="OWNER" hidden>
-        <div class="radio-circle"></div>
-      </label>
-    </div>
+        <button type="button" class="auth-submit-btn" id="nextBtn" onclick="handleNextStep()">
+          다음 단계로
+        </button>
 
-    <div class="bottom-section">
-      <div class="error-msg" id="errorMsg">회원 유형을 먼저 선택해 주세요!</div>
-      <button type="button" class="next-btn" id="nextBtn" onclick="handleNextStep()">다음 단계로</button>
-      <a href="/api/view/login" th:href="@{/api/view/login}" class="login-link">이미 계정이 있으신가요? <span>로그인하기</span></a>
-    </div>
+        <a th:href="@{/api/view/login}" class="signup-choice-login-link">
+          이미 계정이 있으신가요? <span>로그인하기</span>
+        </a>
+      </section>
+
+    </main>
+
   </div>
 </div>
 
@@ -57,14 +79,14 @@
   function selectRole(role, card) {
     selectedRole = role;
 
-    document.querySelectorAll('.type-card').forEach(item => {
+    document.querySelectorAll('.signup-choice-card').forEach(item => {
       item.classList.remove('active');
     });
 
     card.classList.add('active');
 
     const errorElement = document.getElementById('errorMsg');
-    errorElement.style.opacity = '0';
+    errorElement.classList.remove('visible');
 
     const nextBtn = document.getElementById('nextBtn');
     nextBtn.classList.add('ready');
@@ -74,7 +96,7 @@
     const errorElement = document.getElementById('errorMsg');
 
     if (!selectedRole) {
-      errorElement.style.opacity = '1';
+      errorElement.classList.add('visible');
       return;
     }
 
@@ -85,5 +107,6 @@
     }
   }
 </script>
+
 </body>
 </html>

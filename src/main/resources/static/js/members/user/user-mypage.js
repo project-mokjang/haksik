@@ -1,13 +1,14 @@
-// haksik user mypage js
+// user-mypage.js
 
-// 현재 회원이 보유한 전체 뱃지 목록
 let memberBadges = [];
-
-// 현재 선택한 대표 뱃지 ID 목록
 let selectedBadgeIds = [];
 
-// 화면 로딩 후 실행
 document.addEventListener('DOMContentLoaded', function () {
+    initMyPage();
+});
+
+// 마이페이지 초기화
+function initMyPage() {
     const memberId = getMemberId();
 
     if (!memberId) {
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadTrustInfo(memberId);
     loadMemberBadges(memberId);
-});
+}
 
 // 회원 ID 조회
 function getMemberId() {
@@ -30,7 +31,7 @@ function getMemberId() {
     return mypageContainer.dataset.memberId;
 }
 
-// 응답 body를 JSON으로 변환함
+// 응답 body를 JSON으로 변환
 async function safeJson(response) {
     try {
         return await response.json();
@@ -171,9 +172,9 @@ function renderBadgeSelectList() {
             badgeItem.classList.add('selected');
         }
 
-        badgeItem.onclick = function () {
+        badgeItem.addEventListener('click', function () {
             toggleBadgeSelection(badge.badgeId);
-        };
+        });
 
         const selectedOrder = selectedBadgeIds.indexOf(badge.badgeId) + 1;
         const orderHtml = selectedOrder > 0
@@ -246,28 +247,6 @@ async function saveRepresentativeBadges() {
     closeBadgeModal();
 
     alert('대표 뱃지가 변경되었습니다.');
-}
-
-// 회원탈퇴 처리
-function processWithdrawal() {
-    const password = document.getElementById("passwordInput").value;
-
-    if (confirm("정말 탈퇴하시겠습니까?\n탈퇴 즉시 모든 데이터가 영구적으로 삭제되며 절대 복구할 수 없습니다.")) {
-        fetch('/api/members/withdraw', {
-            method: 'POST',
-            body: JSON.stringify({ password: password }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.location.href = '/api/view/login';
-                } else {
-                    alert(data.message);
-                }
-            });
-    }
 }
 
 // 약관 모달 열기
