@@ -68,6 +68,18 @@
 
         /* 오직 이 안에서만 스크롤이 발생 */
         .app-content { flex: 1; overflow-y: auto; padding-bottom: 80px; } /* 하단 댓글 입력창 공간 확보 */
+
+        /* 신고 모달 CSS */
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: flex-end; }
+        .modal-overlay.show { display: flex; }
+        .bottom-sheet { width: 100%; max-width: 420px; background: var(--paper); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); }
+        .modal-overlay.show .bottom-sheet { transform: translateY(0); }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--forest); }
+        .btn-close { background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; line-height: 1; }
+
+        .report-option { display: block; width: 100%; text-align: left; padding: 16px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-size: 14px; font-weight: 700; color: var(--forest); cursor: pointer; transition: 0.2s; }
+        .report-option:hover { background: var(--ivory2); border-color: var(--green); }
     </style>
 </head>
 <body class="app-body">
@@ -86,7 +98,7 @@
             <div class="post-header">
                 <div class="header-top-row">
                     <div class="post-category" id="categoryBadge"></div>
-                    <div class="options-wrap" id="actionOptions" style="display: none;">
+                    <div class="options-wrap" id="actionOptions">
                         <button class="options-btn" onclick="toggleOptions()">⋮</button>
                         <div class="options-dropdown" id="optionsDropdown">
                             <button onclick="editPost()">수정하기</button>
@@ -126,6 +138,21 @@
                 <button id="commentSubmitBtn" class="ui-btn" onclick="submitComment()">등록</button>
             </div>
         </div>
+        <div class="modal-overlay" id="reportModal" onclick="closeReportModal(event)">
+            <div class="bottom-sheet" onclick="event.stopPropagation()">
+                <div class="sheet-header">
+                    <span class="sheet-title">신고사유 선택</span>
+                    <button class="btn-close" onclick="closeReportModal()">×</button>
+                </div>
+                <input type="hidden" id="reportTargetType">
+                <input type="hidden" id="reportTargetId">
+
+                <button class="report-option" onclick="submitReport('욕설 / 비하 / 혐오 조장')">욕설 / 비하 / 혐오 조장</button>
+                <button class="report-option" onclick="submitReport('음란물 / 성희롱')">음란물 / 성희롱</button>
+                <button class="report-option" onclick="submitReport('스팸 / 상업적 광고 도배')">스팸 / 상업적 광고 도배</button>
+                <button class="report-option" onclick="submitReport('게시판 성격에 맞지 않는 부적절한 글')">게시판 성격에 맞지 않는 부적절한 글</button>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -148,8 +175,19 @@
             document.getElementById('postInfo').innerText = `조회 ${post.viewCount} · ${post.createdAt.split('T')[0]}`;
             document.getElementById('postContent').innerText = post.content;
 
+            const dropdown = document.getElementById('optionsDropdown');
+
             if (post.mine) {
-                document.getElementById('actionOptions').style.display = 'inline-block';
+                // 내 글이면 수정/삭제
+                dropdown.innerHTML = `
+                    <button onclick="editPost()">수정하기</button>
+                    <button class="delete-text" onclick="deletePost()">삭제하기</button>
+                `;
+            } else {
+                // 남의 글이면 신고
+                dropdown.innerHTML = `
+                    <button class="delete-text" onclick="openReportModal('POST', ${postId})">신고하기</button>
+                `;
             }
 
             const gallery = document.getElementById('imageGallery');
@@ -216,6 +254,8 @@
         if (c.mine) {
             actionsHtml += `<button class="comment-btn" onclick="prepareEditComment(${c.commentId}, '${safeContent}')">수정</button>`;
             actionsHtml += `<button class="comment-btn" style="color: var(--red);" onclick="deleteComment(${c.commentId})">삭제</button>`;
+        } else {
+            actionsHtml += `<button class="comment-btn" style="color: var(--red);" onclick="openReportModal('COMMENT', ${c.commentId})">신고</button>`;
         }
 
         //대댓글이면 'reply' 클래스.
@@ -339,6 +379,52 @@
                     dropdowns[i].classList.remove('show');
                 }
             }
+        }
+    }
+
+    // --- 🚨 신고(Report) 관련 모달 및 API 통신 로직 ---
+
+    function openReportModal(targetType, targetId) {
+        document.getElementById('reportTargetType').value = targetType;
+        document.getElementById('reportTargetId').value = targetId;
+
+        // 열려있는 옵션 드롭다운 닫기
+        document.querySelectorAll('.options-dropdown.show').forEach(el => el.classList.remove('show'));
+
+        // 바텀 시트 열기
+        document.getElementById('reportModal').classList.add('show');
+    }
+
+    function closeReportModal(event) {
+        // 어두운 배경을 클릭했거나 X 버튼을 눌렀을 때만 닫힘
+        if (event && event.target !== document.getElementById('reportModal') && event.target.className !== 'btn-close') return;
+        document.getElementById('reportModal').classList.remove('show');
+    }
+
+    async function submitReport(reason) {
+        const targetType = document.getElementById('reportTargetType').value;
+        const targetId = document.getElementById('reportTargetId').value;
+
+        if (!confirm(`해당 내용을 '${reason}' 사유로 신고하시겠습니까?`)) return;
+
+        try {
+            const res = await fetch('/api/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetType: targetType, targetId: targetId, reason: reason })
+            });
+
+            if (res.ok) {
+                alert('신고가 정상적으로 접수되었습니다. 깨끗한 목장을 위한 제보 감사합니다.');
+                closeReportModal();
+            } else {
+                // 백엔드에서 날아온 ErrorCode 파싱 (예: "이미 신고가 접수된 항목입니다.")
+                const errorData = await res.json();
+                alert('신고 처리 실패: ' + (errorData.message || '서버 오류'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert('서버와 통신 중 오류가 발생했습니다.');
         }
     }
 </script>

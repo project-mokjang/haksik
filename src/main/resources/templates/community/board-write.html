@@ -6,20 +6,15 @@
     <title>학식목장 - 글쓰기</title>
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-    <style>
-        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); }
-        textarea.ui-input { height: 240px; padding: 16px; resize: none; font-family: inherit; line-height: 1.5; }
-    </style>
-</head>
+    <link rel="stylesheet" th:href="@{/css/board-list.css}"> </head>
 <body class="app-body">
-
 <div class="app-page">
     <main class="app-shell">
         <header class="app-header">
             <button class="app-header-btn" onclick="history.back()">◀</button>
             <div class="app-header-title">게시글 작성</div>
-            <div style="width: 40px;"></div> </header>
+            <div style="width: 40px;"></div>
+        </header>
 
         <section class="app-content">
             <form id="writeForm">
@@ -69,37 +64,5 @@
         </section>
     </main>
 </div>
-
-<script>
-    document.getElementById('anonymousCheck').addEventListener('change', function() {
-        document.getElementById('anonymousYn').value = this.checked ? 'Y' : 'N';
-    });
-
-    async function submitPost() {
-        const btn = document.getElementById('submitBtn');
-        const form = document.getElementById('writeForm');
-        if (!form.reportValidity()) return;
-
-        const formData = new FormData(form);
-
-        try {
-            btn.disabled = true;
-            btn.innerText = '업로드 중...';
-            const response = await fetch('/api/posts', { method: 'POST', body: formData });
-
-            if (response.ok) {
-                alert('게시글이 등록되었습니다.');
-                location.replace('/api/view/community');
-            } else {
-                alert('등록 실패');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = '등록하기';
-        }
-    }
-</script>
-</body>
+<script th:src="@{/js/board-write.js}"></script> </body>
 </html>
