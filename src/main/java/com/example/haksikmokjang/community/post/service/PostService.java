@@ -1,5 +1,8 @@
 package com.example.haksikmokjang.community.post.service;
 
+import com.example.haksikmokjang.community.comment.domain.Comment;
+import com.example.haksikmokjang.community.comment.dto.CommentResponse;
+import com.example.haksikmokjang.community.comment.repository.CommentRepository;
 import com.example.haksikmokjang.community.post.dto.PostUpdateRequest;
 import com.example.haksikmokjang.community.post.domain.BoardType;
 import com.example.haksikmokjang.community.post.domain.Post;
@@ -34,6 +37,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final FileAttachmentRepository fileAttachmentRepository;
+    private final CommentRepository commentRepository;
 
     @Value("${file.upload.dir}")
     private String uploadDir;
@@ -55,7 +59,7 @@ public class PostService {
             schoolId = userProfile.getSchool().getSchoolId();
         }
 
-        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize);
+        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize, loginId);
     }
 
     @Transactional
@@ -132,26 +136,54 @@ public class PostService {
     }
 
     @Transactional
-    public PostDetailResponse getPostDetail(Long postId) {
-        // 🚨 하드코딩 제거 및 Exception 교체 타점 4
+    // 매개변수에 loginId 추가
+    public PostDetailResponse getPostDetail(Long postId, String loginId) {
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
         post.addViewCount();
 
+        //게시글 작성자 닉네임 세팅 (익명 방어)
         String authorName = "익명";
         if (post.getAnonymousYn().equals("N")) {
-            // 🚨 Exception 교체 타점 5
             UserProfile profile = userProfileRepository.findByMember(post.getMember())
                     .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
             authorName = profile.getNickname();
         }
 
+        //이미지 URL 세팅
         List<FileAttachment> attachments = fileAttachmentRepository.findByTargetTypeAndTargetId("POST", postId);
         List<String> imageUrls = attachments.stream()
                 .map(file -> "/api/images/" + file.getFileId())
                 .toList();
 
+        //대망의 댓글 세팅 (상태가 ACTIVE인 정상 댓글만 싹 다 긁어오기)
+        List<Comment> commentList =
+                commentRepository.findByPostAndStatusOrderByCommentIdAsc(
+                        post, com.example.haksikmokjang.community.comment.domain.CommentStatus.ACTIVE);
+
+        List<com.example.haksikmokjang.community.comment.dto.CommentResponse> comments = commentList.stream().map(comment -> {
+            String commentAuthor = "익명";
+            if (comment.getAnonymousYn().equals("N")) {
+                UserProfile cProfile = userProfileRepository.findByMember(comment.getMember())
+                        .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+                commentAuthor = cProfile.getNickname();
+            }
+
+            // 이 댓글이 내가 쓴 댓글인지 팩트 체크
+            boolean isCommentMine = comment.getMember().getLoginId().equals(loginId);
+            Long parentId = comment.getParentComment() != null ? comment.getParentComment().getCommentId() : null;
+
+            return new CommentResponse(
+                    comment.getCommentId(), parentId, commentAuthor, comment.getContent(), comment.getCreatedAt(), isCommentMine
+            );
+        }).toList();
+
+        //이 게시글이 내가 쓴 게시글인지 체크
+        boolean isPostMine = post.getMember().getLoginId().equals(loginId);
+
+        //올인원 바구니 조립
         PostDetailResponse response = new PostDetailResponse();
         response.setPostId(post.getPostId());
         response.setCategory(post.getCategory().name());
@@ -161,6 +193,8 @@ public class PostService {
         response.setViewCount(post.getViewCount());
         response.setCreatedAt(post.getCreatedAt());
         response.setImageUrls(imageUrls);
+        response.setMine(isPostMine); // lombok이 boolean 필드에 대해 setMine()으로 자동 생성함
+        response.setComments(comments);
 
         return response;
     }

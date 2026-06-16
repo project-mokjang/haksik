@@ -17,14 +17,15 @@ public class PostListResponse {
     private String authorName;    // 작성자 닉네임 (또는 익명)
     private int viewCount;        // 조회수
     private LocalDateTime createdAt; // 작성 시간 //후에 댓글 개수, 썸넬 이미지 url 등등 덧붙일 예정 - 진우
-
+    private boolean isMine;
     //Enum을 다이렉트로 꽂아버림 ㄹㅇㅋㅋ
-    public PostListResponse(Long postId, PostCategory category, String title, String authorName, int viewCount, LocalDateTime createdAt) {
+    public PostListResponse(Long postId, PostCategory category, String title, String authorName, int viewCount, LocalDateTime createdAt, boolean isMine) {
         this.postId = postId;
         this.category = (category != null) ? category.name() : "일반";
         this.title = title;
         this.authorName = authorName;
         this.viewCount = viewCount;
         this.createdAt = createdAt;
+        this.isMine = isMine;// 추가
     }
 }

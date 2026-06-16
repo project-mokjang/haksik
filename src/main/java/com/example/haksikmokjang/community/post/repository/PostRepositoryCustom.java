@@ -16,6 +16,7 @@ public interface PostRepositoryCustom {
             PostCategory category,
             String keyword,
             Long lastPostId,
-            int pageSize
+            int pageSize,
+            String loginId
     );
 }
