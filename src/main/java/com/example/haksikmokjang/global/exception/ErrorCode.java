@@ -19,6 +19,10 @@ public enum ErrorCode {
     USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_005", "프로필 정보를 찾을 수 없습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER_006", "비밀번호가 일치하지 않습니다."),
 
+    PASSWORD_TOO_SHORT(HttpStatus.BAD_REQUEST, "MEMBER_007", "새 비밀번호는 8글자 이상이어야 합니다."),
+
+    SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER_008", "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
+
     //Owner
     DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),
     // School
@@ -50,9 +54,11 @@ public enum ErrorCode {
     //File Attachment
     FILE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "FILE_001", "업로드에 실패했습니다."),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FILE_002", "파일을 찾을 수 없습니다."),
-    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_002", "게시물을 찾을 수 없습니다.");
-
-
+    POST_NOT_FOUND(HttpStatus.BAD_REQUEST, "POST_002", "게시물을 찾을 수 없습니다."),
+    //남의 글을 수정/삭제하려고 할 때 뱉어낼 에러
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "COMMON_403", "해당 작업을 수행할 권한이 없습니다."),
+    // Comment 추가
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "댓글을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -15,6 +15,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByEmail(String email);
 
+    Optional<Member> findByLoginIdAndEmail(String loginId, String email);
+
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query
             ("UPDATE Member m SET m.passwordHash = :newPassword WHERE m.memberId = :memberId")

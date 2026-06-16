@@ -57,7 +57,7 @@ public class BadgeSetupTest {
 
                 {"캠퍼스 메이트", "같은 학교 사용자와 매칭을 10회 이상 완료한 사용자", BadgeConditionType.SAME_SCHOOL_MATCHING_COUNT, 10, "🏫"},
                 {"전국구 메이트", "다른 학교 사용자와 매칭을 3회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_SCHOOL_MATCHING_COUNT, 3, "🌍"},
-                {"믿음직한 메이트", "신고 없이 식사 약속을 20회 이상 완료한 사용자", BadgeConditionType.NO_REPORT_COUNT, 20, "🛡️"}
+                {"믿음직한 메이트", "학식 메이트 매칭을 20회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 20, "🛡️"}
         };
 
         // 3. 배열을 순회하며 엔티티로 조립
