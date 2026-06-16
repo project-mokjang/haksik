@@ -58,7 +58,11 @@ public enum ErrorCode {
     //남의 글을 수정/삭제하려고 할 때 뱉어낼 에러
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "COMMON_403", "해당 작업을 수행할 권한이 없습니다."),
     // Comment 추가
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "댓글을 찾을 수 없습니다.");
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "댓글을 찾을 수 없습니다."),
+
+    //신고 권한
+    CANNOT_REPORT_OWN_CONTENT(HttpStatus.BAD_REQUEST, "COMMON_4001", "자신이 작성한 게시글이나 댓글은 신고할 수 없습니다."),
+    ALREADY_REPORTED(HttpStatus.CONFLICT, "COMMON_4002", "이미 신고가 접수된 항목입니다.");
 
     private final HttpStatus status;
     private final String code;

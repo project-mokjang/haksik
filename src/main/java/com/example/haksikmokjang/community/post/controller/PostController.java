@@ -49,7 +49,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    // 🏋️‍♂️ 2. 게시글 쓰기 (POST) - 🚨 이 부분이 없어서 아까 500 에러가 터진 겁니다!
+    //게시글 쓰기 (POST)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createPost(
             Authentication authentication,
@@ -63,9 +63,14 @@ public class PostController {
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다. Post ID: " + savedPostId);
     }
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPostDetail(postId));
+    public ResponseEntity<PostDetailResponse> getPostDetail(
+            @PathVariable Long postId,
+            Authentication authentication) { //시큐리티 로그인 정보 받아오기 추가
+
+        String loginId = authentication.getName();
+        return ResponseEntity.ok(postService.getPostDetail(postId, loginId));
     }
+
     // 게시글 수정 (PUT)
     @PutMapping("/{postId}")
     public ResponseEntity<String> updatePost(

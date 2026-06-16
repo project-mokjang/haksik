@@ -1,6 +1,7 @@
 package com.example.haksikmokjang.community.comment.domain;
 
 import com.example.haksikmokjang.community.post.domain.Post;
+import com.example.haksikmokjang.global.entity.CreatedTimeEntity;
 import com.example.haksikmokjang.member.core.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-public class Comment {
+public class Comment extends CreatedTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
