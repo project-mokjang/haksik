@@ -19,6 +19,10 @@ public enum ErrorCode {
     USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_005", "프로필 정보를 찾을 수 없습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER_006", "비밀번호가 일치하지 않습니다."),
 
+    PASSWORD_TOO_SHORT(HttpStatus.BAD_REQUEST, "MEMBER_007", "새 비밀번호는 8글자 이상이어야 합니다."),
+
+    SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "MEMBER_008", "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
+
     //Owner
     DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),
     // School

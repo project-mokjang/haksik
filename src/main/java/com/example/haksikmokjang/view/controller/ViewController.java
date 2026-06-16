@@ -77,6 +77,13 @@ public class ViewController {
         return "members/find-pw";
     }
 
+    @GetMapping("/reset-pw")
+    public String resetPwPage(@RequestParam(required = false) String email, Model model) {
+        // 주소 뒤에 ?email=... 로 달고 온 이메일을 화면(Model)에 담음
+        model.addAttribute("email", email);
+        return "members/reset-pw";
+    }
+
     //관리자 전용 화면
     @GetMapping("/admin/users")
     public String adminUsersPage() {
