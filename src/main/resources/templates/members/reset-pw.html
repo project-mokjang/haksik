@@ -20,7 +20,7 @@
       <h1 class="title">비밀번호 재설정</h1>
     </div>
 
-    <form class="form-section" action="/api/auth/reset-pw" method="post">
+    <div class="form-section">
       <input type="hidden" id="resetToken" name="resetToken" value="">
 
       <div class="input-group">
@@ -33,15 +33,60 @@
         <input type="password" class="input-field" id="confirmPassword" name="confirmPassword" placeholder="비밀번호를 다시 한번 입력해주세요" required />
       </div>
 
-      <div class="error-msg" id="resetPwError">비밀번호가 일치하지 않습니다.</div>
+      <div class="error-msg" id="resetPwError" style="display: none;">비밀번호가 일치하지 않습니다.</div>
 
-      <button type="submit" class="submit-btn">비밀번호 변경하기</button>
-    </form>
+      <button type="button" class="submit-btn" onclick="submitResetPw()">비밀번호 변경하기</button>
+    </div>
 
     <div class="link-section">
       <a href="/api/view/login" th:href="@{/api/view/login}">로그인으로 돌아가기</a>
     </div>
   </div>
 </div>
+
+<script>
+  async function submitResetPw() {
+    // 주소창 뒤에 달고 온 이메일 정보 빼오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+
+    if (!newPassword || !confirmPassword) {
+      alert('비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      alert(' 비밀번호는 8글자 이상으로 설정해주세요!');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      document.getElementById('resetPwError').style.display = 'block';
+      return;
+    } else {
+      document.getElementById('resetPwError').style.display = 'none';
+    }
+
+    // 서버로 이메일이랑 새 비밀번호 저장
+    const response = await fetch('/api/members/find-pw/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, newPassword: newPassword })
+    });
+
+    if (response.ok) {
+      alert('비밀번호가 성공적으로 변경되었습니다! 😆 다시 로그인해주세요.');
+      window.location.href = '/api/view/login';
+    } else {
+      // 서버에서 튕겨냈을 때
+      const result = await response.json();
+      alert(result.message || '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+    }
+  }
+</script>
 </body>
 </html>

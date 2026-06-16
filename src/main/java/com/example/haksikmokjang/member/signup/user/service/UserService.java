@@ -2,10 +2,14 @@ package com.example.haksikmokjang.member.signup.user.service;
 
 
 import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
+import com.example.haksikmokjang.global.exception.CustomException;
+import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.matching.matchingwaiting.repository.MatchingWaitingRepository;
 import com.example.haksikmokjang.member.core.repository.MemberLocationRepository;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
+import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
+import com.example.haksikmokjang.member.signup.user.dto.FindIdRequest;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import com.example.haksikmokjang.member.terms.repository.TermsAgreementRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +55,21 @@ public class UserService {
         termsAgreementRepository.deleteByMember(member);
         //  마지막으로 회원 본인 데이터 완전 삭제
         memberRepository.delete(member);
+    }
+    //아이디 찾기 기능 코드
+    @Transactional(readOnly = true)
+    public String findLoginId(FindIdRequest request) {
+
+        //  DB에서 이름이랑 이메일 똑같은 프로필 찾기
+        UserProfile userProfile = userProfileRepository.findByNameAndMember_Email(request.getName(), request.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 프로필 안에 연결된 Member에서 아이디만 쏙 뽑아서 반환
+        return userProfile.getMember().getLoginId();
+    }
+    //아디,이메일 두개다 맞는사람있는지 확인
+    @Transactional(readOnly = true)
+    public boolean existsByLoginIdAndEmail(String loginId, String email) {
+        return memberRepository.findByLoginIdAndEmail(loginId, email).isPresent();
     }
 }

@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.controller.member.user;
+package com.example.haksikmokjang.member.signup.user.controller;
 
 
 import com.example.haksikmokjang.global.exception.CustomException;
@@ -7,6 +7,7 @@ import com.example.haksikmokjang.member.signup.user.dto.PasswordUpdateRequest;
 import com.example.haksikmokjang.member.signup.user.service.PasswordService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -50,7 +51,7 @@ public class PasswordUpdateController {
     @PostMapping("/api/view/user/password-update")
     @ResponseBody
     public ResponseEntity<?> updatePassword(
-            @RequestBody PasswordUpdateRequest request,
+            @Valid @RequestBody PasswordUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         try {

@@ -20,7 +20,7 @@
       <h1 class="title">아이디 찾기</h1>
     </div>
 
-    <form class="form-section" action="/api/auth/find-id" method="post">
+    <form class="form-section">
       <input type="hidden" id="emailVerified" name="emailVerified" value="false">
 
       <div class="input-group">
@@ -42,7 +42,7 @@
 
       <div class="error-msg" id="findIdError">이름과 인증번호를 확인해주세요.</div>
 
-      <button type="submit" class="submit-btn">아이디 찾기</button>
+      <button type="button" class="submit-btn" onclick="submitFindId()">아이디 찾기</button>
     </form>
 
     <div class="link-section">
@@ -60,7 +60,7 @@
       return;
     }
 
-    await fetch('/api/auth/email/send', {
+    await fetch('/api/members/find-id/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, purpose: purpose })
@@ -78,10 +78,10 @@
       return;
     }
 
-    const response = await fetch('/api/auth/email/verify', {
+    const response = await fetch('/api/members/find-id/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code, purpose: purpose })
+      body: JSON.stringify({ email: email, code: code })
     });
 
     if (response.ok) {
@@ -94,6 +94,27 @@
       alert('인증번호를 확인해주세요.');
     }
   }
+  async function submitFindId() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const code = document.getElementById('emailCode').value;
+
+    const response = await fetch('/api/members/find-id', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, code: code })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(result.data.message);
+    } else {
+      alert('실패: ' + result.message);
+    }
+  }
+
+
 </script>
 </body>
 </html>

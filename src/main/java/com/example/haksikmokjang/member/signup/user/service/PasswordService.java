@@ -23,8 +23,12 @@ public class PasswordService {
         if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPasswordHash())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+        // 새 비밀번호가 8글자 미만인지 검사
+        if (request.getNewPassword().length() < 8) {
+            throw new CustomException(ErrorCode.PASSWORD_TOO_SHORT);
+        }
 
-        // 2새 비밀번호와 새 비밀번호 확인이 똑같은지 오타 검사
+        // 새 비밀번호와 새 비밀번호 확인이 똑같은지 오타 검사
         if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
@@ -35,4 +39,21 @@ public class PasswordService {
 
         memberRepository.updatePasswordByMemberId(member.getMemberId(), encodedNewPassword);
     }
+    //비밀번호 변경 메서드
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        //  이메일로 회원 찾기
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        //  혹시 기존 비밀번호랑 똑같은 거 쓰려고 하는지 검사
+        if (passwordEncoder.matches(newPassword, member.getPasswordHash())) {
+            throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
+        }
+
+        //  새 비밀번호를 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        // 만들어둔 레포지토리 메서드로 DB 업데이트
+        memberRepository.updatePasswordByMemberId(member.getMemberId(), encodedPassword);
+    }
+
 }

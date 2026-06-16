@@ -50,6 +50,9 @@ public class SecurityConfig {
 
             "/api/terms/**",
 
+            "/api/members/find-id/**",
+            "/api/members/find-pw/**",
+
             "/api/members/check-login-id",
             "/api/members/check-school-email",
             "/api/members/check-nickname",
