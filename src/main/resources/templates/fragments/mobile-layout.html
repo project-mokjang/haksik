@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 공통 헤더 -->
+<header th:fragment="appHeader(title, leftType, rightType)" class="app-header">
+
+    <!-- 왼쪽 -->
+    <button th:if="${leftType == 'back'}"
+            type="button"
+            class="app-header-btn"
+            onclick="history.back()">
+        &lt;
+    </button>
+
+    <button th:if="${leftType == 'menu'}"
+            type="button"
+            class="app-header-btn">
+        ☰
+    </button>
+
+    <div th:if="${leftType == 'none'}" class="app-header-right"></div>
+
+    <!-- 제목 -->
+    <div class="app-header-title" th:text="${title}">제목</div>
+
+    <!-- 오른쪽 -->
+    <button th:if="${rightType == 'alarm'}"
+            type="button"
+            class="app-header-btn">
+        🔔
+    </button>
+
+    <button th:if="${rightType == 'filter'}"
+            type="button"
+            class="app-header-btn header-filter-btn">
+        필터
+    </button>
+
+    <div th:if="${rightType == 'none'}" class="app-header-right"></div>
+</header>
+
+
+<!-- 공통 하단 탭바 -->
+<nav th:fragment="bottomNav(active)" class="bottom-nav">
+    <a th:href="@{/api/view/user/main}"
+       th:classappend="${active == 'home'} ? ' on'">
+        🏠<br>홈
+    </a>
+
+    <a th:href="@{/api/view/user/matching}"
+       th:classappend="${active == 'match'} ? ' on'">
+        💚<br>매칭
+    </a>
+
+    <a th:href="@{/api/view/user/chat}"
+       th:classappend="${active == 'chat'} ? ' on'">
+        💬<br>채팅
+    </a>
+
+    <a th:href="@{/api/view/community}"
+       th:classappend="${active == 'community'} ? ' on'">
+        =3=<br>커뮤니티
+    </a>
+
+    <a th:href="@{/api/view/user/my-page}"
+       th:classappend="${active == 'my'} ? ' on'">
+        👤<br>마이
+    </a>
+</nav>
+
+</body>
+</html>
