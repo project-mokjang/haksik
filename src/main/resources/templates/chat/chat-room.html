@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>채팅방</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
+</head>
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell chat-shell" th:data-chat-room-id="${chatRoomId}">
+
+    <header class="app-header chat-header">
+      <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/chat'">‹</button>
+      <div id="chatRoomTitle" class="app-header-title">채팅방</div>
+      <div class="header-empty"></div>
+    </header>
+
+    <main id="messageList" class="message-list">
+      <!-- JS로 메시지 목록 추가 -->
+    </main>
+
+    <form id="messageForm" class="message-form">
+      <input
+              type="text"
+              id="messageInput"
+              class="message-input"
+              placeholder="메시지를 입력하세요."
+              maxlength="1000"
+              autocomplete="off"
+      >
+      <button type="submit" class="send-button">전송</button>
+    </form>
+
+  </div>
+</div>
+
+<script th:src="@{/js/chat/chat.js}"></script>
+</body>
+</html>

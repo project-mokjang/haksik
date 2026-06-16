@@ -10,8 +10,11 @@ import java.time.LocalDateTime;
 public class ChatMessageResponse {
     private Long chatMessageId;
     private Long senderId;
+    private String senderNickname;
+    private String senderProfileImageUrl;
     private String message;
     private boolean deleted;
     private boolean mine;
+    private int unreadMemberCount;
     private LocalDateTime createdAt;
 }
