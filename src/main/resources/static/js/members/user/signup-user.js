@@ -17,28 +17,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const emailSendBtn = document.getElementById('emailSendBtn');
     const emailVerifyBtn = document.getElementById('emailVerifyBtn');
 
-    loginIdInput.addEventListener('input', function () {
-        loginIdChecked = false;
-    });
+    if (loginIdInput) {
+        loginIdInput.addEventListener('input', function () {
+            loginIdChecked = false;
+            resetDuplicateButton('loginId');
+        });
+    }
 
-    nicknameInput.addEventListener('input', function () {
-        nicknameChecked = false;
-    });
+    if (nicknameInput) {
+        nicknameInput.addEventListener('input', function () {
+            nicknameChecked = false;
+            resetDuplicateButton('nickname');
+        });
+    }
 
-    modalEmailInput.addEventListener('input', resetEmailVerificationState);
+    if (modalEmailInput) {
+        modalEmailInput.addEventListener('input', resetEmailVerificationState);
+    }
 
-    emailModalOpenBtn.addEventListener('click', openEmailModal);
-    emailModalCloseBtn.addEventListener('click', closeEmailModal);
-    emailSendBtn.addEventListener('click', sendEmailCode);
-    emailVerifyBtn.addEventListener('click', verifyEmailCode);
+    if (emailModalOpenBtn) {
+        emailModalOpenBtn.addEventListener('click', openEmailModal);
+    }
 
-    document.querySelectorAll('[data-check-type]').forEach(button => {
+    if (emailModalCloseBtn) {
+        emailModalCloseBtn.addEventListener('click', closeEmailModal);
+    }
+
+    if (emailSendBtn) {
+        emailSendBtn.addEventListener('click', sendEmailCode);
+    }
+
+    if (emailVerifyBtn) {
+        emailVerifyBtn.addEventListener('click', verifyEmailCode);
+    }
+
+    document.querySelectorAll('[data-check-type]').forEach(function (button) {
         button.addEventListener('click', function () {
             checkDuplicate(this.dataset.checkType);
         });
     });
 
-    signupForm.addEventListener('submit', signupUser);
+    if (signupForm) {
+        signupForm.addEventListener('submit', signupUser);
+    }
 });
 
 // 이메일 인증 모달 열기
@@ -64,8 +85,35 @@ function resetEmailVerificationState() {
     document.getElementById('verifiedText').innerText = '';
 
     const verifyBtn = document.getElementById('emailVerifyBtn');
-    verifyBtn.innerText = '확인';
-    verifyBtn.classList.remove('success');
+
+    if (verifyBtn) {
+        verifyBtn.innerText = '확인';
+        verifyBtn.classList.remove('success');
+    }
+}
+
+// 중복확인 버튼 초기화
+function resetDuplicateButton(type) {
+    const button = document.querySelector('[data-check-type="' + type + '"]');
+
+    if (!button) {
+        return;
+    }
+
+    button.innerText = '중복';
+    button.classList.remove('success');
+}
+
+// 중복확인 버튼 완료 처리
+function completeDuplicateButton(type) {
+    const button = document.querySelector('[data-check-type="' + type + '"]');
+
+    if (!button) {
+        return;
+    }
+
+    button.innerText = '완료';
+    button.classList.add('success');
 }
 
 // 응답 body를 JSON으로 변환
@@ -83,6 +131,10 @@ function getErrorMessage(result, fallback) {
         return result.message;
     }
 
+    if (result && result.data && result.data.message) {
+        return result.data.message;
+    }
+
     return fallback;
 }
 
@@ -91,9 +143,12 @@ async function sendEmailCode() {
     const email = document.getElementById('modalEmail').value.trim();
 
     if (!email) {
-        alert('학교 이메일을 입력해주세요.');
+        showToast('학교 이메일을 입력해주세요.', 'error');
         return;
     }
+
+    resetEmailVerificationState();
+    document.getElementById('modalEmail').value = email;
 
     const response = await fetch('/api/auth/email/send', {
         method: 'POST',
@@ -108,12 +163,12 @@ async function sendEmailCode() {
     const result = await safeJson(response);
 
     if (!response.ok || !result || result.success === false) {
-        alert(getErrorMessage(result, '등록된 학교 이메일 도메인이 아니거나 이미 사용 중인 이메일입니다.'));
+        showToast(getErrorMessage(result, '등록된 학교 이메일 도메인이 아니거나 이미 사용 중인 이메일입니다.'), 'error');
         return;
     }
 
     if (!result.data || !result.data.schoolId) {
-        alert('학교 인증 응답 데이터가 올바르지 않습니다.');
+        showToast('학교 인증 응답 데이터가 올바르지 않습니다.', 'error');
         return;
     }
 
@@ -121,7 +176,7 @@ async function sendEmailCode() {
     sentEmail = email;
     verifiedSchoolName = result.data.schoolName;
 
-    alert(`${verifiedSchoolName} 인증번호가 전송되었습니다.`);
+    showToast(verifiedSchoolName + ' 인증번호가 전송되었습니다.', 'success');
 }
 
 // 이메일 인증번호 확인
@@ -131,12 +186,12 @@ async function verifyEmailCode() {
     const schoolId = document.getElementById('schoolId').value;
 
     if (!email || !code) {
-        alert('이메일과 인증번호를 모두 입력해주세요.');
+        showToast('이메일과 인증번호를 모두 입력해주세요.', 'error');
         return;
     }
 
     if (!schoolId || sentEmail !== email) {
-        alert('먼저 현재 이메일로 인증번호 전송을 해주세요.');
+        showToast('먼저 현재 이메일로 인증번호 전송을 해주세요.', 'error');
         return;
     }
 
@@ -154,7 +209,7 @@ async function verifyEmailCode() {
     const result = await safeJson(response);
 
     if (!response.ok || (result && result.success === false)) {
-        alert(getErrorMessage(result, '인증번호를 확인해주세요.'));
+        showToast(getErrorMessage(result, '인증번호를 확인해주세요.'), 'error');
         return;
     }
 
@@ -162,7 +217,7 @@ async function verifyEmailCode() {
     document.getElementById('emailVerified').value = 'true';
 
     document.getElementById('verifiedText').innerText =
-        `${verifiedSchoolName} / ${email} 인증 완료`;
+        verifiedSchoolName + ' / ' + email + ' 인증 완료';
 
     document.getElementById('verifiedBox').classList.add('active');
 
@@ -170,40 +225,47 @@ async function verifyEmailCode() {
     verifyBtn.innerText = '완료';
     verifyBtn.classList.add('success');
 
-    alert('학교 이메일 인증이 완료되었습니다.');
-    closeEmailModal();
+    showToast('학교 이메일 인증이 완료되었습니다.', 'success');
+
+    setTimeout(function () {
+        closeEmailModal();
+    }, 700);
 }
 
 // 아이디/닉네임 중복 확인
 async function checkDuplicate(type) {
     const target = document.getElementById(type);
+
+    if (!target) {
+        showToast('중복 확인 대상을 찾을 수 없습니다.', 'error');
+        return;
+    }
+
     const value = target.value.trim();
 
     if (!value) {
-        alert('값을 입력해주세요.');
+        showToast('값을 입력해주세요.', 'error');
         return;
     }
 
     const url = type === 'loginId'
-        ? `/api/members/check-login-id?loginId=${encodeURIComponent(value)}`
-        : `/api/members/check-nickname?nickname=${encodeURIComponent(value)}`;
+        ? '/api/members/check-login-id?loginId=' + encodeURIComponent(value)
+        : '/api/members/check-nickname?nickname=' + encodeURIComponent(value);
 
     const response = await fetch(url);
     const result = await safeJson(response);
 
     if (!response.ok || !result || result.success === false) {
-        alert(getErrorMessage(result, '중복 확인 중 오류가 발생했습니다.'));
+        showToast(getErrorMessage(result, '중복 확인 중 오류가 발생했습니다.'), 'error');
         return;
     }
 
     if (!result.data || typeof result.data.available !== 'boolean') {
-        alert('중복 확인 응답 데이터가 올바르지 않습니다.');
+        showToast('중복 확인 응답 데이터가 올바르지 않습니다.', 'error');
         return;
     }
 
     if (result.data.available) {
-        alert('사용 가능한 값입니다.');
-
         if (type === 'loginId') {
             loginIdChecked = true;
         }
@@ -211,17 +273,22 @@ async function checkDuplicate(type) {
         if (type === 'nickname') {
             nicknameChecked = true;
         }
-    } else {
-        alert('이미 사용 중입니다.');
 
-        if (type === 'loginId') {
-            loginIdChecked = false;
-        }
-
-        if (type === 'nickname') {
-            nicknameChecked = false;
-        }
+        completeDuplicateButton(type);
+        showToast('사용 가능한 값입니다.', 'success');
+        return;
     }
+
+    if (type === 'loginId') {
+        loginIdChecked = false;
+    }
+
+    if (type === 'nickname') {
+        nicknameChecked = false;
+    }
+
+    resetDuplicateButton(type);
+    showToast('이미 사용 중입니다.', 'error');
 }
 
 // 일반 이용자 회원가입
@@ -241,45 +308,47 @@ async function signupUser(event) {
     const phone = document.getElementById('phone').value.trim();
 
     if (!loginId || !password || !name || !nickname || !department || !birthDate || !gender) {
-        alert('필수 입력값을 모두 입력해주세요.');
+        showToast('필수 입력값을 모두 입력해주세요.', 'error');
         return;
     }
 
     if (!loginIdChecked) {
-        alert('아이디 중복 확인을 해주세요.');
+        showToast('아이디 중복 확인을 해주세요.', 'error');
         return;
     }
 
     if (!nicknameChecked) {
-        alert('닉네임 중복 확인을 해주세요.');
+        showToast('닉네임 중복 확인을 해주세요.', 'error');
         return;
     }
 
     if (document.getElementById('emailVerified').value !== 'true') {
-        alert('학교 이메일 인증을 완료해주세요.');
+        showToast('학교 이메일 인증을 완료해주세요.', 'error');
         return;
     }
 
     if (!schoolId || !schoolEmail) {
-        alert('학교 이메일 인증 정보가 없습니다. 다시 인증해주세요.');
+        showToast('학교 이메일 인증 정보가 없습니다. 다시 인증해주세요.', 'error');
         return;
     }
 
     if (password.length < 8) {
-        alert('비밀번호는 8자 이상이어야 합니다.');
+        showToast('비밀번호는 8자 이상이어야 합니다.', 'error');
         return;
     }
 
     if (password !== passwordConfirm) {
-        alert('비밀번호가 일치하지 않습니다.');
+        showToast('비밀번호가 일치하지 않습니다.', 'error');
         return;
     }
 
     const termsIds = Array.from(document.querySelectorAll('input[name="termsIds"]:checked'))
-        .map(item => Number(item.value));
+        .map(function (item) {
+            return Number(item.value);
+        });
 
     if (termsIds.length === 0) {
-        alert('필수 약관에 동의해주세요.');
+        showToast('필수 약관에 동의해주세요.', 'error');
         return;
     }
 
@@ -308,10 +377,13 @@ async function signupUser(event) {
     const result = await safeJson(response);
 
     if (!response.ok || !result || result.success === false) {
-        alert(getErrorMessage(result, '회원가입에 실패했습니다.'));
+        showToast(getErrorMessage(result, '회원가입에 실패했습니다.'), 'error');
         return;
     }
 
-    alert('회원가입이 완료되었습니다.');
-    location.href = '/api/view/login';
+    showToast('회원가입이 완료되었습니다.', 'success');
+
+    setTimeout(function () {
+        location.href = '/api/view/login';
+    }, 900);
 }

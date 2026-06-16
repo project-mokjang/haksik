@@ -1,120 +1,98 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>학식목장 - 아이디 찾기</title>
-  <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
-  <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/members/auth.css}">
 </head>
-<body class="auth-body">
-<div class="mobile-container">
-  <div class="status-bar">
-    <span>17:41</span>
-    <span>🌾 학식목장</span>
-  </div>
 
-  <div class="content">
-    <div class="header-section">
-      <div class="logo">🐑</div>
-      <h1 class="title">아이디 찾기</h1>
-    </div>
+<body class="app-body">
 
-    <form class="form-section">
-      <input type="hidden" id="emailVerified" name="emailVerified" value="false">
+<div class="app-page">
+  <div class="app-shell">
 
-      <div class="input-group">
-        <label class="input-label" for="name">이름</label>
-        <input type="text" class="input-field" id="name" name="name" placeholder="가입한 이름을 입력해주세요" required />
+    <header th:replace="~{fragments/mobile-layout :: appHeader('아이디 찾기', 'back', 'none')}"></header>
+
+    <main class="app-scroll find-account-scroll">
+
+      <section class="find-account-header">
+        <div class="find-account-logo">🐑</div>
+        <h1 class="find-account-title">아이디 찾기</h1>
+        <p class="find-account-desc">
+          가입한 이름과 이메일 인증을 통해<br>
+          아이디를 확인할 수 있습니다.
+        </p>
+      </section>
+
+      <form class="find-account-form" id="findIdForm">
+
+        <input type="hidden" id="emailVerified" name="emailVerified" value="false">
+
+        <section class="auth-section">
+
+          <div class="auth-field">
+            <label for="name">이름</label>
+            <input type="text"
+                   id="name"
+                   name="name"
+                   placeholder="가입한 이름을 입력해주세요"
+                   required>
+          </div>
+
+          <div class="auth-field">
+            <label for="email">이메일 인증</label>
+
+            <div class="auth-input-row">
+              <input type="email"
+                     id="email"
+                     name="email"
+                     placeholder="가입한 이메일을 입력해주세요"
+                     required>
+
+              <button type="button" class="auth-action-btn" id="sendCodeBtn">
+                전송
+              </button>
+            </div>
+
+            <div class="auth-input-row auth-code-row">
+              <input type="text"
+                     id="emailCode"
+                     name="emailCode"
+                     placeholder="인증번호 6자리 입력">
+
+              <button type="button" class="auth-action-btn" id="verifyBtn">
+                확인
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-error-msg" id="findIdError">
+            이름과 인증번호를 확인해주세요.
+          </div>
+
+          <button type="submit" class="auth-submit-btn">
+            아이디 찾기
+          </button>
+
+        </section>
+
+      </form>
+
+      <div class="find-account-link-section">
+        <a th:href="@{/api/view/login}">로그인으로 돌아가기</a>
       </div>
 
-      <div class="input-group">
-        <label class="input-label" for="email">이메일 인증</label>
-        <div class="input-row">
-          <input type="email" class="input-field" id="email" name="email" placeholder="가입한 이메일을 입력해주세요" required />
-          <button type="button" class="action-btn" onclick="sendFindCode('FIND_ID')">전송</button>
-        </div>
-        <div class="input-row" style="margin-top: 4px;">
-          <input type="text" class="input-field" id="emailCode" name="emailCode" placeholder="인증번호 6자리 입력" />
-          <button type="button" class="action-btn" id="verifyBtn" onclick="verifyFindCode('FIND_ID')">확인</button>
-        </div>
-      </div>
+    </main>
 
-      <div class="error-msg" id="findIdError">이름과 인증번호를 확인해주세요.</div>
-
-      <button type="button" class="submit-btn" onclick="submitFindId()">아이디 찾기</button>
-    </form>
-
-    <div class="link-section">
-      <a href="/api/view/login" th:href="@{/api/view/login}">로그인으로 돌아가기</a>
-    </div>
   </div>
 </div>
 
-<script src="/js/auth.js" th:src="@{/js/auth.js}"></script>
-<script>
-  async function sendFindCode(purpose) {
-    const email = document.getElementById('email').value;
-    if (!email) {
-      alert('이메일을 먼저 입력해주세요.');
-      return;
-    }
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/find-id.js}"></script>
 
-    await fetch('/api/members/find-id/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, purpose: purpose })
-    });
-
-    alert('인증번호가 전송되었습니다.');
-  }
-
-  async function verifyFindCode(purpose) {
-    const email = document.getElementById('email').value;
-    const code = document.getElementById('emailCode').value;
-
-    if (!email || !code) {
-      alert('이메일과 인증번호를 모두 입력해주세요.');
-      return;
-    }
-
-    const response = await fetch('/api/members/find-id/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code })
-    });
-
-    if (response.ok) {
-      document.getElementById('emailVerified').value = 'true';
-      const verifyBtn = document.getElementById('verifyBtn');
-      verifyBtn.innerText = '완료';
-      verifyBtn.classList.add('success');
-      alert('인증이 완료되었습니다.');
-    } else {
-      alert('인증번호를 확인해주세요.');
-    }
-  }
-  async function submitFindId() {
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const code = document.getElementById('emailCode').value;
-
-    const response = await fetch('/api/members/find-id', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, code: code })
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      alert(result.data.message);
-    } else {
-      alert('실패: ' + result.message);
-    }
-  }
-
-
-</script>
 </body>
 </html>
