@@ -48,7 +48,8 @@ public class PostService {
             PostCategory category,
             String keyword,
             Long lastPostId,
-            int pageSize) {
+            int pageSize,
+            String sort) {
 
         Long schoolId = null;
 
@@ -59,7 +60,7 @@ public class PostService {
             schoolId = userProfile.getSchool().getSchoolId();
         }
 
-        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize, loginId);
+        return postRepository.searchPosts(boardType, schoolId, category, keyword, lastPostId, pageSize, loginId,sort);
     }
 
     @Transactional
@@ -142,7 +143,6 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-        post.addViewCount();
 
         //게시글 작성자 닉네임 세팅 (익명 방어)
         String authorName = "익명";
@@ -225,5 +225,12 @@ public class PostService {
 
         // 상태값을 DELETED로 변경 (Soft Delete)
         post.deletePost();
+    }
+    // 조회수
+    @Transactional
+    public void increaseViewCount(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        post.addViewCount();
     }
 }
