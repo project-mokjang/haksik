@@ -70,10 +70,46 @@
 
         <nav th:replace="~{fragments/mobile-layout :: bottomNav('home')}"></nav>
 
+
+        <button id="chatbotFab" class="chatbot-fab">
+            🐏 AI 도우미
+        </button>
+
+        <div id="chatbotModal" class="chatbot-modal" style="display: none;">
+            <div class="chatbot-header">
+                <span>🐑 학식목장 AI 도우미</span>
+                <button id="closeChatbot">✖</button>
+            </div>
+
+            <div class="chatbot-body" id="chatbotBody">
+                <div class="msg bot-msg">
+                    안녕하세요! 저는 학식목장 AI 도우미 입니다! 궁금한 점을 말씀해주세요.<br>
+                    분류별 질문을 찾으시려면 아래 버튼을 눌러보세요.
+                </div>
+
+                <div class="chip-container">
+                    <button class="chip" onclick="sendChipMessage('학식메이트 매칭은 어떻게 해?')">학식메이트 매칭</button>
+                    <button class="chip" onclick="sendChipMessage('내 정보 관리 어디서 해??')">내 정보 관리</button>
+                    <button class="chip" onclick="sendChipMessage('매칭 추천해줘')">매칭 추천 받기 </button>
+                    <button class="chip" onclick="sendChipMessage('비매너 유저 신고 방법 알려줘')">비매너 유저 신고 방법</button>
+                    <button class="chip" onclick="sendChipMessage('오늘의 음식 추천해줘')">오늘의 음식 추천</button>
+                    <button class="chip" onclick="sendChipMessage('오늘의 운세 알려줘')">오늘의 운세</button>
+                </div>
+            </div>
+
+            <div class="chatbot-footer">
+                <input type="text" id="chatInput" placeholder="질문을 입력해주세요..." onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()">전송</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script th:src="@{/js/user-main.js}"></script>
+
+
+
 
 </body>
 </html>
