@@ -46,6 +46,13 @@ public enum ErrorCode {
     MATCHING_WAITING_ALREADY_EXISTS(HttpStatus.CONFLICT, "MATCHING_003", "이미 매칭 대기 중입니다."),
     INVALID_MATCHING_MODE(HttpStatus.BAD_REQUEST, "MATCHING_004", "올바르지 않은 매칭 모드입니다."),
     MATCHING_WAITING_EXPIRED(HttpStatus.BAD_REQUEST, "MATCHING_005", "매칭 대기 시간이 만료되었습니다."),
+    MATCHING_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCHING_006", "매칭 대상을 찾을 수 없습니다."),
+    MATCHING_SELF_REQUEST(HttpStatus.BAD_REQUEST, "MATCHING_007", "자기 자신에게는 매칭을 신청할 수 없습니다."),
+    MATCHING_ALREADY_REQUESTED(HttpStatus.CONFLICT, "MATCHING_008", "이미 진행 중인 매칭 요청이 있습니다."),
+    MATCHING_TARGET_NOT_WAITING(HttpStatus.BAD_REQUEST, "MATCHING_009", "상대방이 매칭 대기 상태가 아닙니다."),
+    MATCHING_NOT_FOUND(HttpStatus.NOT_FOUND, "MATCHING_010", "매칭 요청을 찾을 수 없습니다."),
+    MATCHING_NOT_RECEIVER(HttpStatus.FORBIDDEN, "MATCHING_011", "해당 매칭 요청을 처리할 권한이 없습니다."),
+    MATCHING_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "MATCHING_012", "이미 처리된 매칭 요청입니다."),
 
     //Location
     LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "LOCATION_001", "위치 정보를 찾을 수 없습니다."),

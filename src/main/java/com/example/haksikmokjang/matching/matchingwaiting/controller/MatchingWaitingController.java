@@ -65,15 +65,15 @@ public class MatchingWaitingController {
 
     @PatchMapping("/location")
     public ApiResponse<Void> updateLocation(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody LocationUpdateRequest request
     ) {
-        // 테스트 회원 ID
-        Long memberId = 1L;
+        Long memberId = userDetails.getMemberId();
 
         // 위치 갱신
         matchingWaitingService.updateLocation(memberId, request);
 
         // 성공 응답
-        return ApiResponse.success("위치가 갱신되었습니다.", null);
+        return ApiResponse.success("현재 위치가 갱신되었습니다.", null);
     }
 }
