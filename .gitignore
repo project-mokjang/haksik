@@ -37,4 +37,5 @@ out/
 .vscode/
 
 # secret files
-application-secret.properties
+/application-secret.properties
+/src/main/resources/application-oauth.properties
