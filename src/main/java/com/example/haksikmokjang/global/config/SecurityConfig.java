@@ -78,6 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/view/owner/**").hasRole("OWNER")
                         .requestMatchers("/api/view/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/matching/**").hasRole("USER")
+                        .requestMatchers("/api/chatbot/**").hasRole("USER")
 
                         .anyRequest().authenticated()
                 )
