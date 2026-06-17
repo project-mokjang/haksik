@@ -14,6 +14,8 @@ public class ChatMessageResponse {
     private String senderProfileImageUrl;
     private String message;
     private boolean deleted;
+    private boolean edited;
+    private LocalDateTime editedAt;
     private boolean mine;
     private int unreadMemberCount;
     private LocalDateTime createdAt;

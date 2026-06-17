@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "CHAT_MESSAGE")
 @Getter
@@ -37,11 +39,27 @@ public class ChatMessage extends BaseEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
 
+    // 메시지 수정 여부
+    @Column(name = "is_edited", nullable = false)
+    private boolean edited;
+
+    // 메시지 수정 시간
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
+
     public ChatMessage(ChatRoom chatRoom, Member sender, String message) {
         this.chatRoom = chatRoom;
         this.sender = sender;
         this.message = message;
         this.deleted = false;
+        this.edited = false;
+    }
+
+    // 메시지 수정
+    public void updateMessage(String message) {
+        this.message = message;
+        this.edited = true;
+        this.editedAt = LocalDateTime.now();
     }
 
     // 메시지 숨김 처리

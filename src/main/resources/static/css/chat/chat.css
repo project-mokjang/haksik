@@ -1,106 +1,101 @@
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* 채팅 목록 */
 .chat-list-scroll {
-    padding: 24px;
+    padding: 20px;
 }
 
-.chat-page-title {
-    margin-bottom: 18px;
+.chat-tab-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
 }
 
-.chat-page-title h2 {
-    font-size: 24px;
-    font-weight: 900;
-    color: var(--forest);
-    letter-spacing: -0.05em;
-    margin-bottom: 6px;
-}
-
-.chat-page-title p {
-    font-size: 13px;
+.chat-tab {
+    height: 36px;
+    border: none;
+    border-radius: 12px;
+    background-color: transparent;
     color: var(--muted);
-    line-height: 1.45;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.chat-tab.active {
+    background-color: var(--green);
+    color: white;
 }
 
 .chat-room-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .chat-room-item {
     width: 100%;
-    padding: 17px 16px;
-    border: 2px solid var(--line);
-    border-radius: 24px;
-    background: linear-gradient(135deg, var(--paper) 0%, var(--card) 100%);
-    box-shadow: var(--shadow);
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--paper);
     cursor: pointer;
     text-align: left;
 
     display: flex;
     justify-content: space-between;
-    gap: 12px;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-.chat-room-item:hover {
-    transform: translateY(-2px);
-    border-color: var(--green);
-    box-shadow: 0 14px 34px rgba(55, 42, 26, 0.14);
+    gap: 10px;
 }
 
 .chat-room-name {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     color: var(--forest);
-    letter-spacing: -0.03em;
 
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     gap: 6px;
 }
 
 .last-message {
-    margin-top: 7px;
-    max-width: 230px;
+    margin-top: 6px;
+    max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
     font-size: 13px;
     color: var(--muted);
-    line-height: 1.4;
 }
 
 .chat-room-right {
-    min-width: 48px;
-
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 9px;
+    gap: 7px;
 }
 
 .last-time {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     white-space: nowrap;
 }
 
 .unread-count {
-    min-width: 22px;
-    height: 22px;
-    padding: 0 7px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
     border-radius: 999px;
     background-color: var(--red);
     color: white;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
 
     display: flex;
@@ -109,37 +104,24 @@
 }
 
 .room-type {
-    padding: 3px 7px;
+    padding: 3px 6px;
     border-radius: 999px;
     background-color: var(--ivory2);
     color: var(--green);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 900;
 }
 
 .empty-message {
-    margin-top: 110px;
+    margin-top: 100px;
     text-align: center;
     color: var(--muted);
+    font-size: 14px;
 }
 
 .empty-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 14px;
-    border-radius: 22px;
-    background-color: var(--card);
-    border: 2px solid var(--line);
-    font-size: 28px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.empty-message p {
-    font-size: 14px;
-    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 32px;
 }
 
 /* 채팅방 내부 */
@@ -151,16 +133,16 @@
 .message-list {
     flex: 1;
     min-height: 0;
-    padding: 18px 16px 84px;
+    padding: 16px 14px 84px;
     overflow-y: auto;
-    background: linear-gradient(180deg, #fffdf8 0%, #fff7e8 100%);
+    background-color: var(--ivory);
 
     display: flex;
     flex-direction: column;
     gap: 5px;
 
-    -ms-overflow-style: none;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .message-list::-webkit-scrollbar {
@@ -184,26 +166,21 @@
     max-width: 90%;
 }
 
-/* 닉네임 */
 .sender-name {
-    margin-bottom: 5px;
-    font-size: 14px;
+    margin-bottom: 4px;
+    font-size: 13px;
     font-weight: 900;
     color: #000000;
-    letter-spacing: -0.03em;
 }
 
 .message-row.mine .sender-name {
-    align-self: flex-end;
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 .message-row.other .sender-name {
-    align-self: flex-start;
     margin-left: 2px;
 }
 
-/* 상대 메시지 프로필 */
 .other-message-wrap {
     display: flex;
     align-items: flex-start;
@@ -228,7 +205,6 @@
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--line);
-    background-color: var(--card);
 }
 
 .profile-default {
@@ -247,58 +223,70 @@
     visibility: hidden;
 }
 
-/* 메시지 */
 .message-line {
     display: flex;
     align-items: flex-end;
-    gap: 6px;
+    gap: 5px;
+}
+
+.message-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-row.mine .message-bubble-wrap {
+    align-items: flex-end;
+}
+
+.message-row.other .message-bubble-wrap {
+    align-items: flex-start;
 }
 
 .message-bubble {
     max-width: 230px;
     padding: 10px 13px;
-    border-radius: 18px;
+    border-radius: 16px;
     font-size: 14px;
     line-height: 1.45;
     word-break: break-word;
-    letter-spacing: -0.02em;
 }
 
 .mine .message-bubble {
     background-color: var(--green);
     color: white;
-    border-bottom-right-radius: 7px;
+    border-bottom-right-radius: 6px;
 }
 
 .other .message-bubble {
     background-color: var(--paper);
     color: var(--forest);
     border: 1px solid var(--line);
-    border-bottom-left-radius: 7px;
+    border-bottom-left-radius: 6px;
+}
+
+.message-bubble.editable {
+    cursor: context-menu;
+}
+
+.edited-text {
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--muted);
 }
 
 .message-info {
-    min-width: 38px;
+    min-width: 36px;
     font-size: 10px;
     color: var(--muted);
     line-height: 1.25;
-
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 .message-row.mine .message-info {
-    align-items: flex-end;
-}
-
-.message-row.other .message-info {
-    align-items: flex-start;
+    text-align: right;
 }
 
 .message-unread {
     color: var(--soil);
-    font-size: 11px;
     font-weight: 900;
 }
 
@@ -306,7 +294,7 @@
 .message-form {
     height: 66px;
     padding: 10px 12px;
-    background-color: rgba(255, 253, 248, 0.98);
+    background-color: var(--paper);
     border-top: 1px solid var(--line);
 
     display: flex;
@@ -321,22 +309,17 @@
 .message-input {
     flex: 1;
     height: 46px;
-    border: 2px solid var(--line);
+    border: 1px solid var(--line);
     border-radius: 999px;
-    padding: 0 16px;
+    padding: 0 15px;
     background-color: var(--card);
     color: var(--forest);
     font-size: 14px;
     outline: none;
 }
 
-.message-input:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 0 4px rgba(18, 107, 79, 0.08);
-}
-
 .send-button {
-    width: 62px;
+    width: 58px;
     height: 46px;
     border: none;
     border-radius: 999px;
@@ -345,21 +328,274 @@
     font-size: 14px;
     font-weight: 900;
     cursor: pointer;
-    transition: background-color 0.18s ease, transform 0.18s ease;
 }
 
-.send-button:hover {
-    background-color: var(--green2);
-    transform: translateY(-1px);
+/* 수정 중 안내 */
+.edit-notice {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 70px;
+    z-index: 130;
+
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* 모바일 */
+.edit-notice button {
+    border: none;
+    background: none;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* 상단 메뉴 */
+.chat-menu-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-menu {
+    position: absolute;
+    top: 58px;
+    right: 18px;
+    z-index: 100;
+    width: 145px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.chat-menu button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.chat-menu button:hover {
+    background-color: var(--card);
+}
+
+.end-chat-menu-button {
+    color: var(--red) !important;
+}
+
+/* 참여자 모달 */
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    background-color: rgba(23, 63, 53, 0.25);
+
+    display: flex;
+    align-items: flex-end;
+}
+
+.member-modal {
+    width: 100%;
+    max-height: 65%;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+    background-color: var(--paper);
+    overflow-y: auto;
+}
+
+.member-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.member-modal-header h3 {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.member-modal-header button {
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
+}
+
+.member-profile-image,
+.member-profile-default {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.member-profile-image {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-profile-default {
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-nickname {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.member-role {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.member-leader-badge {
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+.member-my-badge {
+    margin-left: 4px;
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+/* 메시지 수정/삭제 메뉴 */
+.message-menu {
+    position: absolute;
+    z-index: 300;
+    width: 110px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.message-menu button {
+    width: 100%;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.message-menu button:hover {
+    background-color: var(--card);
+}
+
+.message-menu .delete-message-button {
+    color: var(--red);
+}
+
+/* 종료 상태 */
+.message-form.closed {
+    opacity: 0.6;
+}
+
+.message-form.closed .message-input {
+    background-color: var(--ivory2);
+}
+
+.message-form.closed .send-button {
+    background-color: var(--muted);
+    cursor: not-allowed;
+}
+
 @media (max-width: 420px) {
     .message-bubble {
         max-width: 220px;
     }
 
     .last-message {
-        max-width: 210px;
+        max-width: 200px;
     }
+}
+
+.room-status {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.room-status.closed {
+    background-color: var(--ivory2);
+    color: var(--muted);
+}
+
+/* 숨김 처리 항상 맨 아래에 있어야 함 */
+.hidden,
+.modal-backdrop.hidden,
+.chat-menu.hidden,
+.message-menu.hidden,
+.edit-notice.hidden {
+    display: none !important;
 }
