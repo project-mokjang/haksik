@@ -2,7 +2,7 @@
 
 /* 프로필 카드 */
 .profile-card {
-    background-color: var(--paper);
+    background: linear-gradient(135deg, #fffdf8 0%, var(--card) 55%, #edf6ed 100%);
     border: 2px solid var(--line);
     border-radius: 24px;
     padding: 22px 20px;

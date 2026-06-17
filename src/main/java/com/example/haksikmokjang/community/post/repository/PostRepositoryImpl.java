@@ -5,6 +5,7 @@ import com.example.haksikmokjang.community.post.domain.BoardType;
 import com.example.haksikmokjang.community.post.domain.PostCategory;
 import com.example.haksikmokjang.community.post.domain.PostStatus;
 import com.example.haksikmokjang.community.post.dto.PostListResponse;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -33,8 +34,11 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
             String keyword,
             Long lastPostId,
             int pageSize,
-            String loginId) {
+            String loginId,
+            String sort) {
 
+        OrderSpecifier<?> orderSpecifier =
+                "POPULAR".equals(sort) ? post.viewCount.desc() : post.createdAt.desc();
         return queryFactory
                 .select(Projections.constructor(PostListResponse.class,
                         post.postId,
@@ -60,7 +64,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                         eqCategory(category),              // 말머리(자유, 맛집 등) 필터
                         containsKeyword(keyword)           // 제목/내용 검색 필터
                 )
-                .orderBy(post.postId.desc()) // 최신 글이 맨 위로 오도록 정렬
+                .orderBy(orderSpecifier, post.postId.desc())
                 .limit(pageSize)             // 딱 요청한 개수(예: 10개)만 가져옴
                 .fetch();
     }

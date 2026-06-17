@@ -31,21 +31,16 @@ public class PostController {
             @RequestParam(required = false) PostCategory category,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long lastPostId,
-            @RequestParam(defaultValue = "10") int size) { // 기본적으로 10개씩 가져옴
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "LATEST") String sort) { // 기본적으로 10개씩 가져옴
 
-        // 로그인한 유저의 ID 추출 (시큐리티 설정에 따라 username이 loginId로 들어갑니다)
         String loginId = authentication.getName();
+        if (boardType == null) boardType = BoardType.GLOBAL;
 
-        // 파라미터가 비어있으면 기본적으로 전국구(GLOBAL) 게시판을 띄웁니다.
-        if (boardType == null) {
-            boardType = BoardType.GLOBAL;
-        }
-
-        // 비즈니스 로직 호출
+        //비즈니스 로직 호출 시 맨 끝에 sort 토스
         List<PostListResponse> response = postService.getPostList(
-                loginId, boardType, category, keyword, lastPostId, size);
+                loginId, boardType, category, keyword, lastPostId, size, sort);
 
-        // JSON 형태로 깔끔하게 리턴
         return ResponseEntity.ok(response);
     }
 
@@ -65,9 +60,33 @@ public class PostController {
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponse> getPostDetail(
             @PathVariable Long postId,
-            Authentication authentication) { //시큐리티 로그인 정보 받아오기 추가
+            Authentication authentication,
+            jakarta.servlet.http.HttpServletRequest request,
+            jakarta.servlet.http.HttpServletResponse response) {
 
         String loginId = authentication.getName();
+
+        // 🚨 쿠키를 뜯어서 오늘 이 글을 본 적 있는지 팩트 체크
+        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+        boolean isViewed = false;
+        if (cookies != null) {
+            for (jakarta.servlet.http.Cookie cookie : cookies) {
+                if (cookie.getName().equals("postView_" + postId)) {
+                    isViewed = true;
+                    break;
+                }
+            }
+        }
+
+        // 🚨 본 적이 없다면(isViewed == false) 조회수를 올리고, 24시간짜리 쿠키 발급
+        if (!isViewed) {
+            postService.increaseViewCount(postId);
+            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("postView_" + postId, "true");
+            cookie.setPath("/api/posts/" + postId);
+            cookie.setMaxAge(60 * 60 * 24); // 24시간 유지
+            response.addCookie(cookie);
+        }
+
         return ResponseEntity.ok(postService.getPostDetail(postId, loginId));
     }
 

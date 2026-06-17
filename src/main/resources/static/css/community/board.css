@@ -15,8 +15,8 @@
 
 .board-filter-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px; /* 3개가 들어가야 하니 간격을 8px -> 6px로 살짝 줄임 */
     margin-bottom: 10px;
 }
 
@@ -33,9 +33,10 @@
     border-radius: 14px;
     background-color: var(--card);
     color: var(--forest);
-    font-size: 14px;
+    font-size: 13px; /* 14px -> 13px로 축소 */
     font-weight: 700;
-    padding: 0 13px;
+    padding: 0 8px; /* 13px -> 8px로 좌우 여백 축소 */
+    letter-spacing: -0.5px; /* 자간을 살짝 좁혀서 글자 짤림 방지 */
     outline: none;
 }
 
