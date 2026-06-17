@@ -6,18 +6,15 @@ import com.example.haksikmokjang.chat.domain.ChatRoomType;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Builder
-public class ChatRoomResponse {
+public class ChatRoomDetailResponse {
     private Long chatRoomId;
     private ChatRoomType roomType;
     private ChatMatchingMode matchingMode;
     private ChatRoomStatus roomStatus;
     private String roomName;
     private String displayRoomName;
-    private String lastMessage;
-    private LocalDateTime lastMessageAt;
-    private int unreadCount;
+    private boolean leader;
+    private boolean canEndChat;
 }

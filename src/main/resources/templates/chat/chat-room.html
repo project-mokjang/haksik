@@ -16,12 +16,20 @@
     <header class="app-header">
       <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/chat'">‹</button>
       <div id="chatRoomTitle" class="app-header-title">채팅방</div>
-      <div class="app-header-right"></div>
+
+      <div class="app-header-right">
+        <button type="button" class="chat-menu-button" onclick="toggleChatMenu()">⋮</button>
+      </div>
     </header>
 
     <main id="messageList" class="message-list">
       <!-- JS로 메시지 목록 추가 -->
     </main>
+
+    <div id="editNotice" class="edit-notice hidden">
+      <span>메시지 수정 중</span>
+      <button type="button" onclick="cancelEditMessage()">취소</button>
+    </div>
 
     <form id="messageForm" class="message-form">
       <input
@@ -35,6 +43,29 @@
       <button type="submit" class="send-button">전송</button>
     </form>
 
+    <div id="chatMenu" class="chat-menu hidden">
+      <button type="button" onclick="openMemberModal()">참여자 보기</button>
+      <button type="button" id="endChatButton" class="end-chat-menu-button hidden" onclick="endChatRoom()">
+        채팅 끝내기
+      </button>
+    </div>
+
+    <div id="memberModal" class="modal-backdrop hidden">
+      <div class="member-modal">
+        <div class="member-modal-header">
+          <h3>참여자 목록</h3>
+          <button type="button" onclick="closeMemberModal()">×</button>
+        </div>
+
+        <div id="memberList" class="member-list">
+          <!-- JS로 참여자 목록 추가 -->
+        </div>
+      </div>
+    </div>
+    <div id="messageMenu" class="message-menu hidden">
+      <button type="button" onclick="prepareEditMessage()">수정</button>
+      <button type="button" class="delete-message-button" onclick="deleteSelectedMessage()">삭제</button>
+    </div>
   </div>
 </div>
 

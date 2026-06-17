@@ -24,6 +24,10 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "room_type", nullable = false, length = 20)
     private ChatRoomType roomType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "matching_mode", nullable = false, length = 20)
+    private ChatMatchingMode matchingMode;
+
     // 그룹 채팅방 이름
     // 1:1 채팅방은 화면에서 상대방 닉네임으로 표시한다
     @Column(name = "room_name", nullable = false, length = 100)
@@ -42,8 +46,9 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "last_message_at")
     private LocalDateTime lastMessageAt;
 
-    public ChatRoom(ChatRoomType roomType, String roomName) {
+    public ChatRoom(ChatRoomType roomType, ChatMatchingMode matchingMode, String roomName) {
         this.roomType = roomType;
+        this.matchingMode = matchingMode;
         this.roomName = roomName;
         this.roomStatus = ChatRoomStatus.ACTIVE;
     }
