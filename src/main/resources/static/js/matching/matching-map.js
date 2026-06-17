@@ -14,7 +14,8 @@ const map = new naver.maps.Map('matchingMap', {
 
 // 마커 배열
 const markerList = [];
-
+// 현재 열린 정보창
+let openedInfoWindow = null;
 
 
 // 마커 제거
@@ -54,11 +55,22 @@ function showSelectedProfile(markerData) {
 
     message.textContent = markerData.message || '매칭 대기 중입니다.';
 
-    requestBtn.disabled = markerData.mine;
-    requestBtn.textContent = markerData.mine ? '내 위치' : '매칭 신청';
+    requestBtn.disabled = false;
+    requestBtn.textContent = markerData.mine ? '현재 위치 갱신' : '매칭 신청';
+    requestBtn.dataset.mine = markerData.mine;
 
     requestBtn.dataset.waitingId = markerData.waitingId;
     requestBtn.dataset.userProfileId = markerData.userProfileId;
+}
+
+// 알림 출력
+function notify(message, type = 'success') {
+    if (typeof showToast === 'function') {
+        showToast(message, type);
+        return;
+    }
+
+    alert(message);
 }
 
 // 매칭 신청 버튼 클릭
@@ -66,16 +78,70 @@ function requestMatching() {
     const requestBtn = document.getElementById('requestBtn');
 
     const waitingId = requestBtn.dataset.waitingId;
-    const userProfileId = requestBtn.dataset.userProfileId;
+    const mine = requestBtn.dataset.mine === 'true';
 
-    if (!waitingId || requestBtn.disabled) {
+    if (mine) {
+        refreshMyLocation(true);
         return;
     }
 
-    console.log('선택한 waitingId:', waitingId);
-    console.log('선택한 userProfileId:', userProfileId);
+    if (!waitingId) {
+        notify('매칭 대상을 선택해주세요.', 'error');
+        return;
+    }
 
-    alert(`매칭 신청 대상 waitingId: ${waitingId}`);
+    fetch('/api/matching/request', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            targetWaitingId: Number(waitingId)
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log('매칭 신청 응답:', result);
+
+            if (!result.success) {
+                notify(result.message, 'error');
+                return;
+            }
+
+            notify('매칭 신청이 완료되었습니다.', 'success');
+        })
+        .catch(error => {
+            console.error(error);
+            notify('매칭 신청 중 오류가 발생했습니다.', 'error');
+        });
+}
+
+// 정보창 매칭 신청
+function requestMatchingByWaitingId(waitingId) {
+    fetch('/api/matching/request', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            targetWaitingId: Number(waitingId)
+        })
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log('매칭 신청 응답:', result);
+
+            if (!result.success) {
+                notify(result.message, 'error');
+                return;
+            }
+
+            notify('매칭 신청이 완료되었습니다.', 'success');
+        })
+        .catch(error => {
+            console.error(error);
+            notify('매칭 신청 중 오류가 발생했습니다.', 'error');
+        });
 }
 
 // 정보창 생성
@@ -86,8 +152,8 @@ function createInfoWindow(markerData) {
                 <strong>${markerData.nickname}</strong>
                 <p>${markerData.message ?? ''}</p>
                 ${markerData.mine
-            ? '<button disabled>내 위치</button>'
-            : '<button type="button">매칭 요청</button>'}
+            ? '<button type="button" disabled>내 위치</button>'
+            : `<button type="button" onclick="requestMatchingByWaitingId(${markerData.waitingId})">매칭 요청</button>`}
             </div>
         `
     });
@@ -114,7 +180,23 @@ function drawMarkers(markers) {
         const infoWindow = createInfoWindow(markerData);
 
         naver.maps.Event.addListener(marker, 'click', function () {
+            if (openedInfoWindow === infoWindow) {
+                infoWindow.close();
+                openedInfoWindow = null;
+
+                const profile = document.getElementById('selectedProfile');
+                profile.classList.remove('active');
+
+                return;
+            }
+
+            if (openedInfoWindow) {
+                openedInfoWindow.close();
+            }
+
             infoWindow.open(map, marker);
+            openedInfoWindow = infoWindow;
+
             showSelectedProfile(markerData);
         });
 
@@ -145,6 +227,61 @@ function loadMatchingMarkers() {
         });
 }
 
+// 현재 위치 갱신
+function refreshMyLocation(moveCenter = true) {
+    if (!navigator.geolocation) {
+        alert('현재 브라우저에서 위치 기능을 지원하지 않습니다.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const accuracyRangeM = Math.round(position.coords.accuracy);
+
+            console.log('브라우저 현재 위치:', latitude, longitude, accuracyRangeM);
+
+            fetch('/api/matching/waiting/location', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    latitude: latitude,
+                    longitude: longitude,
+                    accuracyRangeM: accuracyRangeM
+                })
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.success) {
+                        alert(result.message);
+                        return;
+                    }
+
+                    if (moveCenter) {
+                        map.setCenter(new naver.maps.LatLng(latitude, longitude));
+                    }
+
+                    loadMatchingMarkers();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('현재 위치 갱신 중 오류가 발생했습니다.');
+                });
+        },
+        function () {
+            alert('현재 위치 권한이 필요합니다.');
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
+    );
+}
+
 // 초기 실행
 setCurrentModeTitle();
-loadMatchingMarkers();
+refreshMyLocation(true);
