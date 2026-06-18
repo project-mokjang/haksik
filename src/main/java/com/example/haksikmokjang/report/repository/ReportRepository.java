@@ -1,7 +1,7 @@
-package com.example.haksikmokjang.community.report.repository;
+package com.example.haksikmokjang.report.repository;
 
 
-import com.example.haksikmokjang.community.report.domain.Report;
+import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.member.core.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 

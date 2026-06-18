@@ -4,6 +4,7 @@
 
 /* 채팅방 내부 */
 .chat-shell {
+    position: relative;
     display: flex;
     flex-direction: column;
 }
@@ -35,6 +36,7 @@
     border-top: 1px solid var(--line);
 
     display: flex;
+    align-items: center;
     gap: 8px;
 
     position: absolute;
@@ -43,21 +45,38 @@
     bottom: 0;
 }
 
+/* + 버튼 영역 */
 .chat-plus-area {
     position: relative;
     flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* 카톡 느낌의 동그란 + 버튼 */
 .chat-plus-button {
     width: 42px;
-    height: 46px;
+    height: 42px;
+    min-width: 42px;
     border: none;
-    border-radius: 999px;
+    border-radius: 50%;
     background-color: var(--card);
     color: var(--forest);
     font-size: 26px;
     font-weight: 900;
+    line-height: 1;
     cursor: pointer;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-plus-button:hover {
+    background-color: var(--ivory2);
 }
 
 .chat-plus-button:disabled {
@@ -65,44 +84,83 @@
     cursor: not-allowed;
 }
 
+/* + 메뉴 */
 .chat-plus-menu {
     position: absolute;
     left: 0;
-    bottom: 54px;
+    bottom: 52px;
     z-index: 150;
-    width: 140px;
-    padding: 6px;
+
+    padding: 12px 14px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 20px;
     background-color: var(--paper);
     box-shadow: var(--shadow);
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
 }
 
+/* + 메뉴 아이템 */
 .chat-plus-menu-item {
-    width: 100%;
-    height: 38px;
+    width: 54px;
     border: none;
-    border-radius: 10px;
     background-color: transparent;
     color: var(--forest);
-    font-size: 13px;
-    font-weight: 800;
-    text-align: left;
-    padding: 0 10px;
     cursor: pointer;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
 
-.chat-plus-menu-item:hover {
-    background-color: var(--card);
+.chat-plus-menu-item:hover .plus-menu-icon {
+    background-color: var(--ivory2);
 }
 
 .chat-plus-menu-item.danger {
     color: var(--red);
 }
 
+/* + 메뉴 아이콘 */
+.plus-menu-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 19px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-plus-menu-item.danger .plus-menu-icon {
+    background-color: #fff1f1;
+    color: var(--red);
+}
+
+/* + 메뉴 글자 */
+.plus-menu-text {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--forest);
+}
+
+.chat-plus-menu-item.danger .plus-menu-text {
+    color: var(--red);
+}
+
+/* 메시지 입력창 */
 .message-input {
     flex: 1;
-    height: 46px;
+    height: 42px;
+    min-width: 0;
     border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0 15px;
@@ -110,11 +168,21 @@
     color: var(--forest);
     font-size: 14px;
     outline: none;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
 }
 
+.message-input:focus {
+    border-color: var(--green);
+}
+
+/* 전송 버튼 */
 .send-button {
     width: 58px;
-    height: 46px;
+    height: 42px;
+    min-width: 58px;
     border: none;
     border-radius: 999px;
     background-color: var(--green);
@@ -122,6 +190,15 @@
     font-size: 14px;
     font-weight: 900;
     cursor: pointer;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-button:hover {
+    opacity: 0.9;
 }
 
 /* 수정 중 안내 */
@@ -199,6 +276,77 @@
 
 .end-chat-menu-button {
     color: var(--red) !important;
+}
+
+/* 화면 안쪽 상단 확인창 */
+.top-confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgba(23, 63, 53, 0.18);
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 14px 12px 0;
+    box-sizing: border-box;
+}
+
+.top-confirm-box {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    padding: 16px 16px 14px;
+    box-sizing: border-box;
+}
+
+.top-confirm-title {
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.top-confirm-message {
+    color: var(--forest);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+.top-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.top-confirm-button {
+    min-width: 64px;
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    padding: 0 16px;
+}
+
+.top-confirm-button.cancel {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.top-confirm-button.ok {
+    background-color: var(--green);
+    color: white;
+}
+
+.top-confirm-button.cancel:hover,
+.top-confirm-button.ok:hover {
+    opacity: 0.9;
 }
 
 /* 참여자 모달 */
@@ -312,6 +460,126 @@
     color: var(--green);
 }
 
+/* 참여자 신고 버튼 */
+.member-report-button {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background-color: var(--paper);
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.member-report-button:hover {
+    background-color: var(--ivory2);
+}
+
+/* 신고 모달 */
+.report-modal {
+    width: 100%;
+    max-height: 75%;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+    background-color: var(--paper);
+    overflow-y: auto;
+}
+
+.report-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.report-modal-header h3 {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.report-modal-header button {
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.report-reason-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-reason-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.report-reason-item input {
+    accent-color: var(--green);
+}
+
+.custom-report-reason {
+    width: 100%;
+    min-height: 82px;
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 700;
+    resize: none;
+    outline: none;
+}
+
+.custom-report-reason:focus {
+    border-color: var(--green);
+    background-color: var(--paper);
+}
+
+.report-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.report-actions button {
+    flex: 1;
+    height: 42px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.report-cancel-button {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.report-submit-button {
+    background-color: var(--red);
+    color: white;
+}
+
 /* 종료 상태 */
 .message-form.closed {
     opacity: 0.6;
@@ -332,6 +600,7 @@
 .chat-menu.hidden,
 .chat-plus-menu.hidden,
 .edit-notice.hidden,
+.top-confirm-backdrop.hidden,
 .hidden {
     display: none !important;
 }

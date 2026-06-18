@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.community.report.domain;
+package com.example.haksikmokjang.report.domain;
 
 public enum ReportStatus {
     PENDING,    // 대기 중 (기본값)

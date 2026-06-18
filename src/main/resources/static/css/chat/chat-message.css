@@ -159,11 +159,11 @@
     object-fit: cover;
 }
 
-/* 메시지 수정/삭제 메뉴 */
+/* 메시지 수정/삭제/신고 메뉴 */
 .message-menu {
     position: absolute;
     z-index: 300;
-    width: 110px;
+    width: 120px;
     padding: 6px;
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -190,6 +190,10 @@
 }
 
 .message-menu .delete-message-button {
+    color: var(--red);
+}
+
+.message-menu .report-message-button {
     color: var(--red);
 }
 

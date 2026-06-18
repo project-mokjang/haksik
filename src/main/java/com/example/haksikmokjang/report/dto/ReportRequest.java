@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.community.report.dto;
+package com.example.haksikmokjang.report.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -71,7 +71,7 @@ function loadMessages() {
                     ? `<div class="edited-text">수정됨</div>`
                     : "";
 
-                const messageMenuEvent = message.mine && !message.deleted
+                const messageMenuEvent = !message.deleted
                     ? `
                         oncontextmenu="openMessageMenu(event, ${message.chatMessageId})"
                         ontouchstart="startLongPress(event, ${message.chatMessageId})"
@@ -80,7 +80,7 @@ function loadMessages() {
                       `
                     : "";
 
-                const editableClass = message.mine && !message.deleted
+                const editableClass = !message.deleted
                     ? "editable"
                     : "";
 
@@ -120,7 +120,7 @@ function loadMessages() {
                                     ${senderName}
                                     <div class="message-line">
                                         <div class="message-bubble-wrap">
-                                            <div class="message-bubble ${imageBubbleClass}">
+                                            <div class="message-bubble ${editableClass} ${imageBubbleClass}" ${messageMenuEvent}>
                                                 ${messageContent}
                                             </div>
                                             ${editedText}
@@ -202,17 +202,41 @@ function openMessageMenu(event, chatMessageId) {
     const selectedMessage = messageCache[selectedMessageId];
     const messageMenu = document.getElementById("messageMenu");
     const editMessageMenuButton = document.getElementById("editMessageMenuButton");
+    const deleteMessageMenuButton = document.getElementById("deleteMessageMenuButton");
+    const reportMessageMenuButton = document.getElementById("reportMessageMenuButton");
     const chatShell = document.querySelector(".chat-shell");
 
     if (!selectedMessage || !messageMenu || !chatShell) {
         return;
     }
 
-    if (editMessageMenuButton) {
-        if (isImageMessage(selectedMessage)) {
+    if (selectedMessage.mine) {
+        if (editMessageMenuButton) {
+            if (isImageMessage(selectedMessage)) {
+                editMessageMenuButton.classList.add("hidden");
+            } else {
+                editMessageMenuButton.classList.remove("hidden");
+            }
+        }
+
+        if (deleteMessageMenuButton) {
+            deleteMessageMenuButton.classList.remove("hidden");
+        }
+
+        if (reportMessageMenuButton) {
+            reportMessageMenuButton.classList.add("hidden");
+        }
+    } else {
+        if (editMessageMenuButton) {
             editMessageMenuButton.classList.add("hidden");
-        } else {
-            editMessageMenuButton.classList.remove("hidden");
+        }
+
+        if (deleteMessageMenuButton) {
+            deleteMessageMenuButton.classList.add("hidden");
+        }
+
+        if (reportMessageMenuButton) {
+            reportMessageMenuButton.classList.remove("hidden");
         }
     }
 
