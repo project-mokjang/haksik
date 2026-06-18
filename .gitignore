@@ -39,3 +39,4 @@ out/
 # secret files
 /application-secret.properties
 /src/main/resources/application-oauth.properties
+/src/main/resources/application-secret.properties

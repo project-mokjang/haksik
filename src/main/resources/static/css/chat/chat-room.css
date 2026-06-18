@@ -1,0 +1,337 @@
+.hidden {
+    display: none !important;
+}
+
+/* 채팅방 내부 */
+.chat-shell {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-list {
+    flex: 1;
+    min-height: 0;
+    padding: 16px 14px 84px;
+    overflow-y: auto;
+    background-color: var(--ivory);
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.message-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* 입력창 */
+.message-form {
+    height: 66px;
+    padding: 10px 12px;
+    background-color: var(--paper);
+    border-top: 1px solid var(--line);
+
+    display: flex;
+    gap: 8px;
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.chat-plus-area {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.chat-plus-button {
+    width: 42px;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-plus-button:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.chat-plus-menu {
+    position: absolute;
+    left: 0;
+    bottom: 54px;
+    z-index: 150;
+    width: 140px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.chat-plus-menu-item {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.chat-plus-menu-item:hover {
+    background-color: var(--card);
+}
+
+.chat-plus-menu-item.danger {
+    color: var(--red);
+}
+
+.message-input {
+    flex: 1;
+    height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0 15px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    outline: none;
+}
+
+.send-button {
+    width: 58px;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* 수정 중 안내 */
+.edit-notice {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 70px;
+    z-index: 130;
+
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-notice button {
+    border: none;
+    background: none;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* 상단 메뉴 */
+.chat-menu-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-menu {
+    position: absolute;
+    top: 58px;
+    right: 18px;
+    z-index: 100;
+    width: 145px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.chat-menu button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.chat-menu button:hover {
+    background-color: var(--card);
+}
+
+.end-chat-menu-button {
+    color: var(--red) !important;
+}
+
+/* 참여자 모달 */
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    background-color: rgba(23, 63, 53, 0.25);
+
+    display: flex;
+    align-items: flex-end;
+}
+
+.member-modal {
+    width: 100%;
+    max-height: 65%;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+    background-color: var(--paper);
+    overflow-y: auto;
+}
+
+.member-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.member-modal-header h3 {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.member-modal-header button {
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
+}
+
+.member-profile-image,
+.member-profile-default {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.member-profile-image {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-profile-default {
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-nickname {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.member-role {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.member-leader-badge {
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+.member-my-badge {
+    margin-left: 4px;
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+/* 종료 상태 */
+.message-form.closed {
+    opacity: 0.6;
+}
+
+.message-form.closed .message-input {
+    background-color: var(--ivory2);
+}
+
+.message-form.closed .send-button,
+.message-form.closed .chat-plus-button {
+    background-color: var(--muted);
+    cursor: not-allowed;
+}
+
+/* 숨김 처리 */
+.modal-backdrop.hidden,
+.chat-menu.hidden,
+.chat-plus-menu.hidden,
+.edit-notice.hidden,
+.hidden {
+    display: none !important;
+}
