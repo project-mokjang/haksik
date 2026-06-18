@@ -1,6 +1,7 @@
 package com.example.haksikmokjang.matching.matchingwaiting.dto;
 
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,4 +21,8 @@ public class MatchingWaitingEnterRequest {
     private Integer accuracyRangeM;
 
     private String message;
+
+    private MatchingType matchingType;
+
+    private Integer maxParticipants;
 }

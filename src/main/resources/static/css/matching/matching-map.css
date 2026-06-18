@@ -24,6 +24,142 @@
     border-color: var(--green);
 }
 
+.current-mode-card {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.current-mode-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--green);
+    margin-bottom: 6px;
+}
+
+.current-mode-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--forest);
+    margin-bottom: 6px;
+}
+
+.current-mode-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+/* 학식 모드 선택 카드 */
+.meal-mode-select-card {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+/* 학식 모드 선택 라벨 */
+.meal-mode-label {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--green);
+    margin-bottom: 6px;
+}
+
+/* 학식 모드 선택 설명 */
+.meal-mode-desc {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+/* 학식 모드 선택 버튼 목록 */
+.meal-mode-option-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+/* 학식 모드 선택 버튼 */
+.meal-mode-option {
+    width: 100%;
+    border: 2px solid var(--line);
+    border-radius: 20px;
+    background-color: var(--ivory2);
+    padding: 15px 16px;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* 학식 모드 선택 버튼 제목 */
+.meal-mode-option-title {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+/* 학식 모드 선택 버튼 설명 */
+.meal-mode-option-desc {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* 학식 모드 선택 비활성화 */
+.meal-mode-option:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* 현재 대기 상태 박스 */
+.current-waiting-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 18px;
+    background-color: var(--green);
+    color: white;
+}
+
+/* 현재 대기 상태 라벨 */
+.current-waiting-label {
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    opacity: 0.85;
+}
+
+/* 현재 대기 상태 제목 */
+.current-waiting-title {
+    font-size: 14px;
+    font-weight: 900;
+}
+
+/* 현재 매칭 취소 버튼 */
+.current-waiting-cancel-btn {
+    min-width: 108px;
+    height: 38px;
+    border: none;
+    border-radius: 14px;
+    background-color: white;
+    color: var(--forest);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
 .map-box {
     width: 100%;
     height: 390px;
@@ -40,27 +176,72 @@
     height: 100%;
 }
 
-.my-marker,
-.user-marker {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+/* 내 마커 */
+.my-marker {
+    min-width: 32px;
+    height: 28px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background-color: var(--green);
     color: white;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+/* 1:1 마커 */
+.one-to-one-marker {
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background-color: var(--red);
+    color: white;
     border: 3px solid white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
 }
 
-.my-marker {
+/* 단체 학식 마커 */
+.group-meal-marker {
+    min-width: 44px;
+    height: 28px;
+    padding: 0 9px;
+    border-radius: 999px;
     background-color: var(--green);
+    color: white;
+    border: 3px solid white;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
 }
 
+/* 기존 user-marker 호환 */
 .user-marker {
+    min-width: 34px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 999px;
     background-color: var(--soil);
+    color: white;
+    border: 3px solid white;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .info-window {
@@ -103,6 +284,7 @@
 .selected-profile.active {
     display: block;
 }
+
 .header-filter-btn {
     font-size: 12px;
 }
@@ -114,6 +296,17 @@
     padding: 20px;
     margin-bottom: 18px;
     box-shadow: var(--shadow);
+}
+
+.selected-type {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .match-profile-title {
@@ -158,31 +351,67 @@
     cursor: not-allowed;
 }
 
-.current-mode-card {
-    background-color: var(--paper);
-    border: 2px solid var(--line);
+/* 단체 학식 모달 배경 */
+.group-meal-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* 단체 학식 모달 박스 */
+.group-meal-modal-box {
+    width: 100%;
+    max-width: 340px;
+    padding: 20px;
     border-radius: 24px;
-    padding: 18px 20px;
-    margin-bottom: 16px;
+    background-color: var(--paper);
     box-shadow: var(--shadow);
 }
 
-.current-mode-label {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--green);
-    margin-bottom: 6px;
-}
-
-.current-mode-title {
-    font-size: 20px;
+/* 단체 학식 모달 제목 */
+.group-meal-modal-title {
+    margin-bottom: 16px;
+    font-size: 18px;
     font-weight: 900;
     color: var(--forest);
-    margin-bottom: 6px;
 }
 
-.current-mode-desc {
+/* 단체 학식 입력 라벨 */
+.group-meal-label {
+    display: block;
+    margin: 12px 0 6px;
     font-size: 13px;
-    color: var(--muted);
-    line-height: 1.45;
+    font-weight: 800;
+    color: var(--forest);
+}
+
+/* 단체 학식 입력창 */
+.group-meal-input,
+.group-meal-textarea {
+    width: 100%;
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    background-color: white;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* 단체 학식 메시지 입력창 */
+.group-meal-textarea {
+    min-height: 90px;
+    resize: none;
+}
+
+/* 단체 학식 모달 버튼 영역 */
+.group-meal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
 }

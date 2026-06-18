@@ -44,6 +44,50 @@
                 </div>
             </section>
 
+            <!-- 현재 매칭 대기 카드 -->
+            <section class="current-matching-card" id="currentMatchingCard" style="display: none;">
+                <div class="current-matching-label">현재 매칭 대기 중</div>
+
+                <div class="current-matching-title" id="currentMatchingTitle">
+                    매칭 대기 중입니다.
+                </div>
+
+                <p class="current-matching-desc" id="currentMatchingDesc">
+                    현재 선택한 매칭이 유지되고 있습니다.
+                </p>
+
+                <div class="current-matching-actions">
+                    <button type="button" class="ui-btn sub" id="goCurrentMatchingMapBtn">
+                        지도 보기
+                    </button>
+                    <button type="button" class="ui-btn danger" id="cancelCurrentMatchingBtn">
+                        현재 매칭 취소
+                    </button>
+                </div>
+            </section>
+
+            <!-- 내가 보낸 매칭 요청 카드 -->
+            <section class="sent-request-card" id="sentRequestCard" style="display: none;">
+                <div class="sent-request-label">보낸 매칭 요청</div>
+
+                <div class="sent-request-title" id="sentRequestTitle">
+                    매칭 신청 중입니다.
+                </div>
+
+                <p class="sent-request-desc" id="sentRequestDesc">
+                    상대방의 수락을 기다리고 있습니다.
+                </p>
+
+                <div class="sent-request-actions">
+                    <button type="button" class="ui-btn sub" id="goSentRequestMapBtn">
+                        지도 보기
+                    </button>
+                    <button type="button" class="ui-btn danger" id="cancelSentRequestBtn">
+                        신청 취소
+                    </button>
+                </div>
+            </section>
+
             <div class="main-section-title">매칭 모드</div>
 
             <article class="mode-card" onclick="enterMatchingMode('MEAL')">

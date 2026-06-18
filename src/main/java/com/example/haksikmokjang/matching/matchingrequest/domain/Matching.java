@@ -2,6 +2,8 @@ package com.example.haksikmokjang.matching.matchingrequest.domain;
 
 import com.example.haksikmokjang.global.entity.BaseEntity;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +27,10 @@ public class Matching extends BaseEntity {
     @Column(name = "mode", nullable = false, length = 20)
     private MatchingMode mode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "matching_type", nullable = false , length = 30)
+    private MatchingType matchingType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_profile_id", nullable = false)
     private UserProfile requester;
@@ -32,6 +38,10 @@ public class Matching extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_profile_id", nullable = false)
     private UserProfile target;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_waiting_id", nullable = false)
+    private MatchingWaiting targetWaiting;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

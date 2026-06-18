@@ -30,12 +30,80 @@
                 </p>
             </div>
 
+            <!-- 학식 모드 선택 -->
+            <section class="meal-mode-select-card" id="mealModeSelectCard">
+                <div class="meal-mode-label">학식 모드 선택</div>
+                <p class="meal-mode-desc">
+                    한 번 선택하면 취소하기 전까지 다른 방식으로 변경할 수 없습니다.
+                </p>
+
+                <div class="meal-mode-option-list">
+                    <button type="button" class="meal-mode-option" id="oneToOneWaitingBtn">
+                        <span class="meal-mode-option-title">🙋 손들기</span>
+                        <span class="meal-mode-option-desc">1:1로 같이 먹을 사람을 찾습니다.</span>
+                    </button>
+
+                    <button type="button" class="meal-mode-option" id="groupMealWaitingBtn">
+                        <span class="meal-mode-option-title">👥 단체방 만들기</span>
+                        <span class="meal-mode-option-desc">여러 명이 함께 먹을 단체방을 만듭니다.</span>
+                    </button>
+                </div>
+
+                <div class="current-waiting-box" id="currentWaitingBox" style="display: none;">
+                    <div>
+                        <div class="current-waiting-label">현재 대기 상태</div>
+                        <div class="current-waiting-title" id="currentWaitingTitle">대기 중</div>
+                    </div>
+
+                    <button type="button" class="current-waiting-cancel-btn" id="cancelCurrentWaitingBtn">
+                        현재 매칭 취소
+                    </button>
+                </div>
+            </section>
+
+            <!-- 단체 학식 모집 모달 -->
+            <div class="group-meal-modal" id="groupMealModal" style="display: none;">
+                <div class="group-meal-modal-box">
+                    <div class="group-meal-modal-title">단체방 만들기</div>
+
+                    <label class="group-meal-label" for="groupMealMaxParticipants">
+                        모집 인원
+                    </label>
+                    <input
+                            type="number"
+                            id="groupMealMaxParticipants"
+                            class="group-meal-input"
+                            min="3"
+                            placeholder="예: 4, 10, 20">
+
+                    <label class="group-meal-label" for="groupMealMessage">
+                        모집 메시지
+                    </label>
+                    <textarea
+                            id="groupMealMessage"
+                            class="group-meal-textarea"
+                            placeholder="같이 학식 먹을 사람 구해요"></textarea>
+
+                    <div class="group-meal-actions">
+                        <button type="button" class="match-btn sub" id="closeGroupMealModalBtn">
+                            취소
+                        </button>
+                        <button type="button" class="match-btn" id="createGroupMealBtn">
+                            만들기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="map-box">
                 <div id="matchingMap"></div>
             </div>
 
             <article id="selectedProfile" class="match-profile-card selected-profile">
+                <div class="selected-type" id="selectedType">매칭</div>
+
                 <div class="match-profile-title" id="selectedNickname">상대 정보</div>
+
                 <p class="match-profile-desc" id="selectedMessage">
                     마커를 선택하면 상대 정보가 표시됩니다.
                 </p>
