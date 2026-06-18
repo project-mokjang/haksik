@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.community.report.domain;
+package com.example.haksikmokjang.report.domain;
 import com.example.haksikmokjang.member.core.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

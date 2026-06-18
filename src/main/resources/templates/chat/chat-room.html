@@ -42,15 +42,18 @@
 
         <div id="chatPlusMenu" class="chat-plus-menu hidden">
           <button type="button" id="sendImageMenuButton" class="chat-plus-menu-item">
-            사진 보내기
+            <span class="plus-menu-icon">🖼️</span>
+            <span class="plus-menu-text">사진</span>
           </button>
 
           <button type="button" id="sendFormMenuButton" class="chat-plus-menu-item">
-            폼 보내기
+            <span class="plus-menu-icon">📋</span>
+            <span class="plus-menu-text">폼</span>
           </button>
 
-          <button type="button" id="endChatPlusButton" class="chat-plus-menu-item danger hidden">
-            채팅 끝내기
+          <button type="button" id="endChatPlusButton" class="chat-plus-menu-item danger">
+            <span class="plus-menu-icon">🚪</span>
+            <span class="plus-menu-text">종료</span>
           </button>
         </div>
       </div>
@@ -95,9 +98,57 @@
       </div>
     </div>
 
+    <div id="reportModal" class="modal-backdrop hidden">
+      <div class="report-modal">
+        <div class="report-modal-header">
+          <h3>신고하기</h3>
+          <button type="button" onclick="closeReportModal()">×</button>
+        </div>
+
+        <div class="report-reason-list">
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="욕설" onchange="handleReportReasonChange()">
+            <span>욕설</span>
+          </label>
+
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="비매너" onchange="handleReportReasonChange()">
+            <span>비매너</span>
+          </label>
+
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="불쾌한 내용" onchange="handleReportReasonChange()">
+            <span>불쾌한 내용</span>
+          </label>
+
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="스팸" onchange="handleReportReasonChange()">
+            <span>스팸</span>
+          </label>
+
+          <label class="report-reason-item">
+            <input type="radio" name="reportReason" value="기타" onchange="handleReportReasonChange()">
+            <span>기타</span>
+          </label>
+        </div>
+
+        <textarea
+                id="customReportReason"
+                class="custom-report-reason hidden"
+                placeholder="신고 사유를 입력해 주세요."
+                maxlength="100"></textarea>
+
+        <div class="report-actions">
+          <button type="button" class="report-cancel-button" onclick="closeReportModal()">취소</button>
+          <button type="button" class="report-submit-button" onclick="submitReport()">신고</button>
+        </div>
+      </div>
+    </div>
+
     <div id="messageMenu" class="message-menu hidden">
       <button type="button" id="editMessageMenuButton" onclick="prepareEditMessage()">수정</button>
-      <button type="button" class="delete-message-button" onclick="deleteSelectedMessage()">삭제</button>
+      <button type="button" id="deleteMessageMenuButton" class="delete-message-button" onclick="deleteSelectedMessage()">삭제</button>
+      <button type="button" id="reportMessageMenuButton" class="report-message-button hidden" onclick="openMessageReportModal()">신고</button>
     </div>
   </div>
 </div>
