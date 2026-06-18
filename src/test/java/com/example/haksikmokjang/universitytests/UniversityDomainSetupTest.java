@@ -21,13 +21,13 @@ public class UniversityDomainSetupTest {
     @Commit
     @DisplayName("팀원 로컬 DB 동기화용: 전국 대학교 도메인 150+개 주입")
     void insertSchoolDomains() {
-        // 1. 이미 데이터가 있으면 중복 삽입 방지 (근손실 방지)
+        //이미 데이터가 있으면 중복 삽입 방지
         if (schoolRepository.count() > 2) {
             System.out.println("✅ 이미 대학교 도메인 데이터가 존재합니다. 주입을 생략합니다.");
             return;
         }
 
-        // 2. 150개의 데이터를 2차원 배열로 압축 세팅 (하드코딩 방지)
+        //150개의 데이터를 2차원 배열로 압축 세팅 (하드코딩 방지)
         String[][] domainData = {
                 {"아주대학교", "ajou.ac.kr"}, {"국립안동대학교", "andong.ac.kr"}, {"안양대학교", "anyang.ac.kr"},
                 {"아신대학교", "acts.ac.kr"}, {"백석대학교", "bu.ac.kr"}, {"부산교육대학교", "bnue.ac.kr"},

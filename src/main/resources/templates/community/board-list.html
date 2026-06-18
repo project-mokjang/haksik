@@ -22,9 +22,20 @@
 
       <div class="app-header-title">커뮤니티</div>
 
-      <button type="button" class="app-header-btn" id="writePostBtn">
-        ✏️
-      </button>
+      <div class="header-actions">
+        <div class="header-bell-wrap">
+          <button type="button" class="bell-btn" onclick="toggleNoti(event)">🔔</button>
+          <div class="bell-badge" id="bellBadge"></div>
+
+          <div class="noti-dropdown" id="notiDropdown" onclick="event.stopPropagation()">
+            <div class="noti-header">알림</div>
+            <ul class="noti-list" id="notiList">
+              <li class="noti-empty">알림을 불러오는 중...</li>
+            </ul>
+          </div>
+        </div>
+        <button type="button" class="app-header-btn" id="writePostBtn">✏️</button>
+      </div>
     </header>
 
     <main class="app-scroll has-bottom-nav board-list-scroll">
