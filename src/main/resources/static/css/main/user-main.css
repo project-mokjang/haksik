@@ -264,3 +264,39 @@
     cursor: pointer;
     font-weight: bold;
 }
+
+.received-request-card {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.received-request-label {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--green);
+}
+
+.received-request-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.received-request-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.received-request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}

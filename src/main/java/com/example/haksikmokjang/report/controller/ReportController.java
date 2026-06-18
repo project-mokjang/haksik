@@ -1,6 +1,6 @@
-package com.example.haksikmokjang.community.report.controller;
-import com.example.haksikmokjang.community.report.dto.ReportRequest;
-import com.example.haksikmokjang.community.report.service.ReportService;
+package com.example.haksikmokjang.report.controller;
+import com.example.haksikmokjang.report.dto.ReportRequest;
+import com.example.haksikmokjang.report.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

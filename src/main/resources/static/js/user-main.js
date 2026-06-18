@@ -136,3 +136,152 @@ async function sendMessage() {
     }
 }
 
+// 매칭 성사를 위한 임시 알림 카드
+let currentReceivedMatchingId = null;
+
+// 알림 출력
+function notify(message, type = 'success') {
+    if (typeof showToast === 'function') {
+        showToast(message, type);
+        return;
+    }
+
+    console.log(message);
+}
+
+// 받은 매칭 요청 조회
+function loadReceivedRequests() {
+    fetch('/api/matching/request/received')
+        .then(response => response.json())
+        .then(result => {
+            console.log('받은 매칭 요청:', result);
+
+            if (!result.success) {
+                hideReceivedRequestCard();
+                return;
+            }
+
+            const requests = result.data;
+
+            if (!requests || requests.length === 0) {
+                hideReceivedRequestCard();
+                return;
+            }
+
+            showReceivedRequestCard(requests[0]);
+        })
+        .catch(error => {
+            console.error('받은 매칭 요청 조회 실패:', error);
+        });
+}
+
+// 받은 요청 카드 표시
+function showReceivedRequestCard(request) {
+    const card = document.getElementById('receivedRequestCard');
+    const nickname = document.getElementById('receivedRequesterNickname');
+    const modeText = document.getElementById('receivedRequestMode');
+
+    if (!card || !nickname || !modeText) {
+        return;
+    }
+
+    currentReceivedMatchingId = request.matchingId;
+
+    nickname.textContent = request.requesterNickname;
+
+    if (request.mode === 'MEAL') {
+        modeText.textContent = '학식메이트 요청이 도착했습니다.';
+    } else if (request.mode === 'BLIND_DATE') {
+        modeText.textContent = '소개팅 매칭 요청이 도착했습니다.';
+    } else if (request.mode === 'GROUP') {
+        modeText.textContent = '과팅 매칭 요청이 도착했습니다.';
+    } else {
+        modeText.textContent = '매칭 요청이 도착했습니다.';
+    }
+
+    card.style.display = 'block';
+}
+
+// 받은 요청 카드 숨김
+function hideReceivedRequestCard() {
+    const card = document.getElementById('receivedRequestCard');
+
+    currentReceivedMatchingId = null;
+
+    if (card) {
+        card.style.display = 'none';
+    }
+}
+
+// 매칭 요청 수락
+function acceptReceivedMatching() {
+    if (!currentReceivedMatchingId) {
+        notify('처리할 매칭 요청이 없습니다.', 'error');
+        return;
+    }
+
+    fetch(`/api/matching/request/${currentReceivedMatchingId}/accept`, {
+        method: 'PATCH'
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log('매칭 수락 응답:', result);
+
+            if (!result.success) {
+                notify(result.message, 'error');
+                return;
+            }
+
+            notify('매칭 요청을 수락했습니다.', 'success');
+            hideReceivedRequestCard();
+
+            // 채팅방 연결 후 수정
+            // location.href = `/api/view/user/chat-room/${result.data.chatRoomId}`;
+        })
+        .catch(error => {
+            console.error(error);
+            notify('매칭 수락 중 오류가 발생했습니다.', 'error');
+        });
+}
+
+// 매칭 요청 거절
+function rejectReceivedMatching() {
+    if (!currentReceivedMatchingId) {
+        notify('처리할 매칭 요청이 없습니다.', 'error');
+        return;
+    }
+
+    fetch(`/api/matching/request/${currentReceivedMatchingId}/reject`, {
+        method: 'PATCH'
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log('매칭 거절 응답:', result);
+
+            if (!result.success) {
+                notify(result.message, 'error');
+                return;
+            }
+
+            notify('매칭 요청을 거절했습니다.', 'success');
+            hideReceivedRequestCard();
+            loadReceivedRequests();
+        })
+        .catch(error => {
+            console.error(error);
+            notify('매칭 거절 중 오류가 발생했습니다.', 'error');
+        });
+}
+
+// 초기 실행
+document.getElementById('acceptMatchingBtn')
+    ?.addEventListener('click', acceptReceivedMatching);
+
+document.getElementById('rejectMatchingBtn')
+    ?.addEventListener('click', rejectReceivedMatching);
+
+loadReceivedRequests();
+
+// 알림 구현 전 임시 확인
+setInterval(loadReceivedRequests, 10000);
+

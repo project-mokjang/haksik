@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.community.report.service;
+package com.example.haksikmokjang.report.service;
 
 import com.example.haksikmokjang.community.comment.domain.Comment;
 import com.example.haksikmokjang.community.comment.repository.CommentRepository;
@@ -8,9 +8,9 @@ import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
-import com.example.haksikmokjang.community.report.domain.Report;
-import com.example.haksikmokjang.community.report.dto.ReportRequest;
-import com.example.haksikmokjang.community.report.repository.ReportRepository;
+import com.example.haksikmokjang.report.domain.Report;
+import com.example.haksikmokjang.report.dto.ReportRequest;
+import com.example.haksikmokjang.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

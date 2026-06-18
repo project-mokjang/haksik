@@ -26,6 +26,24 @@
                 </p>
             </section>
 
+            <!-- 받은 매칭 요청 카드 -->
+            <section class="received-request-card" id="receivedRequestCard" style="display: none;">
+                <div class="received-request-label">새 매칭 요청</div>
+
+                <div class="received-request-title">
+                    <span id="receivedRequesterNickname">상대</span>님이 매칭을 신청했습니다.
+                </div>
+
+                <p class="received-request-desc" id="receivedRequestMode">
+                    매칭 요청이 도착했습니다.
+                </p>
+
+                <div class="received-request-actions">
+                    <button type="button" class="ui-btn sub" id="rejectMatchingBtn">거절</button>
+                    <button type="button" class="ui-btn" id="acceptMatchingBtn">수락</button>
+                </div>
+            </section>
+
             <div class="main-section-title">매칭 모드</div>
 
             <article class="mode-card" onclick="enterMatchingMode('MEAL')">
