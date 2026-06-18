@@ -6,7 +6,8 @@
 
   <link rel="stylesheet" th:href="@{/css/base.css}">
   <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-  <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-room.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-message.css}">
 </head>
 <body class="app-body">
 
@@ -16,14 +17,52 @@
     <header class="app-header">
       <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/chat'">‹</button>
       <div id="chatRoomTitle" class="app-header-title">채팅방</div>
-      <div class="app-header-right"></div>
+
+      <div class="app-header-right">
+        <button type="button" class="chat-menu-button" onclick="toggleChatMenu()">⋮</button>
+      </div>
     </header>
 
     <main id="messageList" class="message-list">
       <!-- JS로 메시지 목록 추가 -->
     </main>
 
+    <div id="editNotice" class="edit-notice hidden">
+      <span>메시지 수정 중</span>
+      <button type="button" onclick="cancelEditMessage()">취소</button>
+    </div>
+
     <form id="messageForm" class="message-form">
+
+      <!-- + 버튼 영역 -->
+      <div class="chat-plus-area">
+        <button type="button" id="chatPlusButton" class="chat-plus-button">
+          +
+        </button>
+
+        <div id="chatPlusMenu" class="chat-plus-menu hidden">
+          <button type="button" id="sendImageMenuButton" class="chat-plus-menu-item">
+            사진 보내기
+          </button>
+
+          <button type="button" id="sendFormMenuButton" class="chat-plus-menu-item">
+            폼 보내기
+          </button>
+
+          <button type="button" id="endChatPlusButton" class="chat-plus-menu-item danger hidden">
+            채팅 끝내기
+          </button>
+        </div>
+      </div>
+
+      <!-- 실제 파일 input은 숨김 처리 -->
+      <input
+              type="file"
+              id="chatImageInput"
+              accept="image/*"
+              class="hidden"
+      >
+
       <input
               type="text"
               id="messageInput"
@@ -32,12 +71,38 @@
               maxlength="1000"
               autocomplete="off"
       >
-      <button type="submit" class="send-button">전송</button>
+
+      <button type="submit" id="sendButton" class="send-button">전송</button>
     </form>
 
+    <div id="chatMenu" class="chat-menu hidden">
+      <button type="button" onclick="openMemberModal()">참여자 보기</button>
+      <button type="button" id="endChatButton" class="end-chat-menu-button hidden" onclick="endChatRoom()">
+        채팅 끝내기
+      </button>
+    </div>
+
+    <div id="memberModal" class="modal-backdrop hidden">
+      <div class="member-modal">
+        <div class="member-modal-header">
+          <h3>참여자 목록</h3>
+          <button type="button" onclick="closeMemberModal()">×</button>
+        </div>
+
+        <div id="memberList" class="member-list">
+          <!-- JS로 참여자 목록 추가 -->
+        </div>
+      </div>
+    </div>
+
+    <div id="messageMenu" class="message-menu hidden">
+      <button type="button" id="editMessageMenuButton" onclick="prepareEditMessage()">수정</button>
+      <button type="button" class="delete-message-button" onclick="deleteSelectedMessage()">삭제</button>
+    </div>
   </div>
 </div>
 
-<script th:src="@{/js/chat/chat.js}"></script>
+<script th:src="@{/js/chat/chat-message.js}"></script>
+<script th:src="@{/js/chat/chat-room.js}"></script>
 </body>
 </html>

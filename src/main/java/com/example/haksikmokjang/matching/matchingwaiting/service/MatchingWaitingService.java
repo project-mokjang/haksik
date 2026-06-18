@@ -161,7 +161,10 @@ import java.util.Objects;
 
         // 위치 정보 조회
         MemberLocation location = memberLocationRepository.findByUserProfile(userProfile)
-                .orElseThrow(() -> new CustomException(ErrorCode.LOCATION_NOT_FOUND));
+                .orElseGet(() -> MemberLocation.builder()
+                        .userProfile(userProfile)
+                        .locationPublicYn("Y")
+                        .build());
 
         // 현재 위치 갱신
         location.updateLocation(
@@ -169,5 +172,7 @@ import java.util.Objects;
                 request.getLongitude(),
                 request.getAccuracyRangeM()
         );
+
+        memberLocationRepository.save(location);
     }
 }

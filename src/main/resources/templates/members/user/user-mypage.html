@@ -59,12 +59,12 @@
             <!-- 계정 메뉴 -->
             <div class="menu-group">
                 <div class="menu-item">
-                    <span>아이디</span>
+                    <span>아이디 👤</span>
                     <span class="menu-value" th:text="${myPage.loginId}">userid</span>
                 </div>
 
                 <a href="/api/view/user/password-update" class="menu-item">
-                    <span>비밀번호 변경</span>
+                    <span>비밀번호 변경 🔒</span>
                     <span class="menu-arrow">&gt;</span>
                 </a>
             </div>
@@ -72,20 +72,22 @@
             <!-- 기타 메뉴 -->
             <div class="menu-group">
                 <div class="menu-item" onclick="openTermsModal()">
-                    <span>이용약관 동의 내역</span>
+                    <span>이용약관 동의 내역 📄</span>
                     <span class="menu-arrow">&gt;</span>
                 </div>
 
                 <div class="menu-item" onclick="location.href='/api/auth/logout'">
-                    <span>로그아웃</span>
+                    <span>로그아웃 🚪🏃</span>
                     <span class="menu-arrow">&gt;</span>
                 </div>
 
                 <div class="menu-item" onclick="location.href='/api/view/user/withdraw'">
-                    <span class="menu-danger">회원 탈퇴</span>
+                    <span class="menu-danger">회원 탈퇴 🚨</span>
                     <span class="menu-arrow">&gt;</span>
                 </div>
             </div>
+
+
 
         </main>
 
@@ -143,6 +145,8 @@
 </div>
 
 <script src="/js/members/user/user-mypage.js" th:src="@{/js/members/user/user-mypage.js}"></script>
+
+
 
 </body>
 </html>
