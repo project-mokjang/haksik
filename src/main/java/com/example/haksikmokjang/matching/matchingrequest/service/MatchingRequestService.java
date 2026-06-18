@@ -1,6 +1,6 @@
 package com.example.haksikmokjang.matching.matchingrequest.service;
 
-import com.example.haksikmokjang.chat.service.ChatService;
+import com.example.haksikmokjang.chat.chatroom.service.ChatRoomCreateService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.matching.matchingrequest.domain.Matching;
@@ -28,7 +28,7 @@ public class MatchingRequestService {
     private final MatchingRepository matchingRepository;
     private final MatchingWaitingRepository matchingWaitingRepository;
     private final UserProfileRepository userProfileRepository;
-    private final ChatService chatService;
+    private final ChatRoomCreateService chatRoomCreateService;
 
     public void requestMatching(Long memberId, MatchingRequestCreateRequest request) {
 
@@ -144,7 +144,7 @@ public class MatchingRequestService {
         Long requesterMemberId = matching.getRequester().getMember().getMemberId();
         Long targetMemberId = matching.getTarget().getMember().getMemberId();
 
-        chatService.createMealChatRoom(requesterMemberId, targetMemberId);
+        chatRoomCreateService.createMealChatRoom(requesterMemberId, targetMemberId);
     }
 
     // 매칭 요청 거절

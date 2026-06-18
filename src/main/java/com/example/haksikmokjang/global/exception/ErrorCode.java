@@ -66,6 +66,8 @@ public enum ErrorCode {
     CHAT_MESSAGE_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "CHAT_009", "삭제된 메시지는 수정할 수 없습니다."),
     INVALID_DIRECT_CHAT_ROOM(HttpStatus.BAD_REQUEST, "CHAT_010", "1:1 채팅방 생성 정보가 올바르지 않습니다."),
     INVALID_GROUP_DATE_CHAT_ROOM(HttpStatus.BAD_REQUEST, "CHAT_011", "과팅 채팅방 생성 정보가 올바르지 않습니다."),
+    INVALID_CHAT_IMAGE_FILE(HttpStatus.BAD_REQUEST, "CHAT_012", "이미지 파일만 업로드할 수 있습니다."),
+    CHAT_IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "CHAT_013", "채팅 이미지 저장에 실패했습니다."),
 
     //Location
     LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "LOCATION_001", "위치 정보를 찾을 수 없습니다."),
