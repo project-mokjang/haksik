@@ -64,4 +64,13 @@ public class Store {
     public void changeBusinessStatus(BusinessStatus status) {
         this.businessStatus = status;
     }
+
+    // 가게 정보 수정용 메서드
+    public void updateStoreInfo(String name, String address, String category, String phone, String operatingHours) {
+        this.name = name;
+        this.address = address;
+        this.category = category;
+        this.phone = phone;
+        this.operatingHours = operatingHours;
+    }
 }

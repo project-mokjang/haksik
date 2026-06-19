@@ -10,8 +10,10 @@ import com.example.haksikmokjang.ownerpage.store.domain.BusinessStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Menu;
 import com.example.haksikmokjang.ownerpage.store.domain.MenuStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Store;
+import com.example.haksikmokjang.ownerpage.store.dto.MenuUpdateRequest;
 import com.example.haksikmokjang.ownerpage.store.dto.StoreCreateRequest;
 import com.example.haksikmokjang.ownerpage.store.dto.StoreMapResponse;
+import com.example.haksikmokjang.ownerpage.store.dto.StoreUpdateRequest;
 import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -120,4 +122,61 @@ public class StoreService {
                 .map(StoreMapResponse::new)
                 .toList();
     }
+
+    //가게 기본 정보 수정하기
+    @Transactional
+    public void updateStore(String loginId, Long storeId, StoreUpdateRequest request) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        // 방어벽: 내 가게가 맞는지 팩트 체크
+        if (!store.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        //이 메서드만 호출하면 트랜잭션 종료 시점에 자동으로 UPDATE SQL이 날아갑니다.
+        store.updateStoreInfo(
+                request.getName(),
+                request.getAddress(),
+                request.getCategory(),
+                request.getPhone(),
+                request.getOperatingHours()
+        );
+    }
+
+    // 가게 전체 영업 상태 퀵 토글
+    @Transactional
+    public void updateBusinessStatus(String loginId, Long storeId, BusinessStatus status) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        store.changeBusinessStatus(status);
+    }
+
+    // 개별 메뉴 정보 수정 및 품절 처리
+    @Transactional
+    public void updateMenu(String loginId, Long storeId, Long menuId, MenuUpdateRequest request) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 메뉴 Not Found로 분리해도 됨
+
+        // 🚨 방어벽: 남의 가게 메뉴를 수정하려는 악의적 요청 차단
+        if (!menu.getStore().getStoreId().equals(storeId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
+    }
+
+    
 }
