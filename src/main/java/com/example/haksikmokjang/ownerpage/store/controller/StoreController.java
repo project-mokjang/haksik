@@ -1,7 +1,10 @@
 package com.example.haksikmokjang.ownerpage.store.controller;
 
+import com.example.haksikmokjang.ownerpage.store.domain.BusinessStatus;
+import com.example.haksikmokjang.ownerpage.store.dto.MenuUpdateRequest;
 import com.example.haksikmokjang.ownerpage.store.dto.StoreCreateRequest;
 import com.example.haksikmokjang.ownerpage.store.dto.StoreMapResponse;
+import com.example.haksikmokjang.ownerpage.store.dto.StoreUpdateRequest;
 import com.example.haksikmokjang.ownerpage.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +43,41 @@ public class StoreController {
 
         List<StoreMapResponse> stores = storeService.getNearbyStores(lat, lng, radius);
         return ResponseEntity.ok(stores);
+    }
+
+    //가게 정보 수정 API
+    @PatchMapping("/{storeId}")
+    public ResponseEntity<String> updateStore(
+            Authentication authentication,
+            @PathVariable Long storeId,
+            @Valid @RequestBody StoreUpdateRequest request) {
+
+        String loginId = authentication.getName();
+        storeService.updateStore(loginId, storeId, request);
+
+        return ResponseEntity.ok("가게 정보가 성공적으로 수정되었습니다.");
+    }
+
+    //영업 상태 변경 (PATCH /api/stores/{storeId}/status?status=BREAK_TIME)
+    @PatchMapping("/{storeId}/status")
+    public ResponseEntity<String> updateBusinessStatus(
+            Authentication authentication,
+            @PathVariable Long storeId,
+            @RequestParam BusinessStatus status) {
+
+        storeService.updateBusinessStatus(authentication.getName(), storeId, status);
+        return ResponseEntity.ok("영업 상태가 [" + status.name() + "](으)로 변경되었습니다.");
+    }
+
+    //개별 메뉴 수정 (PATCH /api/stores/{storeId}/menus/{menuId})
+    @PatchMapping("/{storeId}/menus/{menuId}")
+    public ResponseEntity<String> updateMenu(
+            Authentication authentication,
+            @PathVariable Long storeId,
+            @PathVariable Long menuId,
+            @Valid @RequestBody MenuUpdateRequest request) {
+
+        storeService.updateMenu(authentication.getName(), storeId, menuId, request);
+        return ResponseEntity.ok("메뉴 정보가 성공적으로 수정되었습니다.");
     }
 }

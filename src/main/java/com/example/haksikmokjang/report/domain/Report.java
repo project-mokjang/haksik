@@ -49,4 +49,9 @@ public class Report {
         this.reason = reason;
         this.status = ReportStatus.PENDING; // 기본값
     }
+    public void processReport(ReportStatus status, Member admin) {
+        this.status = status;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+    }
 }
