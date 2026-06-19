@@ -1,5 +1,6 @@
 package com.example.haksikmokjang.chatbot.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -8,24 +9,21 @@ import java.util.*;
 @Service
 public class ChatbotService {
 
-
-
     private final RestTemplate restTemplate = new RestTemplate();
+
+    // application.properties에서 API 키를 안전하게 꺼내오기!
+    @Value("${gemini.api.key}")
+    private String apiKey;
 
     @SuppressWarnings("unchecked") // 잔소리 그만
     public String getAiResponse(String userMessage) {
 
-        String url = "http://localhost:11434/api/chat";
+
+        String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gemma2"); //
-        requestBody.put("stream", false);   //
-
-        List<Map<String, String>> messages = new ArrayList<>();
         String systemPrompt = "너는 인덕대학교 학생 매칭 앱 '학식목장'의 친절하고 다정한 고객센터 AI 도우미야.\n" +
                 "아래의 [답변 규칙]과 [학식목장 앱 정보]를 엄격하게 지켜서 대답해.\n\n" +
                 "[답변 규칙]\n" +
@@ -46,21 +44,32 @@ public class ChatbotService {
                 "- 운세 요청: 긍정적이고 기분 좋은 오늘의 운세를 이야기해 줘.\n" +
                 "- 매칭 고민: 매칭 종류를 고민하면 학식메이트, 소개팅, 과팅 중 하나를 네가 골라서 추천해 줘.";
 
-        messages.add(Map.of("role", "system", "content", systemPrompt));
-        messages.add(Map.of("role", "user", "content", userMessage));
+        Map<String, Object> requestBody = new HashMap<>();
 
-        requestBody.put("messages", messages);
+        // Gemini 전용 시스템 프롬프트 세팅
+        Map<String, Object> systemInstruction = new HashMap<>();
+        systemInstruction.put("parts", Map.of("text", systemPrompt));
+        requestBody.put("system_instruction", systemInstruction);
+
+        // 유저 질문 세팅
+        Map<String, Object> userContent = new HashMap<>();
+        userContent.put("parts", List.of(Map.of("text", userMessage)));
+        requestBody.put("contents", List.of(userContent));
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(URL, entity, Map.class);
             Map<String, Object> responseBody = response.getBody();
 
 
-            Map<String, String> message = (Map<String, String>) responseBody.get("message");
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseBody.get("candidates");
+            Map<String, Object> firstCandidate = candidates.get(0);
+            Map<String, Object> content = (Map<String, Object>) firstCandidate.get("content");
+            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
 
-            return message.get("content");
+            return (String) parts.get(0).get("text");
 
         } catch (Exception e) {
             e.printStackTrace();
