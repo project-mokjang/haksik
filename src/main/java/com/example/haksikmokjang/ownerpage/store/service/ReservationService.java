@@ -5,12 +5,16 @@ import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.ownerpage.store.domain.*;
+import com.example.haksikmokjang.ownerpage.store.dto.ReservationOwnerResponse;
 import com.example.haksikmokjang.ownerpage.store.dto.ReservationRequest;
+import com.example.haksikmokjang.ownerpage.store.dto.ReservationUserResponse;
 import com.example.haksikmokjang.ownerpage.store.repository.ReservationRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,4 +62,22 @@ public class ReservationService {
 
         // 유저에게 "예약 수락/거절되었습니다" 알림 쏴주는 로직 추가 예정
     }
+
+    // 점주용 : 내 가게 예약 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReservationOwnerResponse> getReservationsForOwner(String loginId) {
+        return reservationRepository.findAllByOwnerLoginIdWithMember(loginId)
+                .stream()
+                .map(ReservationOwnerResponse::new)
+                .toList();
+    }
+    // 유저용 : 내 예약 목록 전체 조회
+    @Transactional(readOnly = true)
+    public List<ReservationUserResponse> getReservationsForUser(String loginId) {
+        return reservationRepository.findAllByMemberLoginIdWithStore(loginId)
+                .stream()
+                .map(ReservationUserResponse::new)
+                .toList();
+    }
+
 }
