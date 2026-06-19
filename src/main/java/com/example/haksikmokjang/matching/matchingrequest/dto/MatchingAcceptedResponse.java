@@ -30,5 +30,7 @@ public class MatchingAcceptedResponse {
 
     private Integer maxParticipants;
 
+    private Long chatRoomId;
+
     private LocalDateTime respondedAt;
 }

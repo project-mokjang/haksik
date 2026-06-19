@@ -74,15 +74,15 @@ public class MatchingRequestController {
 
     // 매칭 요청 수락
     @PatchMapping("/{matchingId}/accept")
-    public ApiResponse<Void> acceptMatching(
+    public ApiResponse<Long> acceptMatching(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long matchingId
     ) {
         Long memberId = userDetails.getMemberId();
 
-        matchingRequestService.acceptMatching(memberId, matchingId);
+        Long chatRoomId = matchingRequestService.acceptMatching(memberId, matchingId);
 
-        return ApiResponse.success("매칭 요청을 수락했습니다.", null);
+        return ApiResponse.success("매칭 요청을 수락했습니다.", chatRoomId);
     }
 
     // 매칭 요청 거절
