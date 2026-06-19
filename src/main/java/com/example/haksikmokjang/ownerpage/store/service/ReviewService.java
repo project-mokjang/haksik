@@ -9,18 +9,13 @@ import com.example.haksikmokjang.ownerpage.store.domain.ReservationStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
 import com.example.haksikmokjang.ownerpage.store.dto.ReviewCreateRequest;
-import com.example.haksikmokjang.ownerpage.store.dto.ReviewOwnerResponse;
-import com.example.haksikmokjang.ownerpage.store.dto.ReviewReportRequest;
 import com.example.haksikmokjang.ownerpage.store.repository.ReservationRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreReviewRepository;
-import com.example.haksikmokjang.report.domain.Report;
-import com.example.haksikmokjang.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +25,6 @@ public class ReviewService {
     private final StoreReviewRepository storeReviewRepository;
     private final ReservationRepository reservationRepository;
     private final MemberRepository memberRepository;
-    private final ReportRepository reportRepository;
 
     @Transactional
     public Long createReview(String loginId, ReviewCreateRequest request) {
@@ -75,36 +69,5 @@ public class ReviewService {
                 .build();
 
         return storeReviewRepository.save(newReview).getReviewId();
-    }
-
-    //점주의 내 가게 리뷰 전체 조회
-    @Transactional(readOnly = true)
-    public List<ReviewOwnerResponse> getOwnerReviews(String ownerLoginId) {
-        return storeReviewRepository.findAllByStoreOwnerLoginId(ownerLoginId)
-                .stream()
-                .map(ReviewOwnerResponse::new)
-                .toList();
-    }
-
-    // 🚨 기능 2: 악성 리뷰 신고 처리
-    @Transactional
-    public void reportReview(String ownerLoginId, Long reviewId, ReviewReportRequest request) {
-        StoreReview review = storeReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND)); // REVIEW_NOT_FOUND 권장
-
-        // 내 가게의 리뷰가 맞는지 팩트 체크
-        if (!review.getStore().getMember().getLoginId().equals(ownerLoginId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        // 🚨 팩트: 제공해주신 Report.builder 규격에 정확히 맞춘 Insert 로직
-        Report report = Report.builder()
-                .reporter(review.getStore().getMember()) // 신고자는 점주
-                .targetType("REVIEW") // 타겟 타입은 리뷰
-                .targetId(review.getReviewId()) // 타겟 PK는 리뷰 ID
-                .reason(request.getReason())
-                .build(); // status는 엔티티 생성자에서 PENDING으로 자동 세팅됨
-
-        reportRepository.save(report);
     }
 }

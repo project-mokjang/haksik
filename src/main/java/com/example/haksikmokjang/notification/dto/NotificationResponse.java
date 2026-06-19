@@ -29,16 +29,5 @@ public class NotificationResponse {
         } else {
             this.targetUrl = "#";
         }
-        // 🚨 핵심 관절: targetType과 targetId를 조합해서 프론트가 이동할 URL을 완성해 줌
-        if ("POST".equals(noti.getTargetType())) {
-            this.targetUrl = "/api/view/community/" + noti.getTargetId();
-        } else if ("MATCHING".equals(noti.getTargetType())) {
-            this.targetUrl = "/api/view/user/main";
-        } else if ("RESERVATION".equals(noti.getTargetType())) {
-            // 🚨 팩트: 예약 알림을 눌렀을 때 프론트가 띄워줄 URL 경로 추가
-            this.targetUrl = "/api/view/reservations/" + noti.getTargetId();
-        } else {
-            this.targetUrl = "#";
-        }
     }
 }

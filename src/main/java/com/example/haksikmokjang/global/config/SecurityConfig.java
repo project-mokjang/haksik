@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 
 import javax.sql.DataSource;
 
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
