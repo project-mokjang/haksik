@@ -2,6 +2,8 @@ package com.example.haksikmokjang.matching.matchingwaiting.service;
 
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.matching.matchingrequest.domain.MatchingStatus;
+import com.example.haksikmokjang.matching.matchingrequest.repository.MatchingRepository;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
@@ -30,6 +32,7 @@ public class MatchingWaitingService {
     private final UserProfileRepository userProfileRepository;
     private final MemberLocationRepository memberLocationRepository;
     private final MatchingWaitingRepository matchingWaitingRepository;
+    private final MatchingRepository matchingRepository;
 
     // 매칭 대기 입장
     public void enterWaiting(Long memberId, MatchingWaitingEnterRequest request) {
@@ -37,6 +40,18 @@ public class MatchingWaitingService {
         // 로그인한 회원의 사용자 프로필 조회
         UserProfile userProfile = userProfileRepository.findByMember_MemberId(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 확정된 매칭이 있으면 새 대기 생성 차단
+        boolean hasAcceptedMatching = !matchingRepository
+                .findByParticipantAndStatusOrderByRespondedAtDesc(
+                        userProfile,
+                        MatchingStatus.ACCEPTED
+                )
+                .isEmpty();
+
+        if (hasAcceptedMatching) {
+            throw new CustomException(ErrorCode.MATCHING_ACCEPTED_ALREADY_EXISTS);
+        }
 
         // 기존 WAITING 상태가 있으면 새 대기 생성 차단
         matchingWaitingRepository.findByUserProfileAndStatus(

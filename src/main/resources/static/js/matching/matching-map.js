@@ -3,6 +3,9 @@
 // 서버에서 전달된 모드값
 let matchingMode = document.getElementById('matchingPage')?.dataset.mode || 'MEAL';
 
+// 메인 페이지 URL
+const mainPageUrl = '/api/view/user/main';
+
 // 기본 지도 중심 좌표
 const defaultPosition = new naver.maps.LatLng(37.6299, 127.0548);
 
@@ -26,6 +29,22 @@ let myWaitingMarker = null;
 function clearMarkers() {
     markerList.forEach(marker => marker.setMap(null));
     markerList.length = 0;
+}
+
+// 메인 페이지 이동
+function moveToMainPage() {
+    location.href = mainPageUrl;
+}
+
+// 알림 출력 후 메인 이동
+function notifyAndMoveToMainPage(message, type = 'success') {
+    notify(message, type);
+
+    const delay = typeof showToast === 'function' ? 900 : 150;
+
+    setTimeout(() => {
+        moveToMainPage();
+    }, delay);
 }
 
 // 현재 매칭 모드 제목 설정
@@ -189,8 +208,22 @@ function applyTestLocationOffset(latitude, longitude) {
     };
 }
 
+// 단체방 입력값 초기화
+function clearGroupMealForm() {
+    const maxParticipantsInput = document.getElementById('groupMealMaxParticipants');
+    const messageInput = document.getElementById('groupMealMessage');
+
+    if (maxParticipantsInput) {
+        maxParticipantsInput.value = '';
+    }
+
+    if (messageInput) {
+        messageInput.value = '';
+    }
+}
+
 // 매칭 대기 생성
-function enterWaiting(matchingType, maxParticipants, message) {
+function enterWaiting(matchingType, maxParticipants, message, options = {}) {
     if (myWaitingMarker) {
         notify('이미 매칭 대기 중입니다. 현재 매칭을 취소한 뒤 다시 선택해주세요.', 'error');
         return;
@@ -233,7 +266,23 @@ function enterWaiting(matchingType, maxParticipants, message) {
                 return;
             }
 
-            notify('매칭 대기를 시작했습니다.', 'success');
+            if (options.closeGroupMealModal) {
+                closeGroupMealModal();
+            }
+
+            if (options.clearGroupMealForm) {
+                clearGroupMealForm();
+            }
+
+            if (options.moveToMain) {
+                notifyAndMoveToMainPage(
+                    options.successMessage || '매칭 대기를 시작했습니다.',
+                    'success'
+                );
+                return;
+            }
+
+            notify(options.successMessage || '매칭 대기를 시작했습니다.', 'success');
             loadMatchingMarkers();
         })
         .catch(error => {
@@ -245,17 +294,23 @@ function enterWaiting(matchingType, maxParticipants, message) {
 // 1:1 또는 기본 대기 시작
 function startOneToOneWaiting() {
     if (matchingMode === 'MEAL') {
-        enterWaiting('ONE_TO_ONE', 2, '같이 학식 먹을 사람을 찾고 있어요.');
+        enterWaiting('ONE_TO_ONE', 2, '같이 학식 먹을 사람을 찾고 있어요.', {
+            successMessage: '손들기를 시작했습니다.'
+        });
         return;
     }
 
     if (matchingMode === 'BLIND_DATE') {
-        enterWaiting('ONE_TO_ONE', 2, '소개팅 매칭 상대를 찾고 있어요.');
+        enterWaiting('ONE_TO_ONE', 2, '소개팅 매칭 상대를 찾고 있어요.', {
+            successMessage: '소개팅 대기를 시작했습니다.'
+        });
         return;
     }
 
     if (matchingMode === 'GROUP') {
-        enterWaiting('GROUP_DATE', 2, '과팅 대표 매칭 상대를 찾고 있어요.');
+        enterWaiting('GROUP_DATE', 2, '과팅 대표 매칭 상대를 찾고 있어요.', {
+            successMessage: '과팅 대기를 시작했습니다.'
+        });
     }
 }
 
@@ -302,12 +357,12 @@ function createGroupMealWaiting() {
         return;
     }
 
-    enterWaiting('GROUP_MEAL', maxParticipants, message);
-
-    closeGroupMealModal();
-
-    maxParticipantsInput.value = '';
-    messageInput.value = '';
+    enterWaiting('GROUP_MEAL', maxParticipants, message, {
+        moveToMain: true,
+        closeGroupMealModal: true,
+        clearGroupMealForm: true,
+        successMessage: '단체방 모집을 시작했습니다.'
+    });
 }
 
 // 내 매칭 대기 취소
@@ -344,6 +399,8 @@ function cancelMyWaiting() {
 // 매칭 신청 버튼 클릭
 function requestMatching() {
     const requestBtn = document.getElementById('requestBtn');
+
+    if (!requestBtn) return;
 
     const waitingId = requestBtn.dataset.waitingId;
     const mine = requestBtn.dataset.mine === 'true';
@@ -396,7 +453,7 @@ function sendMatchingRequest(waitingId) {
                 return;
             }
 
-            notify('매칭 신청이 완료되었습니다.', 'success');
+            notifyAndMoveToMainPage('매칭 신청이 완료되었습니다.', 'success');
         })
         .catch(error => {
             console.error(error);
@@ -660,6 +717,9 @@ function bindMatchingActionEvents() {
 
     document.getElementById('createGroupMealBtn')
         ?.addEventListener('click', createGroupMealWaiting);
+
+    document.getElementById('requestBtn')
+        ?.addEventListener('click', requestMatching);
 }
 
 // 초기 실행

@@ -28,6 +28,8 @@ public class ViewController {
         return "index";
     }
 
+    // 커뮤니티 --------------------------------------------
+
     //커뮤니티 게시판 메인
     @GetMapping("/community")
     public String communityPage() {
@@ -45,6 +47,10 @@ public class ViewController {
         model.addAttribute("postId", postId);
         return "community/board-detail";
     }
+
+    // community ------------------------------------------
+
+    // auth -------------- login, register
 
     @GetMapping("/signup-choice")
     public String signupChoicePage() {
@@ -83,37 +89,12 @@ public class ViewController {
         model.addAttribute("email", email);
         return "members/reset-pw";
     }
+    // auth --------------------------------------
 
-    //관리자 전용 화면
+    //관리자 관련 view -------------------------------
     @GetMapping("/admin/users")
     public String adminUsersPage() {
         return "members/admin/admin-users";
-    }
-
-    @GetMapping("/user/main")
-    public String userMainPage() {
-        return "main/user-main";
-    }
-
-    @GetMapping("/user/chat")
-    public String chatListPage() {
-        return "chat/chat-list";
-    }
-
-    @GetMapping("/user/chat/rooms/{chatRoomId}")
-    public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
-        model.addAttribute("chatRoomId", chatRoomId);
-        return "chat/chat-room";
-    }
-
-    @GetMapping("/owner/main")
-    public String ownerMainPage() {
-        return "main/owner-main";
-    }
-
-    @GetMapping("/owner/pending")
-    public String ownerPendingPage() {
-        return "members/owner/owner-pending";
     }
 
     @GetMapping("/admin/reports")
@@ -141,9 +122,24 @@ public class ViewController {
         return "members/admin/admin-stats";
     }
 
-    @GetMapping("/owner/rejected")
-    public String ownerRejectedPage() {
-        return "members/owner/owner-rejected";
+    // 관리자 -----------------------------
+
+
+    // user 관련 view -------------------------------------------------------
+    @GetMapping("/user/main")
+    public String userMainPage() {
+        return "main/user-main";
+    }
+
+    @GetMapping("/user/chat")
+    public String chatListPage() {
+        return "chat/chat-list";
+    }
+
+    @GetMapping("/user/chat/rooms/{chatRoomId}")
+    public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
+        model.addAttribute("chatRoomId", chatRoomId);
+        return "chat/chat-room";
     }
 
     @GetMapping("/user/my-page")
@@ -156,6 +152,12 @@ public class ViewController {
         model.addAttribute("termsList", termsService.getTermsList());
 
         return "members/user/user-mypage";
+    }
+
+    // 알림 전체 보기 페이지
+    @GetMapping("/user/notifications")
+    public String userNotificationsPage() {
+        return "members/user/user-notifications";
     }
 
     @Value("${naver.map.client-id}")
@@ -175,6 +177,27 @@ public class ViewController {
         // 지도 페이지 반환
         return "matching/matching-map";
     }
+
+    // user -----------------------------------------
+
+     // owner 관련 뷰 --------------------------
+    @GetMapping("/owner/main")
+    public String ownerMainPage() {
+        return "main/owner-main";
+    }
+
+    @GetMapping("/owner/pending")
+    public String ownerPendingPage() {
+        return "members/owner/owner-pending";
+    }
+
+
+    @GetMapping("/owner/rejected")
+    public String ownerRejectedPage() {
+        return "members/owner/owner-rejected";
+    }
+
+    // owner ------------------------------------
 
 }
 

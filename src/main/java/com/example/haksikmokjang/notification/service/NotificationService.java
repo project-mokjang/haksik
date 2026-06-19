@@ -91,4 +91,24 @@ public class NotificationService {
     public void readNotification(Long notiId) {
         notificationRepository.findById(notiId).ifPresent(Notification::markAsRead);
     }
+
+    // 알림 전체 조회
+    @Transactional(readOnly = true)
+    public Map<String, Object> getAllNotifications(String loginId) {
+        Member member = userProfileRepository.findByMember_LoginId(loginId)
+                .orElseThrow()
+                .getMember();
+
+        List<NotificationResponse> notis = notificationRepository.findByMemberOrderByCreatedAtDesc(member)
+                .stream()
+                .map(NotificationResponse::new)
+                .toList();
+
+        int unreadCount = notificationRepository.countByMemberAndReadYn(member, "N");
+
+        return Map.of(
+                "notifications", notis,
+                "unreadCount", unreadCount
+        );
+    }
 }

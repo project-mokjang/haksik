@@ -9,6 +9,12 @@ let currentSentMatchingId = null;
 // 현재 보낸 매칭 요청 모드
 let currentSentMatchingMode = null;
 
+// 현재 확정된 매칭 ID
+let currentAcceptedMatchingId = null;
+
+// 현재 확정된 매칭 모드
+let currentAcceptedMatchingMode = null;
+
 // 현재 내 매칭 대기 정보
 let currentWaitingMarker = null;
 
@@ -28,6 +34,11 @@ function notify(message, type = 'success') {
 
 // 매칭 모드 지도 이동
 function enterMatchingMode(mode) {
+    if (currentAcceptedMatchingId) {
+        notify('이미 확정된 매칭이 있습니다. 기존 매칭을 먼저 진행해주세요.', 'error');
+        return;
+    }
+
     if (currentWaitingMarker && currentWaitingMode !== mode) {
         notify('이미 다른 매칭 대기 중입니다. 현재 매칭을 취소한 뒤 다시 선택해주세요.', 'error');
         return;
@@ -54,6 +65,21 @@ function goSentRequestMap() {
     }
 
     location.href = `/api/view/user/matching-map?mode=${currentSentMatchingMode}`;
+}
+
+// 확정 매칭 지도 이동
+function goAcceptedMatchingMap() {
+    if (!currentAcceptedMatchingMode) {
+        notify('확정된 매칭이 없습니다.', 'error');
+        return;
+    }
+
+    location.href = `/api/view/user/matching-map?mode=${currentAcceptedMatchingMode}`;
+}
+
+// 확정 매칭 채팅방 이동
+function goAcceptedChatRoom() {
+    notify('채팅방 연결은 채팅 기능 연동 후 이동 처리하면 됩니다.', 'error');
 }
 
 // 현재 내 매칭 대기 조회
@@ -174,6 +200,7 @@ function cancelCurrentMatchingWaiting() {
             updateCurrentMatchingCard();
             loadReceivedRequests();
             loadSentRequests();
+            loadAcceptedRequests();
         })
         .catch(error => {
             console.error(error);
@@ -255,6 +282,46 @@ function hideReceivedRequestCard() {
     if (card) {
         card.style.display = 'none';
     }
+}
+
+// 확정된 매칭 취소
+function cancelAcceptedMatching() {
+    if (!currentAcceptedMatchingId) {
+        notify('취소할 확정 매칭이 없습니다.', 'error');
+        return;
+    }
+
+    const confirmed = confirm('확정된 매칭을 취소하시겠습니까?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    fetch(`/api/matching/request/${currentAcceptedMatchingId}/accepted/cancel`, {
+        method: 'PATCH'
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log('확정 매칭 취소 응답:', result);
+
+            if (!result.success) {
+                notify(result.message, 'error');
+                return;
+            }
+
+            notify('확정된 매칭을 취소했습니다.', 'success');
+
+            hideAcceptedMatchingCard();
+
+            loadCurrentMatchingWaiting();
+            loadReceivedRequests();
+            loadSentRequests();
+            loadAcceptedRequests();
+        })
+        .catch(error => {
+            console.error(error);
+            notify('확정 매칭 취소 중 오류가 발생했습니다.', 'error');
+        });
 }
 
 // 보낸 매칭 요청 조회
@@ -367,11 +434,99 @@ function cancelSentRequest() {
 
             hideSentRequestCard();
             loadSentRequests();
+            loadAcceptedRequests();
         })
         .catch(error => {
             console.error(error);
             notify('보낸 매칭 요청 취소 중 오류가 발생했습니다.', 'error');
         });
+}
+
+// 확정된 매칭 조회
+function loadAcceptedRequests() {
+    fetch('/api/matching/request/accepted')
+        .then(response => response.json())
+        .then(result => {
+            console.log('확정된 매칭:', result);
+
+            if (!result.success) {
+                hideAcceptedMatchingCard();
+                return;
+            }
+
+            const matchings = result.data;
+
+            if (!matchings || matchings.length === 0) {
+                hideAcceptedMatchingCard();
+                return;
+            }
+
+            showAcceptedMatchingCard(matchings[0]);
+        })
+        .catch(error => {
+            console.error('확정된 매칭 조회 실패:', error);
+        });
+}
+
+// 확정된 매칭 카드 표시
+function showAcceptedMatchingCard(matching) {
+    const card = document.getElementById('acceptedMatchingCard');
+    const title = document.getElementById('acceptedMatchingTitle');
+    const desc = document.getElementById('acceptedMatchingDesc');
+
+    if (!card || !title || !desc) {
+        return;
+    }
+
+    currentAcceptedMatchingId = matching.matchingId;
+    currentAcceptedMatchingMode = matching.mode;
+
+    title.textContent = getAcceptedMatchingTitle(matching);
+    desc.textContent = getAcceptedMatchingDesc(matching);
+
+    card.style.display = 'block';
+}
+
+// 확정된 매칭 제목 생성
+function getAcceptedMatchingTitle(matching) {
+    if (matching.mode === 'MEAL' && matching.matchingType === 'GROUP_MEAL') {
+        return `학식 단체 참여 확정 ${matching.currentParticipants}/${matching.maxParticipants}`;
+    }
+
+    if (matching.mode === 'MEAL' && matching.matchingType === 'ONE_TO_ONE') {
+        return '학식 1:1 매칭 확정';
+    }
+
+    if (matching.mode === 'BLIND_DATE') {
+        return '소개팅 매칭 확정';
+    }
+
+    if (matching.mode === 'GROUP') {
+        return '과팅 매칭 확정';
+    }
+
+    return '매칭 확정';
+}
+
+// 확정된 매칭 설명 생성
+function getAcceptedMatchingDesc(matching) {
+    if (matching.mode === 'MEAL' && matching.matchingType === 'GROUP_MEAL') {
+        return `${matching.opponentNickname}님과 단체 학식 매칭이 확정되었습니다. 채팅방에서 약속을 이어가세요.`;
+    }
+
+    return `${matching.opponentNickname}님과 매칭이 확정되었습니다. 채팅방에서 약속을 이어가세요.`;
+}
+
+// 확정된 매칭 카드 숨김
+function hideAcceptedMatchingCard() {
+    const card = document.getElementById('acceptedMatchingCard');
+
+    currentAcceptedMatchingId = null;
+    currentAcceptedMatchingMode = null;
+
+    if (card) {
+        card.style.display = 'none';
+    }
 }
 
 // 매칭 요청 수락
@@ -398,6 +553,7 @@ function acceptReceivedMatching() {
 
             loadCurrentMatchingWaiting();
             loadSentRequests();
+            loadAcceptedRequests();
         })
         .catch(error => {
             console.error(error);
@@ -429,6 +585,7 @@ function rejectReceivedMatching() {
 
             loadReceivedRequests();
             loadSentRequests();
+            loadAcceptedRequests();
         })
         .catch(error => {
             console.error(error);
@@ -474,12 +631,23 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('cancelSentRequestBtn')
         ?.addEventListener('click', cancelSentRequest);
 
+    document.getElementById('goAcceptedMatchingMapBtn')
+        ?.addEventListener('click', goAcceptedMatchingMap);
+
+    document.getElementById('cancelAcceptedMatchingBtn')
+        ?.addEventListener('click', cancelAcceptedMatching);
+
+    document.getElementById('goAcceptedChatBtn')
+        ?.addEventListener('click', goAcceptedChatRoom);
+
     loadCurrentMatchingWaiting();
     loadReceivedRequests();
     loadSentRequests();
+    loadAcceptedRequests();
 
     setInterval(loadReceivedRequests, 10000);
     setInterval(loadSentRequests, 10000);
+    setInterval(loadAcceptedRequests, 10000);
     setInterval(loadCurrentMatchingWaiting, 10000);
 });
 

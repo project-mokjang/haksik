@@ -13,32 +13,49 @@
         &lt;
     </button>
 
-    <button th:if="${leftType == 'menu'}"
-            type="button"
-            class="app-header-btn">
-        ☰
-    </button>
+    <a th:if="${leftType == 'menu'}"
+       th:href="@{/api/view/user/main}"
+       class="app-header-btn app-header-home-btn">
+        🐑
+    </a>
 
     <div th:if="${leftType == 'none'}" class="app-header-right"></div>
 
     <!-- 제목 -->
     <div class="app-header-title" th:text="${title}">제목</div>
 
-    <!-- 오른쪽 -->
-    <button th:if="${rightType == 'alarm'}"
-            type="button"
-            class="app-header-btn">
+    <!-- 오른쪽: 알림 -->
+    <th:block th:if="${rightType == 'alarm'}"
+              th:replace="~{fragments/mobile-layout :: notificationBell}">
+    </th:block>
+
+
+    <!-- 오른쪽: 없음 -->
+    <div th:if="${rightType == 'none'}" class="app-header-right"></div>
+</header>
+
+
+<!-- 공통 알림 버튼 -->
+<div th:fragment="notificationBell" class="header-bell-wrap">
+    <button type="button"
+            class="app-header-btn bell-btn"
+            onclick="toggleNoti(event)">
         🔔
     </button>
 
-    <button th:if="${rightType == 'filter'}"
-            type="button"
-            class="app-header-btn header-filter-btn">
-        필터
-    </button>
+    <div class="bell-badge" id="bellBadge"></div>
 
-    <div th:if="${rightType == 'none'}" class="app-header-right"></div>
-</header>
+    <div class="noti-dropdown"
+         id="notiDropdown"
+         onclick="event.stopPropagation()">
+
+        <div class="noti-header">알림</div>
+
+        <ul class="noti-list" id="notiList">
+            <li class="noti-empty">알림을 불러오는 중...</li>
+        </ul>
+    </div>
+</div>
 
 
 <!-- 공통 하단 탭바 -->
@@ -48,11 +65,6 @@
         🏠<br>홈
     </a>
 
-    <a th:href="@{/api/view/user/matching}"
-       th:classappend="${active == 'match'} ? ' on'">
-        💚<br>매칭
-    </a>
-
     <a th:href="@{/api/view/user/chat}"
        th:classappend="${active == 'chat'} ? ' on'">
         💬<br>채팅
@@ -60,7 +72,7 @@
 
     <a th:href="@{/api/view/community}"
        th:classappend="${active == 'community'} ? ' on'">
-        =3=<br>커뮤니티
+        💚<br>커뮤니티
     </a>
 
     <a th:href="@{/api/view/user/my-page}"

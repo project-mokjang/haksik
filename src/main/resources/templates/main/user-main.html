@@ -88,6 +88,33 @@
                 </div>
             </section>
 
+            <!-- 확정된 매칭 카드 -->
+            <section class="accepted-matching-card" id="acceptedMatchingCard" style="display: none;">
+                <div class="accepted-matching-label">확정된 매칭</div>
+
+                <div class="accepted-matching-title" id="acceptedMatchingTitle">
+                    매칭이 확정되었습니다.
+                </div>
+
+                <p class="accepted-matching-desc" id="acceptedMatchingDesc">
+                    채팅방에서 약속을 이어가세요.
+                </p>
+
+                <div class="accepted-matching-actions accepted-matching-actions-three">
+                    <button type="button" class="ui-btn sub" id="goAcceptedMatchingMapBtn">
+                        지도 보기
+                    </button>
+
+                    <button type="button" class="ui-btn" id="goAcceptedChatBtn">
+                        채팅방 이동
+                    </button>
+
+                    <button type="button" class="ui-btn danger" id="cancelAcceptedMatchingBtn">
+                        매칭 취소
+                    </button>
+                </div>
+            </section>
+
             <div class="main-section-title">매칭 모드</div>
 
             <article class="mode-card" onclick="enterMatchingMode('MEAL')">
@@ -168,6 +195,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/common/feedback.js}"></script>
 <script th:src="@{/js/user-main.js}"></script>
 
 

@@ -2,6 +2,7 @@ package com.example.haksikmokjang.matching.matchingrequest.controller;
 
 import com.example.haksikmokjang.global.response.ApiResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
+import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingAcceptedResponse;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingReceivedResponse;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingRequestCreateRequest;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingSentResponse;
@@ -58,6 +59,19 @@ public class MatchingRequestController {
         return ApiResponse.success(responses);
     }
 
+    // 확정된 매칭 목록 조회
+    @GetMapping("/accepted")
+    public ApiResponse<List<MatchingAcceptedResponse>> getAcceptedRequests(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        List<MatchingAcceptedResponse> responses =
+                matchingRequestService.getAcceptedRequests(memberId);
+
+        return ApiResponse.success(responses);
+    }
+
     // 매칭 요청 수락
     @PatchMapping("/{matchingId}/accept")
     public ApiResponse<Void> acceptMatching(
@@ -95,5 +109,18 @@ public class MatchingRequestController {
         matchingRequestService.cancelSentMatching(memberId, matchingId);
 
         return ApiResponse.success("매칭 요청을 취소했습니다.", null);
+    }
+
+    // 확정된 매칭 취소
+    @PatchMapping("/{matchingId}/accepted/cancel")
+    public ApiResponse<Void> cancelAcceptedMatching(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long matchingId
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        matchingRequestService.cancelAcceptedMatching(memberId, matchingId);
+
+        return ApiResponse.success(null);
     }
 }

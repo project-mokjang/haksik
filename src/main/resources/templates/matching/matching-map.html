@@ -15,9 +15,23 @@
     <div class="app-shell" id="matchingPage" th:data-mode="${mode}">
 
         <header class="app-header">
-            <button type="button" class="app-header-btn" onclick="history.back()">←</button>
+            <button type="button"
+                    class="app-header-btn"
+                    onclick="history.back()">
+                &lt;
+            </button>
+
             <div class="app-header-title">상대 찾기 지도</div>
-            <button type="button" class="app-header-btn header-filter-btn">필터</button>
+
+            <div class="header-actions">
+                <div th:replace="~{fragments/mobile-layout :: notificationBell}"></div>
+
+                <button type="button"
+                        class="app-header-btn header-filter-btn"
+                        id="matchingFilterBtn">
+                    필터
+                </button>
+            </div>
         </header>
 
         <main class="app-scroll has-bottom-nav">
@@ -124,6 +138,7 @@
 </div>
 
 <script th:src="'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId}"></script>
+<script th:src="@{/js/common/feedback.js}"></script>
 <script th:src="@{/js/matching/matching-map.js}"></script>
 
 </body>

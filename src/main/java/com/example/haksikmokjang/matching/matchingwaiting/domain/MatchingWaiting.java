@@ -84,6 +84,19 @@ public class MatchingWaiting extends BaseEntity {
         }
     }
 
+    // 단체방 참가자 수 감소
+    public void decreaseParticipant() {
+        if (this.currentParticipants > 1) {
+            this.currentParticipants--;
+        }
+
+        if (this.status == MatchingWaitingStatus.MATCHED
+                && this.currentParticipants < this.maxParticipants) {
+            this.status = MatchingWaitingStatus.WAITING;
+            this.endedAt = null;
+        }
+    }
+
     // 단체 매칭 정원 초과 여부 확인
     public boolean isFull() {
         return this.currentParticipants >= this.maxParticipants;
