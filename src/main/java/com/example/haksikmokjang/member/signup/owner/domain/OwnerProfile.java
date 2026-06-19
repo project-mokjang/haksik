@@ -49,4 +49,18 @@ public class OwnerProfile extends BaseEntity {
 
     @Column(name = "rejected_reason", length = 500)
     private String rejectedReason;
+
+    public void approve(Member admin) {
+        this.approvalStatus = ApprovalStatus.APPROVED;
+        this.processedBy = admin;
+        this.processedAt = LocalDateTime.now();
+        this.rejectedReason = null;
+    }
+
+    public void reject(Member admin, String rejectedReason) {
+        this.approvalStatus = ApprovalStatus.REJECTED;
+        this.processedBy = admin;
+        this.processedAt = LocalDateTime.now();
+        this.rejectedReason = rejectedReason;
+    }
 }

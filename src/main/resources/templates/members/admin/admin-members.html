@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{members/admin/fragments/admin-fragments :: head('학식목장 관리자 - 회원 관리')}"></head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 회원 관리',
+        'members',
+        '회원 관리',
+        ~{::content}
+      )}">
 
-<body>
+<th:block th:fragment="content">
 
-<aside th:replace="~{members/admin/fragments/admin-fragments :: sidebar('members')}"></aside>
+    <div class="data-card">
 
-<main class="admin-main">
-    <header th:replace="~{members/admin/fragments/admin-fragments :: header('회원 관리')}"></header>
+        <div class="filter-bar">
+            <select class="filter-input" id="roleFilter" onchange="fetchMembers()">
+                <option value="ALL">전체</option>
+                <option value="USER">일반 회원</option>
+                <option value="OWNER">점주</option>
+                <option value="ADMIN">관리자</option>
+            </select>
 
-    <section class="admin-content">
-        <div class="data-card">
+            <button class="filter-btn" onclick="fetchMembers()">조회</button>
+        </div>
 
-            <div class="filter-bar">
-                <select class="filter-input" id="roleFilter" onchange="fetchMembers()">
-                    <option value="ALL">전체</option>
-                    <option value="USER">일반 회원</option>
-                    <option value="OWNER">점주</option>
-                    <option value="ADMIN">관리자</option>
-                </select>
-
-                <button class="filter-btn" onclick="fetchMembers()">조회</button>
-            </div>
-
+        <div class="table-scroll">
             <table class="data-table">
                 <thead>
                 <tr>
@@ -38,78 +38,71 @@
                     <th>관리</th>
                 </tr>
                 </thead>
-                <tbody id="memberTableBody">
-                </tbody>
+                <tbody id="memberTableBody"></tbody>
             </table>
-
         </div>
-    </section>
-</main>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        fetchMembers();
-    });
+    </div>
 
-    function fetchMembers() {
-        const role = document.getElementById("roleFilter").value;
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchMembers();
+        });
 
-        fetch(`/api/admin/members?role=${role}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("회원 목록 조회 실패");
-                }
-                return response.json();
-            })
-            .then(data => renderMembers(data))
-            .catch(error => {
-                console.error(error);
-                alert("회원 목록 조회 중 오류가 발생했습니다.");
-            });
-    }
+        function fetchMembers() {
+            const role = document.getElementById("roleFilter").value;
 
-    function renderMembers(members) {
-        const tbody = document.getElementById("memberTableBody");
-        tbody.innerHTML = "";
-
-        if (!members || members.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="10">조회된 회원이 없습니다.</td>
-                </tr>
-            `;
-            return;
+            fetch(`/api/admin/members?role=${role}`)
+                .then(response => response.json())
+                .then(data => renderMembers(data))
+                .catch(error => {
+                    console.error(error);
+                    alert("회원 목록 조회 중 오류가 발생했습니다.");
+                });
         }
 
-        members.forEach(member => {
-            const displayName = member.nickname || member.ownerName || member.name || "-";
-            const schoolName = member.schoolName || "-";
-            const mannerTemperature = member.mannerTemperature !== null && member.mannerTemperature !== undefined
-                ? `${member.mannerTemperature}°C`
-                : "-";
-            const noShowCount = member.noShowCount !== null && member.noShowCount !== undefined
-                ? `${member.noShowCount}회`
-                : "-";
+        function renderMembers(members) {
+            const tbody = document.getElementById("memberTableBody");
+            tbody.innerHTML = "";
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${member.memberId}</td>
-                    <td>${member.loginId}</td>
-                    <td>${member.role}</td>
-                    <td>${displayName}</td>
-                    <td>${schoolName}</td>
-                    <td>${mannerTemperature}</td>
-                    <td>${noShowCount}</td>
-                    <td>${member.accountStatus}</td>
-                    <td>${member.lockedYn}</td>
-                    <td>
-                        <button class="action-btn" onclick="alert('상세 기능은 다음 단계에서 연결')">상세</button>
-                    </td>
-                </tr>
-            `;
-        });
-    }
-</script>
+            if (!members || members.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10">조회된 회원이 없습니다.</td>
+                    </tr>
+                `;
+                return;
+            }
 
-</body>
+            members.forEach(member => {
+                const displayName = member.nickname || member.ownerName || member.name || "-";
+                const schoolName = member.schoolName || "-";
+                const mannerTemperature = member.mannerTemperature !== null && member.mannerTemperature !== undefined
+                    ? `${member.mannerTemperature}°C`
+                    : "-";
+                const noShowCount = member.noShowCount !== null && member.noShowCount !== undefined
+                    ? `${member.noShowCount}회`
+                    : "-";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${member.memberId}</td>
+                        <td>${member.loginId}</td>
+                        <td>${member.role}</td>
+                        <td>${displayName}</td>
+                        <td>${schoolName}</td>
+                        <td>${mannerTemperature}</td>
+                        <td>${noShowCount}</td>
+                        <td>${member.accountStatus}</td>
+                        <td>${member.lockedYn}</td>
+                        <td>
+                            <button class="action-btn">상세</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+
+</th:block>
 </html>

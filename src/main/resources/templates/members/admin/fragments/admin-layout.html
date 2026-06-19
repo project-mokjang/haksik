@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(pageTitle, activeMenu, headerTitle, content)">
 
-<head th:fragment="head(pageTitle)">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">학식목장 관리자</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
 
-<body>
+<body class="admin-body">
 
-<aside class="admin-sidebar" th:fragment="sidebar(activeMenu)">
+<aside class="admin-sidebar">
     <div class="admin-logo">
         <span>🐑</span>
-        학식목장 Admin
+        <strong>학식목장<br>Admin</strong>
     </div>
 
     <nav class="admin-menu">
@@ -37,10 +38,16 @@
     </nav>
 </aside>
 
-<header class="admin-header" th:fragment="header(title)">
-    <h2 class="admin-title" th:text="${title}">관리자 페이지</h2>
-    <div class="admin-profile">최고관리자 (admin)</div>
-</header>
+<main class="admin-main">
+    <header class="admin-header">
+        <h2 class="admin-title" th:text="${headerTitle}">관리자 페이지</h2>
+        <div class="admin-profile">최고관리자 (admin)</div>
+    </header>
+
+    <section class="admin-content">
+        <th:block th:replace="${content}"></th:block>
+    </section>
+</main>
 
 </body>
 </html>

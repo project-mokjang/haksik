@@ -25,6 +25,13 @@ public enum ErrorCode {
 
     //Owner
     DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),
+    OWNER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "OWNER_002", "점주 신청 정보를 찾을 수 없습니다."),
+    OWNER_ALREADY_PROCESSED(HttpStatus.CONFLICT, "OWNER_003", "이미 처리된 점주 신청입니다."),
+    REJECT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "OWNER_004", "반려 사유는 필수입니다."),
+
+    // Admin
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "ADMIN_001", "관리자 정보를 찾을 수 없습니다."),
+
     // School
     SCHOOL_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHOOL_001", "학교를 찾을 수 없습니다."),
     INVALID_SCHOOL_EMAIL_DOMAIN(HttpStatus.BAD_REQUEST, "SCHOOL_002", "학교 이메일 도메인이 일치하지 않습니다."),

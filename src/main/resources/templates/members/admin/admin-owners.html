@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{members/admin/fragments/admin-fragments :: head('학식목장 관리자 - 점주 승인 관리')}"></head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 점주 승인 관리',
+        'owners',
+        '점주 승인 관리',
+        ~{::content}
+      )}">
 
-<body>
+<th:block th:fragment="content">
 
-<aside th:replace="~{members/admin/fragments/admin-fragments :: sidebar('owners')}"></aside>
+  <div class="data-card">
 
-<main class="admin-main">
-  <header th:replace="~{members/admin/fragments/admin-fragments :: header('점주 승인 관리')}"></header>
+    <div class="filter-bar">
+      <select class="filter-input" id="statusFilter" onchange="fetchOwners()">
+        <option value="ALL">전체</option>
+        <option value="PENDING">승인 대기</option>
+        <option value="APPROVED">승인 완료</option>
+        <option value="REJECTED">반려</option>
+      </select>
 
-  <section class="admin-content">
-    <div class="data-card">
+      <button class="filter-btn" onclick="fetchOwners()">조회</button>
+    </div>
 
-      <div class="filter-bar">
-        <select class="filter-input" id="statusFilter" onchange="fetchOwners()">
-          <option value="ALL">전체</option>
-          <option value="PENDING">승인 대기</option>
-          <option value="APPROVED">승인 완료</option>
-          <option value="REJECTED">반려</option>
-        </select>
-
-        <button class="filter-btn" onclick="fetchOwners()">조회</button>
-      </div>
-
+    <div class="table-scroll">
       <table class="data-table">
         <thead>
         <tr>
@@ -37,81 +37,128 @@
           <th>관리</th>
         </tr>
         </thead>
-        <tbody id="ownerTableBody">
-        </tbody>
+        <tbody id="ownerTableBody"></tbody>
       </table>
-
     </div>
-  </section>
-</main>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    fetchOwners();
-  });
+  </div>
 
-  function fetchOwners() {
-    const status = document.getElementById("statusFilter").value;
-
-    fetch(`/api/admin/members/owners?status=${status}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("점주 신청 목록 조회 실패");
-              }
-              return response.json();
-            })
-            .then(data => renderOwners(data))
-            .catch(error => {
-              console.error(error);
-              alert("점주 신청 목록 조회 중 오류가 발생했습니다.");
-            });
-  }
-
-  function renderOwners(owners) {
-    const tbody = document.getElementById("ownerTableBody");
-    tbody.innerHTML = "";
-
-    if (!owners || owners.length === 0) {
-      tbody.innerHTML = `
-                <tr>
-                    <td colspan="9">조회된 점주 신청이 없습니다.</td>
-                </tr>
-            `;
-      return;
-    }
-
-    owners.forEach(owner => {
-      const processedAt = owner.processedAt || "-";
-
-      tbody.innerHTML += `
-                <tr>
-                    <td>${owner.ownerProfileId}</td>
-                    <td>${owner.loginId}</td>
-                    <td>${owner.businessName}</td>
-                    <td>${owner.ownerName}</td>
-                    <td>${owner.ownerPhone}</td>
-                    <td>${owner.businessNumber}</td>
-                    <td>${owner.approvalStatus}</td>
-                    <td>${processedAt}</td>
-                    <td>
-                        ${renderOwnerButtons(owner)}
-                    </td>
-                </tr>
-            `;
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchOwners();
     });
-  }
 
-  function renderOwnerButtons(owner) {
-    if (owner.approvalStatus !== "PENDING") {
-      return "-";
+    function fetchOwners() {
+      const status = document.getElementById("statusFilter").value;
+
+      fetch(`/api/admin/members/owners?status=${status}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 신청 목록 조회 실패");
+                }
+                return response.json();
+              })
+              .then(data => renderOwners(data))
+              .catch(error => {
+                console.error(error);
+                alert("점주 신청 목록 조회 중 오류가 발생했습니다.");
+              });
     }
 
-    return `
-            <button class="action-btn" onclick="alert('승인 기능은 다음 단계에서 연결')">승인</button>
-            <button class="action-btn" onclick="alert('반려 기능은 다음 단계에서 연결')">반려</button>
-        `;
-  }
-</script>
+    function renderOwners(owners) {
+      const tbody = document.getElementById("ownerTableBody");
+      tbody.innerHTML = "";
 
-</body>
+      if (!owners || owners.length === 0) {
+        tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">조회된 점주 신청이 없습니다.</td>
+                    </tr>
+                `;
+        return;
+      }
+
+      owners.forEach(owner => {
+        const processedAt = owner.processedAt || "-";
+
+        tbody.innerHTML += `
+                    <tr>
+                        <td>${owner.ownerProfileId}</td>
+                        <td>${owner.loginId}</td>
+                        <td>${owner.businessName}</td>
+                        <td>${owner.ownerName}</td>
+                        <td>${owner.ownerPhone}</td>
+                        <td>${owner.businessNumber}</td>
+                        <td>${owner.approvalStatus}</td>
+                        <td>${processedAt}</td>
+                        <td>${renderOwnerButtons(owner)}</td>
+                    </tr>
+                `;
+      });
+    }
+
+    function renderOwnerButtons(owner) {
+      if (owner.approvalStatus !== "PENDING") {
+        return "-";
+      }
+
+      return `
+                <button class="action-btn" onclick="approveOwner(${owner.ownerProfileId})">승인</button>
+                <button class="action-btn" onclick="rejectOwner(${owner.ownerProfileId})">반려</button>
+            `;
+    }
+
+    function approveOwner(ownerProfileId) {
+      if (!confirm("해당 점주 신청을 승인하시겠습니까?")) {
+        return;
+      }
+
+      fetch(`/api/admin/members/owners/${ownerProfileId}/approve`, {
+        method: "POST"
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 승인 실패");
+                }
+                alert("승인 처리되었습니다.");
+                fetchOwners();
+              })
+              .catch(error => {
+                console.error(error);
+                alert("점주 승인 중 오류가 발생했습니다.");
+              });
+    }
+
+    function rejectOwner(ownerProfileId) {
+      const rejectedReason = prompt("반려 사유를 입력하세요.");
+
+      if (!rejectedReason || rejectedReason.trim() === "") {
+        alert("반려 사유는 필수입니다.");
+        return;
+      }
+
+      fetch(`/api/admin/members/owners/${ownerProfileId}/reject`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          rejectedReason: rejectedReason
+        })
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 반려 실패");
+                }
+                alert("반려 처리되었습니다.");
+                fetchOwners();
+              })
+              .catch(error => {
+                console.error(error);
+                alert("점주 반려 중 오류가 발생했습니다.");
+              });
+    }
+  </script>
+
+</th:block>
 </html>

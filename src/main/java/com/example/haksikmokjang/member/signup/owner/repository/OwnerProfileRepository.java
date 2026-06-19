@@ -2,6 +2,7 @@ package com.example.haksikmokjang.member.signup.owner.repository;
 
 
 import com.example.haksikmokjang.member.core.domain.Member;
+import com.example.haksikmokjang.member.signup.owner.domain.ApprovalStatus;
 import com.example.haksikmokjang.member.signup.owner.domain.OwnerProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,4 +16,6 @@ public interface OwnerProfileRepository extends JpaRepository<OwnerProfile, Long
     Optional<OwnerProfile> findByMember(Member member);
 
     List<OwnerProfile> findAllByOrderByOwnerProfileIdDesc();
+
+    List<OwnerProfile> findByApprovalStatusOrderByOwnerProfileIdDesc(ApprovalStatus approvalStatus);
 }
