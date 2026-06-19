@@ -1,18 +1,19 @@
 package com.example.haksikmokjang.chat.chatroom.service;
 
 import com.example.haksikmokjang.chat.chatmessage.domain.ChatMessage;
+import com.example.haksikmokjang.chat.chatmessage.repository.ChatMessageRepository;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoom;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomMember;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomType;
 import com.example.haksikmokjang.chat.chatroom.dto.ChatRoomDetailResponse;
 import com.example.haksikmokjang.chat.chatroom.dto.ChatRoomMemberResponse;
 import com.example.haksikmokjang.chat.chatroom.dto.ChatRoomResponse;
-import com.example.haksikmokjang.chat.chatmessage.repository.ChatMessageRepository;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomMemberRepository;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomRepository;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.member.badge.service.BadgeAwardService;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
@@ -31,6 +32,7 @@ public class ChatRoomService {
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserProfileRepository userProfileRepository;
+    private final BadgeAwardService badgeAwardService;
 
     // 내가 참여 중인 채팅방 목록 조회
     public List<ChatRoomResponse> getMyChatRooms(Member loginMember) {
@@ -111,6 +113,7 @@ public class ChatRoomService {
         }
 
         chatRoom.close();
+        badgeAwardService.awardChatRoomClosedBadges(chatRoom);
 
         return ChatRoomDetailResponse.builder()
                 .chatRoomId(chatRoom.getChatRoomId())
