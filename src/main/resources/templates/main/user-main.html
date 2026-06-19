@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>학식목장 메인</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/main/user-main.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('학식목장', 'menu','alarm')}"></header>
+
+        <main class="app-scroll has-bottom-nav">
+
+            <section class="main-hero-card">
+                <h2>오늘 같이 밥 먹을<br>친구를 찾아볼까요?</h2>
+                <p>
+                    매칭 모드를 선택하면 현재 위치를 기준으로 지도에서
+                    대기 중인 사용자를 확인할 수 있습니다.
+                </p>
+            </section>
+
+            <!-- 받은 매칭 요청 카드 -->
+            <section class="received-request-card" id="receivedRequestCard" style="display: none;">
+                <div class="received-request-label">새 매칭 요청</div>
+
+                <div class="received-request-title">
+                    <span id="receivedRequesterNickname">상대</span>님이 매칭을 신청했습니다.
+                </div>
+
+                <p class="received-request-desc" id="receivedRequestMode">
+                    매칭 요청이 도착했습니다.
+                </p>
+
+                <div class="received-request-actions">
+                    <button type="button" class="ui-btn sub" id="rejectMatchingBtn">거절</button>
+                    <button type="button" class="ui-btn" id="acceptMatchingBtn">수락</button>
+                </div>
+            </section>
+
+            <!-- 현재 매칭 대기 카드 -->
+            <section class="current-matching-card" id="currentMatchingCard" style="display: none;">
+                <div class="current-matching-label">현재 매칭 대기 중</div>
+
+                <div class="current-matching-title" id="currentMatchingTitle">
+                    매칭 대기 중입니다.
+                </div>
+
+                <p class="current-matching-desc" id="currentMatchingDesc">
+                    현재 선택한 매칭이 유지되고 있습니다.
+                </p>
+
+                <div class="current-matching-actions">
+                    <button type="button" class="ui-btn sub" id="goCurrentMatchingMapBtn">
+                        지도 보기
+                    </button>
+                    <button type="button" class="ui-btn danger" id="cancelCurrentMatchingBtn">
+                        현재 매칭 취소
+                    </button>
+                </div>
+            </section>
+
+            <!-- 내가 보낸 매칭 요청 카드 -->
+            <section class="sent-request-card" id="sentRequestCard" style="display: none;">
+                <div class="sent-request-label">보낸 매칭 요청</div>
+
+                <div class="sent-request-title" id="sentRequestTitle">
+                    매칭 신청 중입니다.
+                </div>
+
+                <p class="sent-request-desc" id="sentRequestDesc">
+                    상대방의 수락을 기다리고 있습니다.
+                </p>
+
+                <div class="sent-request-actions">
+                    <button type="button" class="ui-btn sub" id="goSentRequestMapBtn">
+                        지도 보기
+                    </button>
+                    <button type="button" class="ui-btn danger" id="cancelSentRequestBtn">
+                        신청 취소
+                    </button>
+                </div>
+            </section>
+
+            <!-- 확정된 매칭 카드 -->
+            <section class="accepted-matching-card" id="acceptedMatchingCard" style="display: none;">
+                <div class="accepted-matching-label">확정된 매칭</div>
+
+                <div class="accepted-matching-title" id="acceptedMatchingTitle">
+                    매칭이 확정되었습니다.
+                </div>
+
+                <p class="accepted-matching-desc" id="acceptedMatchingDesc">
+                    채팅방에서 약속을 이어가세요.
+                </p>
+
+                <div class="accepted-matching-actions accepted-matching-actions-three">
+                    <button type="button" class="ui-btn sub" id="goAcceptedMatchingMapBtn">
+                        지도 보기
+                    </button>
+
+                    <button type="button" class="ui-btn" id="goAcceptedChatBtn">
+                        채팅방 이동
+                    </button>
+
+                    <button type="button" class="ui-btn danger" id="cancelAcceptedMatchingBtn">
+                        매칭 취소
+                    </button>
+                </div>
+            </section>
+
+            <div class="main-section-title">매칭 모드</div>
+
+            <article class="mode-card" onclick="enterMatchingMode('MEAL')">
+                <div class="mode-icon">🍚</div>
+                <div class="mode-info">
+                    <div class="mode-title">학식메이트</div>
+                    <div class="mode-desc">밥 먹을 사람을 지도에서 찾아요.</div>
+                </div>
+            </article>
+
+            <article class="mode-card" onclick="enterMatchingMode('BLIND_DATE')">
+                <div class="mode-icon">💚</div>
+                <div class="mode-info">
+                    <div class="mode-title">소개팅</div>
+                    <div class="mode-desc">1:1 매칭 상대를 지도에서 확인해요.</div>
+                </div>
+            </article>
+
+            <article class="mode-card" onclick="enterMatchingMode('GROUP')">
+                <div class="mode-icon">👥</div>
+                <div class="mode-info">
+                    <div class="mode-title">과팅</div>
+                    <div class="mode-desc">그룹 단위 매칭 상대를 찾아요.</div>
+                </div>
+            </article>
+
+            <div class="main-section-title">빠른 메뉴</div>
+
+            <div class="quick-grid">
+                <a href="#" class="quick-card">
+                    💬 채팅
+                    <span>진행 중인 대화</span>
+                </a>
+
+                <a href="#" class="quick-card">
+                    👤 마이
+                    <span>내 정보 관리</span>
+                </a>
+            </div>
+
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: bottomNav('home')}"></nav>
+
+
+        <button id="chatbotFab" class="chatbot-fab">
+            🐏 AI 도우미
+        </button>
+
+        <div id="chatbotModal" class="chatbot-modal" style="display: none;">
+            <div class="chatbot-header">
+                <span>🐑 학식목장 AI 도우미</span>
+                <button id="closeChatbot">✖</button>
+            </div>
+
+            <div class="chatbot-body" id="chatbotBody">
+                <div class="msg bot-msg">
+                    안녕하세요! 저는 학식목장 AI 도우미 입니다! 궁금한 점을 말씀해주세요.<br>
+                    분류별 질문을 찾으시려면 아래 버튼을 눌러보세요.
+                </div>
+
+                <div class="chip-container">
+                    <button class="chip" onclick="sendChipMessage('학식메이트 매칭은 어떻게 해?')">학식메이트 매칭</button>
+                    <button class="chip" onclick="sendChipMessage('내 정보 관리 어디서 해??')">내 정보 관리</button>
+                    <button class="chip" onclick="sendChipMessage('매칭 추천해줘')">매칭 추천 받기 </button>
+                    <button class="chip" onclick="sendChipMessage('비매너 유저 신고 방법 알려줘')">비매너 유저 신고 방법</button>
+                    <button class="chip" onclick="sendChipMessage('오늘의 음식 추천해줘')">오늘의 음식 추천</button>
+                    <button class="chip" onclick="sendChipMessage('오늘의 운세 알려줘')">오늘의 운세</button>
+                </div>
+            </div>
+
+            <div class="chatbot-footer">
+                <input type="text" id="chatInput" placeholder="질문을 입력해주세요..." onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()">전송</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/user-main.js}"></script>
+
+
+
+
+</body>
+</html>

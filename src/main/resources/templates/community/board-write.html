@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>학식목장 - 글쓰기</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/community/board.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('게시글 작성', 'back', 'none')}"></header>
+
+        <main class="app-scroll board-write-scroll">
+
+            <form id="writeForm" class="board-write-form">
+
+                <section class="board-write-card">
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="boardType">게시판 선택</label>
+
+                        <select id="boardType" name="boardType" class="board-write-input" required>
+                            <option value="GLOBAL">전국구 게시판</option>
+                            <option value="SCHOOL">우리학교 게시판</option>
+                        </select>
+                    </div>
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="category">말머리</label>
+
+                        <select id="category" name="category" class="board-write-input" required>
+                            <option value="FREE">자유</option>
+                            <option value="FOOD">맛집추천</option>
+                            <option value="QUESTION">질문</option>
+                            <option value="MEETUP">만남</option>
+                        </select>
+                    </div>
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="title">제목</label>
+
+                        <input type="text"
+                               id="title"
+                               name="title"
+                               class="board-write-input"
+                               placeholder="제목을 입력하세요"
+                               required>
+                    </div>
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="content">내용</label>
+
+                        <textarea id="content"
+                                  name="content"
+                                  class="board-write-input board-write-textarea"
+                                  placeholder="타인을 비방하거나 욕설이 포함된 글은 경고 없이 삭제될 수 있습니다."
+                                  required></textarea>
+                    </div>
+
+                    <div class="board-write-field">
+                        <label class="board-write-checkbox-row" for="anonymousCheck">
+                            <input type="checkbox" id="anonymousCheck">
+                            <span>익명으로 작성하기</span>
+                        </label>
+
+                        <input type="hidden" name="anonymousYn" id="anonymousYn" value="N">
+                    </div>
+
+                    <div class="board-write-field last">
+                        <label class="board-write-label" for="images">사진 첨부</label>
+
+                        <input type="file"
+                               id="images"
+                               name="images"
+                               class="board-write-input board-write-file"
+                               accept="image/*"
+                               multiple>
+
+                        <p class="board-write-help">
+                            여러 장 선택할 수 있습니다.
+                        </p>
+                    </div>
+
+                </section>
+
+                <button type="submit" id="submitBtn" class="board-write-submit-btn">
+                    등록하기
+                </button>
+
+            </form>
+
+        </main>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/community/board-write.js}"></script>
+
+</body>
+</html>

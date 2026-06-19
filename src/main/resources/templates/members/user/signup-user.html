@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>학식목장 - 일반 이용자 가입</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/members/auth.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell">
+
+    <header th:replace="~{fragments/mobile-layout :: appHeader('일반 이용자 가입', 'back', 'none')}"></header>
+
+    <form id="signupForm" class="auth-form">
+
+      <input type="hidden" id="schoolId">
+      <input type="hidden" id="schoolEmail">
+      <input type="hidden" id="emailVerified" value="false">
+
+      <main class="app-scroll auth-scroll">
+
+        <section class="auth-section">
+          <h2 class="auth-section-title">학교 인증</h2>
+
+          <button type="button" class="auth-main-btn" id="emailModalOpenBtn">
+            학교 이메일 인증하기
+          </button>
+
+          <div class="verified-box" id="verifiedBox">
+            <p class="verified-text" id="verifiedText"></p>
+          </div>
+        </section>
+
+        <section class="auth-section">
+          <h2 class="auth-section-title">학교 정보</h2>
+
+          <div class="auth-field">
+            <label for="department">학과</label>
+            <input type="text"
+                   id="department"
+                   placeholder="예: 컴퓨터공학과"
+                   required>
+          </div>
+        </section>
+
+        <section class="auth-section">
+          <h2 class="auth-section-title">기본 정보</h2>
+
+          <div class="auth-field">
+            <label for="loginId">아이디</label>
+
+            <div class="auth-input-row">
+              <input type="text"
+                     id="loginId"
+                     placeholder="사용할 아이디를 입력해주세요"
+                     required>
+
+              <button type="button"
+                      class="auth-action-btn"
+                      data-check-type="loginId">
+                중복
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="name">이름</label>
+            <input type="text"
+                   id="name"
+                   placeholder="실명을 입력해주세요"
+                   required>
+          </div>
+
+          <div class="auth-field">
+            <label for="nickname">닉네임</label>
+
+            <div class="auth-input-row">
+              <input type="text"
+                     id="nickname"
+                     placeholder="앱에서 사용할 닉네임"
+                     required>
+
+              <button type="button"
+                      class="auth-action-btn"
+                      data-check-type="nickname">
+                중복
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-two-col">
+            <div class="auth-field">
+              <label for="birthDate">생년월일</label>
+              <input type="date"
+                     id="birthDate"
+                     required>
+            </div>
+
+            <div class="auth-field">
+              <label for="gender">성별</label>
+              <select id="gender" required>
+                <option value="">선택</option>
+                <option value="M">남성</option>
+                <option value="F">여성</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="phone">전화번호</label>
+            <input type="tel"
+                   id="phone"
+                   placeholder="- 없이 숫자만 입력">
+          </div>
+        </section>
+
+        <section class="auth-section">
+          <h2 class="auth-section-title">비밀번호</h2>
+
+          <div class="auth-field">
+            <label for="password">비밀번호</label>
+            <input type="password"
+                   id="password"
+                   placeholder="비밀번호 입력"
+                   required>
+
+            <p class="auth-help-text">※ 8자 이상으로 입력해주세요.</p>
+          </div>
+
+          <div class="auth-field">
+            <label for="passwordConfirm">비밀번호 확인</label>
+            <input type="password"
+                   id="passwordConfirm"
+                   placeholder="비밀번호 다시 입력"
+                   required>
+          </div>
+        </section>
+
+        <section class="auth-section">
+          <h2 class="auth-section-title">약관 동의</h2>
+
+          <div class="terms-group">
+            <div class="term-item" th:each="term : ${termsList}">
+              <input type="checkbox"
+                     th:id="'term' + ${term.termsId}"
+                     name="termsIds"
+                     th:value="${term.termsId}"
+                     required>
+
+              <label th:for="'term' + ${term.termsId}">
+                <span th:text="${term.requiredYn == 'Y' ? '[필수]' : '[선택]'}">[필수]</span>
+                <span th:text="${term.title}">약관 제목</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <div class="auth-bottom-fixed">
+        <button type="submit" class="auth-submit-btn">
+          가입 완료하기
+        </button>
+      </div>
+
+    </form>
+
+    <div class="auth-modal-backdrop" id="emailModal">
+      <div class="auth-modal-box">
+        <h2 class="auth-modal-title">학교 이메일 인증</h2>
+
+        <div class="auth-field">
+          <label for="modalEmail">학교 이메일</label>
+
+          <div class="auth-input-row">
+            <input type="email"
+                   id="modalEmail"
+                   placeholder="학교 이메일 입력">
+
+            <button type="button" class="auth-action-btn" id="emailSendBtn">
+              전송
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="modalCode">인증번호</label>
+
+          <div class="auth-input-row">
+            <input type="text"
+                   id="modalCode"
+                   placeholder="인증번호 6자리">
+
+            <button type="button" class="auth-action-btn" id="emailVerifyBtn">
+              확인
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-modal-actions">
+          <button type="button" class="auth-cancel-btn" id="emailModalCloseBtn">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/user/signup-user.js}"></script>
+
+</body>
+</html>

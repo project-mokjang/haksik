@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>학식목장 - 알림 전체 보기</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/members/user.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('알림', 'back', 'alarm')}"></header>
+
+        <main class="app-scroll has-bottom-nav">
+
+            <section class="notification-page-header">
+                <h2>알림 전체 보기</h2>
+                <p>매칭, 커뮤니티 등에서 발생한 알림을 확인할 수 있습니다.</p>
+            </section>
+
+            <section class="notification-page-list" id="allNotificationList">
+                <div class="notification-page-empty">
+                    알림을 불러오는 중입니다.
+                </div>
+            </section>
+
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: bottomNav('my')}"></nav>
+
+    </div>
+</div>
+
+<script th:src="@{/js/feedback.js}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        loadAllNotifications();
+    });
+
+    function loadAllNotifications() {
+        fetch('/api/notifications/all')
+            .then(response => response.json())
+            .then(result => {
+                const notifications = result.notifications || [];
+                renderAllNotifications(notifications);
+            })
+            .catch(error => {
+                console.error('알림 전체 조회 실패:', error);
+
+                const list = document.getElementById('allNotificationList');
+                if (list) {
+                    list.innerHTML = '<div class="notification-page-empty">알림을 불러올 수 없습니다.</div>';
+                }
+            });
+    }
+
+    function renderAllNotifications(notifications) {
+        const list = document.getElementById('allNotificationList');
+
+        if (!list) {
+            return;
+        }
+
+        if (!notifications || notifications.length === 0) {
+            list.innerHTML = '<div class="notification-page-empty">알림이 없습니다.</div>';
+            return;
+        }
+
+        list.innerHTML = notifications
+            .map(notification => createNotificationCard(notification))
+            .join('');
+    }
+
+    function createNotificationCard(notification) {
+        const unreadClass = notification.read ? '' : ' unread';
+        const dateText = formatNotificationDate(notification.createdAt);
+        const title = escapeHtml(notification.title || '알림');
+        const content = escapeHtml(notification.content || '');
+        const targetUrl = notification.targetUrl || '#';
+
+        return `
+            <article class="notification-page-item${unreadClass}"
+                     onclick="readAllNotificationAndMove(${notification.notificationId}, '${targetUrl}')">
+
+                <div class="notification-page-item-top">
+                    <strong>${title}</strong>
+                    <span>${dateText}</span>
+                </div>
+
+                <p>${content}</p>
+            </article>
+        `;
+    }
+
+    function readAllNotificationAndMove(notificationId, targetUrl) {
+        fetch(`/api/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        })
+            .finally(() => {
+                if (targetUrl && targetUrl !== '#') {
+                    location.href = targetUrl;
+                    return;
+                }
+
+                loadAllNotifications();
+            });
+    }
+
+    function formatNotificationDate(value) {
+        if (!value) {
+            return '';
+        }
+
+        return value.replace('T', ' ').substring(0, 16);
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+</script>
+
+</body>
+</html>
