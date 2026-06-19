@@ -18,7 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +46,52 @@ public class ChatRoomCreateService {
         );
     }
 
+    // 학식메이트 채팅방 생성
+    // memberIds가 2명이면 1:1, 3명 이상이면 그룹 채팅방으로 생성한다.
+    @Transactional
+    public ChatRoomResponse createMealChatRoom(
+            List<Long> memberIds
+    ) {
+        return createMealChatRoom(
+                "학식메이트 채팅방",
+                memberIds
+        );
+    }
+
+    // 학식메이트 채팅방 생성
+    // memberIds가 2명이면 1:1, 3명 이상이면 그룹 채팅방으로 생성한다.
+    @Transactional
+    public ChatRoomResponse createMealChatRoom(
+            String roomName,
+            List<Long> memberIds
+    ) {
+        List<Long> safeMemberIds = safeList(memberIds);
+
+        validateNoDuplicatedMemberIds(
+                safeMemberIds,
+                ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM
+        );
+
+        if (safeMemberIds.size() == 2) {
+            return createDirectRoom(
+                    safeMemberIds.get(0),
+                    safeMemberIds.get(1),
+                    ChatMatchingMode.MEAL
+            );
+        }
+
+        if (safeMemberIds.size() < 3) {
+            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+        }
+
+        return createGroupRoom(
+                normalizeRoomName(roomName, "학식메이트 채팅방"),
+                Collections.emptyList(),
+                safeMemberIds,
+                ChatMatchingMode.MEAL
+        );
+    }
+
     // 소개팅 1:1 채팅방 생성
     @Transactional
     public ChatRoomResponse createBlindDateChatRoom(
@@ -57,35 +106,44 @@ public class ChatRoomCreateService {
     }
 
     // 과팅 그룹 채팅방 생성
-    // 주의사항
-    // - leaderMemberIds에는 각 팀 대표자 2명만 넣는다.
-    // - memberIds에는 대표자를 제외한 일반 참여자만 넣는다.
-    // - 같은 회원 ID가 leaderMemberIds와 memberIds에 동시에 들어가면 안 된다.
+    // 처음에는 대표자 2명만 채팅방에 넣는다.
+    // 나머지 멤버는 이후 초대 기능에서 리더가 초대한다.
+    @Transactional
+    public ChatRoomResponse createGroupDateChatRoom(
+            String roomName,
+            List<Long> leaderMemberIds
+    ) {
+        List<Long> safeLeaderMemberIds = safeList(leaderMemberIds);
+
+        if (safeLeaderMemberIds.size() != 2) {
+            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+        }
+
+        validateNoDuplicatedMemberIds(
+                safeLeaderMemberIds,
+                ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM
+        );
+
+        return createGroupRoom(
+                normalizeRoomName(roomName, "과팅 채팅방"),
+                safeLeaderMemberIds,
+                Collections.emptyList(),
+                ChatMatchingMode.GROUP_DATE
+        );
+    }
+
+    // 기존 호출부 유지용
+    // 이제 과팅 생성 시 memberIds는 초기 입장시키지 않는다.
+    // 대표자 2명만 넣고, 나머지는 리더가 초대한다.
     @Transactional
     public ChatRoomResponse createGroupDateChatRoom(
             String roomName,
             List<Long> leaderMemberIds,
             List<Long> memberIds
     ) {
-        if (leaderMemberIds.size() != 2) {
-            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
-        }
-
-        if (memberIds.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
-        }
-
-        for (Long leaderMemberId : leaderMemberIds) {
-            if (memberIds.contains(leaderMemberId)) {
-                throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
-            }
-        }
-
-        return createGroupRoom(
+        return createGroupDateChatRoom(
                 roomName,
-                leaderMemberIds,
-                memberIds,
-                ChatMatchingMode.GROUP_DATE
+                leaderMemberIds
         );
     }
 
@@ -96,11 +154,15 @@ public class ChatRoomCreateService {
             Long memberBId,
             ChatMatchingMode matchingMode
     ) {
+        if (memberAId == null || memberBId == null) {
+            throw new CustomException(ErrorCode.INVALID_DIRECT_CHAT_ROOM);
+        }
+
         if (memberAId.equals(memberBId)) {
             throw new CustomException(ErrorCode.INVALID_DIRECT_CHAT_ROOM);
         }
 
-        if (matchingMode == ChatMatchingMode.GROUP_DATE) {
+        if (matchingMode == null || matchingMode == ChatMatchingMode.GROUP_DATE) {
             throw new CustomException(ErrorCode.INVALID_DIRECT_CHAT_ROOM);
         }
 
@@ -110,7 +172,7 @@ public class ChatRoomCreateService {
         ChatRoom chatRoom = new ChatRoom(
                 ChatRoomType.DIRECT,
                 matchingMode,
-                "1:1 채팅방"
+                getDirectRoomName(matchingMode)
         );
 
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
@@ -151,19 +213,41 @@ public class ChatRoomCreateService {
             List<Long> memberIds,
             ChatMatchingMode matchingMode
     ) {
-        if (matchingMode != ChatMatchingMode.GROUP_DATE) {
+        if (matchingMode == null || matchingMode == ChatMatchingMode.BLIND_DATE) {
             throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
         }
+
+        List<Long> safeLeaderMemberIds = safeList(leaderMemberIds);
+        List<Long> safeMemberIds = safeList(memberIds);
+
+        if (safeLeaderMemberIds.isEmpty() && safeMemberIds.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+        }
+
+        validateNoDuplicatedMemberIds(
+                safeLeaderMemberIds,
+                ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM
+        );
+
+        validateNoDuplicatedMemberIds(
+                safeMemberIds,
+                ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM
+        );
+
+        validateLeaderAndMemberNotDuplicated(
+                safeLeaderMemberIds,
+                safeMemberIds
+        );
 
         ChatRoom chatRoom = new ChatRoom(
                 ChatRoomType.GROUP,
                 matchingMode,
-                roomName
+                normalizeRoomName(roomName, "그룹 채팅방")
         );
 
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
-        for (Long leaderMemberId : leaderMemberIds) {
+        for (Long leaderMemberId : safeLeaderMemberIds) {
             Member leader = getMember(leaderMemberId);
 
             ChatRoomMember chatRoomMember = new ChatRoomMember(
@@ -175,7 +259,7 @@ public class ChatRoomCreateService {
             chatRoomMemberRepository.save(chatRoomMember);
         }
 
-        for (Long memberId : memberIds) {
+        for (Long memberId : safeMemberIds) {
             Member member = getMember(memberId);
 
             ChatRoomMember chatRoomMember = new ChatRoomMember(
@@ -211,5 +295,63 @@ public class ChatRoomCreateService {
         return userProfileRepository.findByMember(member)
                 .map(UserProfile::getNickname)
                 .orElse(member.getLoginId());
+    }
+
+    private String getDirectRoomName(ChatMatchingMode matchingMode) {
+        if (matchingMode == ChatMatchingMode.MEAL) {
+            return "학식메이트 채팅방";
+        }
+
+        if (matchingMode == ChatMatchingMode.BLIND_DATE) {
+            return "소개팅 채팅방";
+        }
+
+        return "1:1 채팅방";
+    }
+
+    private String normalizeRoomName(String roomName, String defaultRoomName) {
+        if (roomName == null || roomName.isBlank()) {
+            return defaultRoomName;
+        }
+
+        return roomName.trim();
+    }
+
+    private List<Long> safeList(List<Long> memberIds) {
+        if (memberIds == null) {
+            return Collections.emptyList();
+        }
+
+        return memberIds;
+    }
+
+    private void validateNoDuplicatedMemberIds(
+            List<Long> memberIds,
+            ErrorCode errorCode
+    ) {
+        Set<Long> memberIdSet = new HashSet<>();
+
+        for (Long memberId : memberIds) {
+            if (memberId == null) {
+                throw new CustomException(errorCode);
+            }
+
+            if (memberIdSet.contains(memberId)) {
+                throw new CustomException(errorCode);
+            }
+
+            memberIdSet.add(memberId);
+        }
+    }
+
+    private void validateLeaderAndMemberNotDuplicated(
+            List<Long> leaderMemberIds,
+            List<Long> memberIds
+    ) {
+        for (Long leaderMemberId : leaderMemberIds) {
+            if (memberIds.contains(leaderMemberId)) {
+                throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+            }
+        }
     }
 }
