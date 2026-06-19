@@ -15,6 +15,9 @@ let currentAcceptedMatchingId = null;
 // 현재 확정된 매칭 모드
 let currentAcceptedMatchingMode = null;
 
+// 현재 확정된 매칭 채팅방 ID
+let currentAcceptedChatRoomId = null;
+
 // 현재 내 매칭 대기 정보
 let currentWaitingMarker = null;
 
@@ -79,7 +82,12 @@ function goAcceptedMatchingMap() {
 
 // 확정 매칭 채팅방 이동
 function goAcceptedChatRoom() {
-    notify('채팅방 연결은 채팅 기능 연동 후 이동 처리하면 됩니다.', 'error');
+    if (!currentAcceptedChatRoomId) {
+        notify('아직 이동할 수 있는 채팅방이 없습니다.', 'error');
+        return;
+    }
+
+    location.href = `/api/view/user/chat/rooms/${currentAcceptedChatRoomId}`;
 }
 
 // 현재 내 매칭 대기 조회
@@ -480,6 +488,7 @@ function showAcceptedMatchingCard(matching) {
 
     currentAcceptedMatchingId = matching.matchingId;
     currentAcceptedMatchingMode = matching.mode;
+    currentAcceptedChatRoomId = matching.chatRoomId;
 
     title.textContent = getAcceptedMatchingTitle(matching);
     desc.textContent = getAcceptedMatchingDesc(matching);
@@ -523,6 +532,7 @@ function hideAcceptedMatchingCard() {
 
     currentAcceptedMatchingId = null;
     currentAcceptedMatchingMode = null;
+    currentAcceptedChatRoomId = null;
 
     if (card) {
         card.style.display = 'none';
@@ -550,6 +560,10 @@ function acceptReceivedMatching() {
 
             notify('매칭 요청을 수락했습니다.', 'success');
             hideReceivedRequestCard();
+
+            if (result.data) {
+                currentAcceptedChatRoomId = result.data;
+            }
 
             loadCurrentMatchingWaiting();
             loadSentRequests();

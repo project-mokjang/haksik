@@ -17,7 +17,7 @@ public class MyPageService {
     private final UserProfileRepository userProfileRepository;
 
     public MyPageResponse getMyPageInfo(Member member) {
-        // 1. Member와 연결된 UserProfile 정보 꺼내오기
+        // Member와 연결된 UserProfile 정보 꺼내오기
         UserProfile profile = userProfileRepository.findByMember(member)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 

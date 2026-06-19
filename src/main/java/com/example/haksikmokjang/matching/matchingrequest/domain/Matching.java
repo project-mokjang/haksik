@@ -54,6 +54,9 @@ public class Matching extends BaseEntity {
     @Column(name = "responded_at")
     private LocalDateTime respondedAt;
 
+    @Column(name = "chat_room_id")
+    private Long chatRoomId;
+
     // 매칭 수락
     public void accept() {
         this.status = MatchingStatus.ACCEPTED;
@@ -76,5 +79,10 @@ public class Matching extends BaseEntity {
     public void complete() {
         this.status = MatchingStatus.COMPLETED;
         this.respondedAt = LocalDateTime.now();
+    }
+
+    // 매칭과 연결된 채팅방 저장
+    public void connectChatRoom(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
     }
 }
