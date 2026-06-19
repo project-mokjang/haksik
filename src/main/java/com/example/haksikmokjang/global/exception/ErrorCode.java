@@ -54,6 +54,21 @@ public enum ErrorCode {
     MATCHING_NOT_RECEIVER(HttpStatus.FORBIDDEN, "MATCHING_011", "해당 매칭 요청을 처리할 권한이 없습니다."),
     MATCHING_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "MATCHING_012", "이미 처리된 매칭 요청입니다."),
 
+    // Chat
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_001", "채팅방을 찾을 수 없습니다."),
+    CHAT_MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT_002", "채팅방 참여자가 아닙니다."),
+    CHAT_ROOM_END_FORBIDDEN(HttpStatus.FORBIDDEN, "CHAT_003", "채팅방을 종료할 권한이 없습니다."),
+    CHAT_ROOM_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "CHAT_004", "이미 종료된 채팅방입니다."),
+    CHAT_ROOM_CLOSED(HttpStatus.BAD_REQUEST, "CHAT_005", "종료된 채팅방에서는 작업할 수 없습니다."),
+    CHAT_MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_006", "메시지를 찾을 수 없습니다."),
+    CHAT_MESSAGE_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "CHAT_007", "본인이 보낸 메시지만 수정할 수 있습니다."),
+    CHAT_MESSAGE_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "CHAT_008", "본인이 보낸 메시지만 삭제할 수 있습니다."),
+    CHAT_MESSAGE_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "CHAT_009", "삭제된 메시지는 수정할 수 없습니다."),
+    INVALID_DIRECT_CHAT_ROOM(HttpStatus.BAD_REQUEST, "CHAT_010", "1:1 채팅방 생성 정보가 올바르지 않습니다."),
+    INVALID_GROUP_DATE_CHAT_ROOM(HttpStatus.BAD_REQUEST, "CHAT_011", "과팅 채팅방 생성 정보가 올바르지 않습니다."),
+    INVALID_CHAT_IMAGE_FILE(HttpStatus.BAD_REQUEST, "CHAT_012", "이미지 파일만 업로드할 수 있습니다."),
+    CHAT_IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "CHAT_013", "채팅 이미지 저장에 실패했습니다."),
+
     //Location
     LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "LOCATION_001", "위치 정보를 찾을 수 없습니다."),
     INVALID_LOCATION_VALUE(HttpStatus.BAD_REQUEST, "LOCATION_002", "올바르지 않은 위치 값입니다."),
@@ -66,6 +81,9 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "COMMON_403", "해당 작업을 수행할 권한이 없습니다."),
     // Comment 추가
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "댓글을 찾을 수 없습니다."),
+
+    //Report
+    INVALID_REPORT_TARGET(HttpStatus.BAD_REQUEST, "REPORT_001", "신고 대상 정보가 올바르지 않습니다."),
 
     //신고 권한
     CANNOT_REPORT_OWN_CONTENT(HttpStatus.BAD_REQUEST, "COMMON_4001", "자신이 작성한 게시글이나 댓글은 신고할 수 없습니다."),

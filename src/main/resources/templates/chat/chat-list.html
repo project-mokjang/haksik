@@ -6,7 +6,7 @@
 
   <link rel="stylesheet" th:href="@{/css/base.css}">
   <link rel="stylesheet" th:href="@{/css/common-ui.css}">
-  <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-list.css}">
 </head>
 <body class="app-body">
 
@@ -20,10 +20,17 @@
     </header>
 
     <main class="app-scroll chat-list-scroll">
-      <section class="chat-page-title">
-        <h2>내 채팅방</h2>
-        <p>매칭된 친구들과 대화를 이어가요.</p>
-      </section>
+      <div class="chat-tab-bar">
+        <button type="button" class="chat-tab active" data-mode="MEAL" onclick="changeChatTab('MEAL')">
+          학식메이트
+        </button>
+        <button type="button" class="chat-tab" data-mode="GROUP_DATE" onclick="changeChatTab('GROUP_DATE')">
+          과팅
+        </button>
+        <button type="button" class="chat-tab" data-mode="BLIND_DATE" onclick="changeChatTab('BLIND_DATE')">
+          소개팅
+        </button>
+      </div>
 
       <div id="chatRoomList" class="chat-room-list">
         <!-- JS로 채팅방 목록 추가 -->
@@ -38,6 +45,6 @@
   </div>
 </div>
 
-<script th:src="@{/js/chat/chat.js}"></script>
+<script th:src="@{/js/chat/chat-list.js}"></script>
 </body>
 </html>

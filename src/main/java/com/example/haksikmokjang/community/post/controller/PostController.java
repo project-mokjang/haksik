@@ -114,4 +114,14 @@ public class PostController {
 
         return ResponseEntity.ok("게시글이 성공적으로 삭제되었습니다.");
     }
+
+    // 🚨 팩트: Authentication 객체를 통해 현재 접속자의 loginId를 Service로 넘깁니다.
+    @GetMapping("/top/hot")
+    public ResponseEntity<List<PostListResponse>> getHotPosts(
+            @RequestParam String boardType,
+            org.springframework.security.core.Authentication auth) {
+
+        return ResponseEntity.ok(postService.getHotPosts(boardType, auth.getName()));
+    }
+
 }
