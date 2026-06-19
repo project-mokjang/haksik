@@ -1,6 +1,5 @@
 package com.example.haksikmokjang.matching.matchingrequest.service;
 
-import com.example.haksikmokjang.chat.service.ChatService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.matching.matchingrequest.domain.Matching;
@@ -30,7 +29,6 @@ public class MatchingRequestService {
     private final MatchingRepository matchingRepository;
     private final MatchingWaitingRepository matchingWaitingRepository;
     private final UserProfileRepository userProfileRepository;
-    private final ChatService chatService;
 
     // 매칭 요청 생성
     public void requestMatching(Long memberId, MatchingRequestCreateRequest request) {
@@ -83,7 +81,7 @@ public class MatchingRequestService {
             throw new CustomException(ErrorCode.MATCHING_ALREADY_PARTICIPATED);
         }
 
-        // 동일 사용자 간 진행 중인 요청 방지
+        // 동일 사용자 간 진행 중 요청 방지
         boolean alreadyRequested = matchingRepository.existsRequestBetween(
                 requester,
                 target,
@@ -108,7 +106,7 @@ public class MatchingRequestService {
         matchingRepository.save(matching);
     }
 
-    // 받은 매칭 요청 목록 조회
+    // 내가 받은 매칭 요청 목록 조회
     @Transactional(readOnly = true)
     public List<MatchingReceivedResponse> getReceivedRequests(Long memberId) {
 
@@ -116,7 +114,7 @@ public class MatchingRequestService {
         UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
-        // 내가 받은 요청 조회
+        // 내가 받은 REQUESTED 요청 조회
         List<Matching> matchings = matchingRepository.findByTargetAndStatusOrderByRequestedAtDesc(
                 target,
                 MatchingStatus.REQUESTED
@@ -136,7 +134,7 @@ public class MatchingRequestService {
                 .toList();
     }
 
-    // 보낸 매칭 요청 목록 조회
+    // 내가 보낸 매칭 요청 목록 조회
     @Transactional(readOnly = true)
     public List<MatchingSentResponse> getSentRequests(Long memberId) {
 
@@ -167,7 +165,72 @@ public class MatchingRequestService {
                 .toList();
     }
 
-    // 보낸 매칭 요청 취소
+    // 매칭 요청 수락
+    public void acceptMatching(Long memberId, Long matchingId) {
+
+        // 내 프로필 조회
+        UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 매칭 요청 조회
+        Matching matching = matchingRepository.findById(matchingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MATCHING_NOT_FOUND));
+
+        // 요청 받은 사람인지 확인
+        if (!matching.getTarget().getUserProfileId().equals(target.getUserProfileId())) {
+            throw new CustomException(ErrorCode.MATCHING_NOT_RECEIVER);
+        }
+
+        // REQUESTED 상태인지 확인
+        if (matching.getStatus() != MatchingStatus.REQUESTED) {
+            throw new CustomException(ErrorCode.MATCHING_ALREADY_PROCESSED);
+        }
+
+        // 수락 처리
+        matching.accept();
+
+        if (matching.getMatchingType() == MatchingType.GROUP_MEAL) {
+
+            // 단체 학식 매칭 처리
+            acceptGroupMealMatching(matching);
+
+            // TODO 단체 학식 채팅방 연결
+
+        } else {
+
+            // 1:1 매칭 처리
+            acceptOneToOneMatching(matching);
+
+            // TODO 1:1 채팅방 연결
+        }
+    }
+
+    // 매칭 요청 거절
+    public void rejectMatching(Long memberId, Long matchingId) {
+
+        // 내 프로필 조회
+        UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 매칭 요청 조회
+        Matching matching = matchingRepository.findById(matchingId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MATCHING_NOT_FOUND));
+
+        // 요청 받은 사람인지 확인
+        if (!matching.getTarget().getUserProfileId().equals(target.getUserProfileId())) {
+            throw new CustomException(ErrorCode.MATCHING_NOT_RECEIVER);
+        }
+
+        // REQUESTED 상태인지 확인
+        if (matching.getStatus() != MatchingStatus.REQUESTED) {
+            throw new CustomException(ErrorCode.MATCHING_ALREADY_PROCESSED);
+        }
+
+        // 거절 처리
+        matching.reject();
+    }
+
+    // 내가 보낸 매칭 요청 취소
     public void cancelSentMatching(Long memberId, Long matchingId) {
 
         // 내 프로필 조회
@@ -190,76 +253,6 @@ public class MatchingRequestService {
 
         // 요청 취소 처리
         matching.cancel();
-    }
-
-    // 매칭 요청 수락
-    public void acceptMatching(Long memberId, Long matchingId) {
-
-        // 내 프로필 조회
-        UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
-
-        // 매칭 요청 조회
-        Matching matching = matchingRepository.findById(matchingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MATCHING_NOT_FOUND));
-
-        // 요청 수신자 확인
-        if (!matching.getTarget().getUserProfileId().equals(target.getUserProfileId())) {
-            throw new CustomException(ErrorCode.MATCHING_NOT_RECEIVER);
-        }
-
-        // 요청 상태 확인
-        if (matching.getStatus() != MatchingStatus.REQUESTED) {
-            throw new CustomException(ErrorCode.MATCHING_ALREADY_PROCESSED);
-        }
-
-        // 수락 처리
-        matching.accept();
-
-        if (matching.getMatchingType() == MatchingType.GROUP_MEAL) {
-
-            // 단체 학식 매칭 처리
-            acceptGroupMealMatching(matching);
-
-            // TODO 단체 학식 채팅방 연결
-            // chatService.addGroupMealParticipant(...);
-
-        } else {
-
-            // 1:1 매칭 처리
-            acceptOneToOneMatching(matching);
-
-            // 1:1 채팅방 생성
-            Long requesterMemberId = matching.getRequester().getMember().getMemberId();
-            Long targetMemberId = matching.getTarget().getMember().getMemberId();
-
-            chatService.createMealChatRoom(requesterMemberId, targetMemberId);
-        }
-    }
-
-    // 매칭 요청 거절
-    public void rejectMatching(Long memberId, Long matchingId) {
-
-        // 내 프로필 조회
-        UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
-
-        // 매칭 요청 조회
-        Matching matching = matchingRepository.findById(matchingId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MATCHING_NOT_FOUND));
-
-        // 요청 수신자 확인
-        if (!matching.getTarget().getUserProfileId().equals(target.getUserProfileId())) {
-            throw new CustomException(ErrorCode.MATCHING_NOT_RECEIVER);
-        }
-
-        // 요청 상태 확인
-        if (matching.getStatus() != MatchingStatus.REQUESTED) {
-            throw new CustomException(ErrorCode.MATCHING_ALREADY_PROCESSED);
-        }
-
-        // 거절 처리
-        matching.reject();
     }
 
     // 1:1 매칭 수락 후 양쪽 대기 상태 종료

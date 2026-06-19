@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
-
     private final ReportService reportService;
 
+    // 게시글/댓글 신고
     @PostMapping
     public ResponseEntity<String> createReport(
             Authentication authentication,
@@ -21,6 +21,34 @@ public class ReportController {
 
         String loginId = authentication.getName();
         reportService.createReport(loginId, request);
+
+        return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
+    }
+
+    // 채팅 메시지 신고
+    @PostMapping("/chat/rooms/{chatRoomId}/messages/{chatMessageId}")
+    public ResponseEntity<String> reportChatMessage(
+            Authentication authentication,
+            @PathVariable Long chatRoomId,
+            @PathVariable Long chatMessageId,
+            @Valid @RequestBody ReportRequest request
+    ) {
+        String loginId = authentication.getName();
+        reportService.reportChatMessage(loginId, chatRoomId, chatMessageId, request);
+
+        return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
+    }
+
+    // 채팅방 상대 신고
+    @PostMapping("/chat/rooms/{chatRoomId}/members/{memberId}")
+    public ResponseEntity<String> reportChatMember(
+            Authentication authentication,
+            @PathVariable Long chatRoomId,
+            @PathVariable Long memberId,
+            @Valid @RequestBody ReportRequest request
+    ) {
+        String loginId = authentication.getName();
+        reportService.reportChatMember(loginId, chatRoomId, memberId, request);
 
         return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
     }
