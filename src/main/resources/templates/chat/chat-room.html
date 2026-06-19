@@ -51,6 +51,11 @@
             <span class="plus-menu-text">폼</span>
           </button>
 
+          <button type="button" id="inviteMemberPlusButton" class="chat-plus-menu-item hidden">
+            <span class="plus-menu-icon">➕</span>
+            <span class="plus-menu-text">초대</span>
+          </button>
+
           <button type="button" id="endChatPlusButton" class="chat-plus-menu-item danger">
             <span class="plus-menu-icon">🚪</span>
             <span class="plus-menu-text">종료</span>
@@ -80,6 +85,11 @@
 
     <div id="chatMenu" class="chat-menu hidden">
       <button type="button" onclick="openMemberModal()">참여자 보기</button>
+
+      <button type="button" id="inviteMemberMenuButton" class="hidden" onclick="openInviteMemberModal()">
+        멤버 초대
+      </button>
+
       <button type="button" id="endChatButton" class="end-chat-menu-button hidden" onclick="endChatRoom()">
         채팅 끝내기
       </button>
@@ -94,6 +104,36 @@
 
         <div id="memberList" class="member-list">
           <!-- JS로 참여자 목록 추가 -->
+        </div>
+      </div>
+    </div>
+
+    <div id="inviteMemberModal" class="modal-backdrop hidden">
+      <div class="invite-modal">
+        <div class="invite-modal-header">
+          <h3>멤버 초대</h3>
+          <button type="button" onclick="closeInviteMemberModal()">×</button>
+        </div>
+
+        <div class="invite-modal-body">
+          <p class="invite-help-text">
+            초대할 사용자의 닉네임을 입력해 주세요.
+          </p>
+
+          <input
+                  type="text"
+                  id="inviteNicknameInput"
+                  class="invite-nickname-input"
+                  placeholder="닉네임 입력"
+                  maxlength="30"
+                  autocomplete="off"
+                  onkeydown="if (event.key === 'Enter') { event.preventDefault(); submitInviteMember(); }"
+          >
+        </div>
+
+        <div class="invite-actions">
+          <button type="button" class="invite-cancel-button" onclick="closeInviteMemberModal()">취소</button>
+          <button type="button" class="invite-submit-button" onclick="submitInviteMember()">초대</button>
         </div>
       </div>
     </div>
