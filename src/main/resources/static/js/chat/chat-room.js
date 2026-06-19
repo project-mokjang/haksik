@@ -1,13 +1,20 @@
 let currentChatRoomDetail = null;
+let currentLoginMemberId = null;
 let reportTargetType = null;
 let reportTargetId = null;
 let reportTargetUrl = null;
 let reviewTargets = [];
 let currentReviewIndex = 0;
+let chatStompClient = null;
+let chatSocketConnected = false;
+let lastSentReadMessageId = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadChatRoomDetail();
-    loadMessages();
+    loadChatRoomDetail()
+        .finally(function () {
+            loadMessages(true);
+            connectChatSocket();
+        });
 
     const messageForm = document.getElementById("messageForm");
 
@@ -38,19 +45,26 @@ function loadChatRoomDetail() {
     const chatRoomId = getChatRoomId();
 
     if (!chatRoomId) {
-        return;
+        return Promise.resolve(null);
     }
 
-    fetch("/api/chat/rooms/" + chatRoomId)
+    return fetch("/api/chat/rooms/" + chatRoomId)
         .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
             return response.json();
         })
         .then(function (roomDetail) {
             currentChatRoomDetail = roomDetail;
+            currentLoginMemberId = roomDetail.loginMemberId || null;
             applyChatRoomDetail(roomDetail);
+            return roomDetail;
         })
         .catch(function () {
             alert("채팅방 정보를 불러오지 못했습니다.");
+            return null;
         });
 }
 
@@ -243,6 +257,11 @@ function sendMessage() {
         return;
     }
 
+    if (sendSocketTextMessage(chatRoomId, message)) {
+        messageInput.value = "";
+        return;
+    }
+
     fetch("/api/chat/rooms/" + chatRoomId + "/messages", {
         method: "POST",
         headers: {
@@ -259,9 +278,10 @@ function sendMessage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (savedMessage) {
             messageInput.value = "";
-            loadMessages();
+            appendOrReplaceMessage(savedMessage);
+            sendReadForLatestMessage();
         })
         .catch(function () {
             alert("메시지를 전송하지 못했습니다.");
@@ -391,9 +411,13 @@ function sendChatImage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (savedMessage) {
             chatImageInput.value = "";
-            loadMessages();
+
+            if (!isChatSocketReady()) {
+                appendOrReplaceMessage(savedMessage);
+                sendReadForLatestMessage();
+            }
         })
         .catch(function () {
             chatImageInput.value = "";
@@ -1200,6 +1224,163 @@ function closeMessageForm() {
         chatPlusMenu.classList.add("hidden");
     }
 }
+
+
+// WebSocket 연결
+function connectChatSocket() {
+    const chatRoomId = getChatRoomId();
+
+    if (!chatRoomId) {
+        return;
+    }
+
+    if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
+        console.warn("SockJS 또는 STOMP 스크립트를 불러오지 못했습니다. REST 방식으로 동작합니다.");
+        return;
+    }
+
+    const socket = new SockJS("/ws/chat");
+    chatStompClient = Stomp.over(socket);
+    chatStompClient.debug = null;
+
+    chatStompClient.connect({}, function () {
+        chatSocketConnected = true;
+
+        chatStompClient.subscribe("/sub/chat/rooms/" + chatRoomId, function (message) {
+            handleChatSocketEvent(message);
+        });
+
+        sendReadForLatestMessage();
+    }, function () {
+        chatSocketConnected = false;
+    });
+}
+
+// WebSocket 연결 여부
+function isChatSocketReady() {
+    return chatStompClient !== null && chatSocketConnected === true;
+}
+
+// WebSocket 이벤트 처리
+function handleChatSocketEvent(socketMessage) {
+    if (!socketMessage || !socketMessage.body) {
+        return;
+    }
+
+    const event = JSON.parse(socketMessage.body);
+    const chatRoomId = getChatRoomId();
+
+    if (!event || String(event.chatRoomId) !== String(chatRoomId)) {
+        return;
+    }
+
+    if (event.eventType === "SEND") {
+        appendOrReplaceMessage(event.message);
+        sendReadForLatestMessage();
+        return;
+    }
+
+    if (event.eventType === "EDIT") {
+        appendOrReplaceMessage(event.message);
+        return;
+    }
+
+    if (event.eventType === "DELETE") {
+        appendOrReplaceMessage(event.message);
+        return;
+    }
+
+    if (event.eventType === "READ") {
+        loadMessages(false);
+    }
+}
+
+// 텍스트 메시지 WebSocket 전송
+function sendSocketTextMessage(chatRoomId, message) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/send",
+        {},
+        JSON.stringify({
+            chatRoomId: Number(chatRoomId),
+            message: message
+        })
+    );
+
+    return true;
+}
+
+// 메시지 수정 WebSocket 전송
+function sendEditMessageRequest(chatMessageId, message) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/edit",
+        {},
+        JSON.stringify({
+            chatMessageId: Number(chatMessageId),
+            message: message
+        })
+    );
+
+    return true;
+}
+
+// 메시지 삭제 WebSocket 전송
+function sendDeleteMessageRequest(chatMessageId) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/delete",
+        {},
+        JSON.stringify({
+            chatMessageId: Number(chatMessageId)
+        })
+    );
+
+    return true;
+}
+
+// 현재 방의 마지막 메시지까지 읽음 처리
+function sendReadForLatestMessage() {
+    const chatRoomId = getChatRoomId();
+    const lastMessageId = getLastCachedMessageId();
+
+    if (!chatRoomId || !lastMessageId || !isChatSocketReady()) {
+        return;
+    }
+
+    if (String(lastSentReadMessageId) === String(lastMessageId)) {
+        return;
+    }
+
+    lastSentReadMessageId = lastMessageId;
+
+    chatStompClient.send(
+        "/pub/chat/message/read",
+        {},
+        JSON.stringify({
+            chatRoomId: Number(chatRoomId),
+            lastReadMessageId: Number(lastMessageId)
+        })
+    );
+}
+
+// 페이지 이탈 시 WebSocket 연결 해제
+window.addEventListener("beforeunload", function () {
+    if (chatStompClient !== null && chatSocketConnected) {
+        chatStompClient.disconnect(function () {
+            chatSocketConnected = false;
+        });
+    }
+});
 
 // HTML 특수문자 처리
 function escapeHtml(value) {
