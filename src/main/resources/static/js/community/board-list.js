@@ -75,10 +75,12 @@ function resetAndFetch() {
     lastPostId = null;
     isEnd = false;
 
-    saveFilterState(); // 🚨 데이터를 불러오기 전 현재 선택된 조건을 세션에 백업
+    saveFilterState(); // 데이터를 불러오기 전 현재 선택된 조건을 세션에 백업
+
+    //일반 글을 긁어오기 전에 핫글부터 먼저 긁어와서 위에 렌더링
+    loadHotPosts();
     fetchPosts();
 }
-
 // 게시글 목록 조회
 async function fetchPosts() {
     if (isLoading || isEnd) return;
@@ -272,4 +274,42 @@ function initInfiniteScroll() {
     });
 
     postObserver.observe(target);
+}
+
+//핫글 긁어와서 상단에 박아넣는 전용 로직
+async function loadHotPosts() {
+    const boardType = document.getElementById('boardType').value;
+    const hotContainer = document.getElementById('hotPostContainer');
+    if (!hotContainer) return;
+
+    try {
+        // 🚨 팩트: 백엔드와 맞춘 새로운 주소(/api/posts/top/hot)로 찌릅니다.
+        const res = await fetch(`/api/posts/top/hot?boardType=${boardType}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        hotContainer.innerHTML = '';
+
+        data.forEach(post => {
+            const dateStr = post.createdAt ? post.createdAt.split('T')[0] : '';
+            const categoryLabel = getCategoryLabel(post.category);
+
+            hotContainer.innerHTML += `
+                <li class="board-post-card hot-post-item" onclick="location.href='/api/view/community/${post.postId}'">
+                    <div class="board-post-head">
+                        <div class="board-post-category">[${categoryLabel}]</div>
+                    </div>
+                    <div class="board-post-title">
+                        <span class="hot-badge">HOT</span>${post.title}
+                    </div>
+                    <div class="board-post-meta">
+                        <span>${post.authorName || '익명'}</span>
+                        <span>조회 ${post.viewCount || 0} · ${dateStr}</span>
+                    </div>
+                </li>
+            `;
+        });
+    } catch (e) {
+        console.error('핫글 로딩 실패', e);
+    }
 }

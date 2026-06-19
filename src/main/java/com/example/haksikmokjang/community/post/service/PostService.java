@@ -3,6 +3,7 @@ package com.example.haksikmokjang.community.post.service;
 import com.example.haksikmokjang.community.comment.domain.Comment;
 import com.example.haksikmokjang.community.comment.dto.CommentResponse;
 import com.example.haksikmokjang.community.comment.repository.CommentRepository;
+import com.example.haksikmokjang.community.post.domain.PostStatus;
 import com.example.haksikmokjang.community.post.dto.PostUpdateRequest;
 import com.example.haksikmokjang.community.post.domain.BoardType;
 import com.example.haksikmokjang.community.post.domain.Post;
@@ -232,5 +233,39 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.addViewCount();
+    }
+
+
+    // 🚨 팩트: DTO 변환 시 닉네임 처리와 내 글 여부(loginId)를 정확하게 매핑합니다.
+    @Transactional(readOnly = true)
+    public List<PostListResponse> getHotPosts(String boardTypeStr, String loginId) {
+        BoardType boardType = BoardType.valueOf(boardTypeStr);
+
+        List<Post> hotPosts = postRepository.findTop2ByStatusAndBoardTypeOrderByViewCountDesc(PostStatus.ACTIVE, boardType);
+
+        return hotPosts.stream().map(post -> {
+            // 1. 익명 방어벽 및 닉네임 추출
+            String authorName = "익명";
+            if ("N".equals(post.getAnonymousYn())) {
+                UserProfile profile = userProfileRepository.findByMember(post.getMember())
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+                authorName = profile.getNickname();
+            }
+
+            // 2. 내 글인지 팩트 체크
+            boolean isMine = post.getMember().getLoginId().equals(loginId);
+
+            // 3. DTO 수동 조립 (회원님의 PostListResponse 필드명에 맞게 살짝 수정이 필요할 수 있습니다)
+            PostListResponse res = new PostListResponse();
+            res.setPostId(post.getPostId());
+            res.setCategory(post.getCategory().name()); // DTO가 String이면 .name() 유지
+            res.setTitle(post.getTitle());
+            res.setAuthorName(authorName);
+            res.setViewCount(post.getViewCount());
+            res.setCreatedAt(post.getCreatedAt());
+            res.setMine(isMine);
+
+            return res;
+        }).toList();
     }
 }
