@@ -118,3 +118,20 @@ body { display: flex; height: 100vh; background-color: var(--ivory); color: var(
 .btn-submit { padding: 10px 20px; background: var(--red); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
 .btn-submit:hover { background: #b74b3e; }
 
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.card-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.card-desc {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
