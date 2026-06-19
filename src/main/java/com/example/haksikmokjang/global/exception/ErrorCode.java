@@ -105,6 +105,7 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_002", "가게 정보를 찾을 수 없습니다."),
     UNAUTHORIZED_REVIEW(HttpStatus.FORBIDDEN,"REVIEW_001", "리뷰 작성 권한이 없습니다. (예약 완료 후 30분~4시간 내에만 가능합니다.)"),
     NO_SHOW_REPORT_EXPIRED(HttpStatus.NOT_FOUND, "OWNER_004","노쇼 신고 가능 시간이 지났습니다. (예약 시간 2시간 이내에만 가능합니다.)"),
+    RESERVATION_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "REVIEW_002", "이미 리뷰 작성을 하셨습니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_003", "예약 정보를 찾을 수 없습니다.");
 
 
