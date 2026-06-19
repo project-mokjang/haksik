@@ -15,6 +15,7 @@ public class ChatRoomDetailResponse {
     private ChatRoomStatus roomStatus;
     private String roomName;
     private String displayRoomName;
+    private Long loginMemberId;
     private boolean leader;
     private boolean canEndChat;
 }

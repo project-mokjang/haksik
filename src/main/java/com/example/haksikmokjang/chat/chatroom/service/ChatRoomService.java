@@ -72,6 +72,7 @@ public class ChatRoomService {
                 .roomStatus(chatRoom.getRoomStatus())
                 .roomName(chatRoom.getRoomName())
                 .displayRoomName(getDisplayRoomName(chatRoom, loginMember))
+                .loginMemberId(loginMember.getMemberId())
                 .leader(loginChatRoomMember.isLeader())
                 .canEndChat(canEndChatRoom(chatRoom, loginChatRoomMember))
                 .build();
@@ -122,6 +123,7 @@ public class ChatRoomService {
                 .roomStatus(chatRoom.getRoomStatus())
                 .roomName(chatRoom.getRoomName())
                 .displayRoomName(getDisplayRoomName(chatRoom, loginMember))
+                .loginMemberId(loginMember.getMemberId())
                 .leader(loginChatRoomMember.isLeader())
                 .canEndChat(false)
                 .build();

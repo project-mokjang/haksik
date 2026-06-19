@@ -92,7 +92,14 @@ public enum ErrorCode {
 
     //신고 권한
     CANNOT_REPORT_OWN_CONTENT(HttpStatus.BAD_REQUEST, "COMMON_4001", "자신이 작성한 게시글이나 댓글은 신고할 수 없습니다."),
-    ALREADY_REPORTED(HttpStatus.CONFLICT, "COMMON_4002", "이미 신고가 접수된 항목입니다.");
+    ALREADY_REPORTED(HttpStatus.CONFLICT, "COMMON_4002", "이미 신고가 접수된 항목입니다."),
+
+    //Store, 예약 관련 에러코드
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_002", "가게 정보를 찾을 수 없습니다."),
+    UNAUTHORIZED_REVIEW(HttpStatus.FORBIDDEN,"REVIEW_001", "리뷰 작성 권한이 없습니다. (예약 완료 후 30분~4시간 내에만 가능합니다.)"),
+    NO_SHOW_REPORT_EXPIRED(HttpStatus.NOT_FOUND, "OWNER_004","노쇼 신고 가능 시간이 지났습니다. (예약 시간 2시간 이내에만 가능합니다.)"),
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_003", "예약 정보를 찾을 수 없습니다.");
+
 
     private final HttpStatus status;
     private final String code;
