@@ -695,3 +695,18 @@
     background-color: var(--ivory2);
     border-color: var(--green);
 }
+/* 🚨 핫글 전용 스타일 */
+.hot-post-item {
+    background-color: rgba(255, 59, 48, 0.05); /* 연한 빨간 배경 */
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+.hot-badge {
+    background-color: #ff3b30;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
