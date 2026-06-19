@@ -1,0 +1,12 @@
+package com.example.haksikmokjang.chat.chatmessage.dto;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class ChatSocketDeleteRequest {
+    private Long chatMessageId;
+}

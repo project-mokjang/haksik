@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
 
+    Optional<UserProfile> findByNickname(String nickname);
 
     boolean existsByNickname(String nickname);
 
@@ -23,7 +24,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 
     Optional<UserProfile> findByMember_LoginId(String loginId); // 이거는 커뮤니티 게시판에서 유저 프로필좀 쓰려고 박아놨어옹 -진우
 
-    // 이름(name)과 연결된 Member의 이메일(email)로 유저 프로필 찾기
+    // 이름과 연결된 Member의 이메일로 유저 프로필 찾기
     Optional<UserProfile> findByNameAndMember_Email(String name, String email);
 
 

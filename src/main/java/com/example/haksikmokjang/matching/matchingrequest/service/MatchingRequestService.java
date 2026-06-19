@@ -1,5 +1,7 @@
 package com.example.haksikmokjang.matching.matchingrequest.service;
 
+import com.example.haksikmokjang.chat.chatroom.dto.ChatRoomResponse;
+import com.example.haksikmokjang.chat.chatroom.service.ChatRoomCreateService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.matching.matchingrequest.domain.Matching;
@@ -9,6 +11,7 @@ import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingReceivedRe
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingRequestCreateRequest;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingSentResponse;
 import com.example.haksikmokjang.matching.matchingrequest.repository.MatchingRepository;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaitingStatus;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,6 +36,7 @@ public class MatchingRequestService {
     private final MatchingWaitingRepository matchingWaitingRepository;
     private final UserProfileRepository userProfileRepository;
     private final NotificationService notificationService;
+    private final ChatRoomCreateService chatRoomCreateService;
 
     // 매칭 요청 생성
     public void requestMatching(Long memberId, MatchingRequestCreateRequest request) {
@@ -286,7 +291,7 @@ public class MatchingRequestService {
     }
 
     // 매칭 요청 수락
-    public void acceptMatching(Long memberId, Long matchingId) {
+    public Long acceptMatching(Long memberId, Long matchingId) {
 
         // 내 프로필 조회
         UserProfile target = userProfileRepository.findByMember_MemberId(memberId)
@@ -309,20 +314,33 @@ public class MatchingRequestService {
         // 수락 처리
         matching.accept();
 
+        Long chatRoomId;
+
         if (matching.getMatchingType() == MatchingType.GROUP_MEAL) {
 
             // 단체 학식 매칭 처리
             acceptGroupMealMatching(matching);
 
-            // TODO 단체 학식 채팅방 연결
+            // 단체 학식은 정원이 다 찼을 때 3명 이상 채팅방 생성
+            chatRoomId = createGroupMealChatRoomIfFull(matching);
+
+        } else if (matching.getMatchingType() == MatchingType.GROUP_DATE) {
+
+            // 과팅은 대표 2명 매칭 완료 처리
+            acceptOneToOneMatching(matching);
+
+            // 과팅은 리더 2명만 채팅방에 먼저 넣음
+            chatRoomId = createGroupDateChatRoom(matching);
 
         } else {
 
-            // 1:1 매칭 처리
+            // 학식 1:1 / 소개팅 1:1 매칭 처리
             acceptOneToOneMatching(matching);
 
-            // TODO 1:1 채팅방 연결
+            // 모드에 따라 1:1 채팅방 생성
+            chatRoomId = createOneToOneChatRoom(matching);
         }
+
         // 매칭 수락 알림
         sendMatchingNotification(
                 matching.getRequester(),
@@ -330,6 +348,8 @@ public class MatchingRequestService {
                 getNotificationNickname(matching.getTarget()) + "님이 매칭을 수락했습니다.",
                 matching.getMatchingId()
         );
+
+        return chatRoomId;
     }
 
     // 매칭 요청 거절
@@ -355,6 +375,7 @@ public class MatchingRequestService {
 
         // 거절 처리
         matching.reject();
+
         // 거절 알림 처리
         sendMatchingNotification(
                 matching.getRequester(),
@@ -387,7 +408,8 @@ public class MatchingRequestService {
 
         // 요청 취소 처리
         matching.cancel();
-        //매칭 취소 알림
+
+        // 매칭 취소 알림
         sendMatchingNotification(
                 matching.getTarget(),
                 "매칭 신청 취소",
@@ -463,6 +485,7 @@ public class MatchingRequestService {
                             matching.getStatus(),
                             matching.getTargetWaiting().getCurrentParticipants(),
                             matching.getTargetWaiting().getMaxParticipants(),
+                            matching.getChatRoomId(),
                             matching.getRespondedAt()
                     );
                 })
@@ -503,5 +526,81 @@ public class MatchingRequestService {
         }
 
         return userProfile.getNickname();
+    }
+
+    // 1:1 매칭 성공 후 채팅방 생성
+    private Long createOneToOneChatRoom(Matching matching) {
+        Long requesterMemberId = matching.getRequester().getMember().getMemberId();
+        Long targetMemberId = matching.getTarget().getMember().getMemberId();
+
+        ChatRoomResponse chatRoomResponse;
+
+        if (matching.getMode() == MatchingMode.BLIND_DATE) {
+            chatRoomResponse = chatRoomCreateService.createBlindDateChatRoom(
+                    requesterMemberId,
+                    targetMemberId
+            );
+        } else {
+            chatRoomResponse = chatRoomCreateService.createMealChatRoom(
+                    requesterMemberId,
+                    targetMemberId
+            );
+        }
+
+        matching.connectChatRoom(chatRoomResponse.getChatRoomId());
+
+        return chatRoomResponse.getChatRoomId();
+    }
+
+    // 단체 학식 매칭 성공 후 정원이 다 찼으면 채팅방 생성
+    private Long createGroupMealChatRoomIfFull(Matching matching) {
+        MatchingWaiting targetWaiting = matching.getTargetWaiting();
+
+        if (!targetWaiting.isFull()) {
+            return null;
+        }
+
+        List<Matching> acceptedMatchings = matchingRepository.findByTargetWaitingAndStatusIn(
+                targetWaiting,
+                List.of(MatchingStatus.ACCEPTED)
+        );
+
+        List<Long> memberIds = new ArrayList<>();
+
+        // 단체 학식 모집자
+        memberIds.add(targetWaiting.getUserProfile().getMember().getMemberId());
+
+        // 단체 학식 참가자들
+        acceptedMatchings.forEach(acceptedMatching ->
+                memberIds.add(acceptedMatching.getRequester().getMember().getMemberId())
+        );
+
+        ChatRoomResponse chatRoomResponse = chatRoomCreateService.createMealChatRoom(
+                "학식메이트 채팅방",
+                memberIds
+        );
+
+        acceptedMatchings.forEach(acceptedMatching ->
+                acceptedMatching.connectChatRoom(chatRoomResponse.getChatRoomId())
+        );
+
+        matchingRepository.saveAll(acceptedMatchings);
+
+        return chatRoomResponse.getChatRoomId();
+    }
+
+    // 과팅 매칭 성공 후 리더 2명만 채팅방 생성
+    private Long createGroupDateChatRoom(Matching matching) {
+        Long requesterMemberId = matching.getRequester().getMember().getMemberId();
+        Long targetMemberId = matching.getTarget().getMember().getMemberId();
+
+        ChatRoomResponse chatRoomResponse = chatRoomCreateService.createGroupDateChatRoom(
+                "과팅 채팅방",
+                List.of(requesterMemberId, targetMemberId)
+        );
+
+        matching.connectChatRoom(chatRoomResponse.getChatRoomId());
+
+        return chatRoomResponse.getChatRoomId();
     }
 }

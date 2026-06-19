@@ -161,6 +161,28 @@ public class ChatMessageService {
         return createChatMessageResponse(chatMessage, chatRoomMembers, loginMember);
     }
 
+
+    // 메시지가 속한 채팅방 ID 조회
+    public Long getChatRoomIdByMessageId(Long chatMessageId) {
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+
+        return chatMessage.getChatRoom().getChatRoomId();
+    }
+
+    // 읽음 처리
+    @Transactional
+    public void readMessages(Long chatRoomId, Long lastReadMessageId, Member loginMember) {
+        if (lastReadMessageId == null) {
+            return;
+        }
+
+        ChatRoom chatRoom = getChatRoom(chatRoomId);
+        ChatRoomMember loginChatRoomMember = getChatRoomMember(chatRoom, loginMember);
+
+        loginChatRoomMember.updateLastReadMessage(lastReadMessageId);
+    }
+
     // 메시지 응답 생성
     private ChatMessageResponse createChatMessageResponse(
             ChatMessage chatMessage,
