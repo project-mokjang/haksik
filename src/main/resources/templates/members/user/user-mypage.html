@@ -15,7 +15,7 @@
 <div class="app-page">
     <div class="app-shell" id="mypageContainer" th:data-member-id="${myPage.memberId}">
 
-        <header th:replace="~{fragments/mobile-layout :: appHeader('내 정보', 'back', 'none')}"></header>
+        <header th:replace="~{fragments/mobile-layout :: appHeader('내 정보', 'back','alarm')}"></header>
 
         <main class="app-scroll">
 
@@ -65,6 +65,10 @@
 
                 <a href="/api/view/user/password-update" class="menu-item">
                     <span>비밀번호 변경 🔒</span>
+                    <span class="menu-arrow">&gt;</span>
+                </a>
+                <a th:href="@{/api/view/user/notifications}" class="menu-item">
+                    <span>알림 전체 보기 🔔 </span>
                     <span class="menu-arrow">&gt;</span>
                 </a>
             </div>
@@ -144,6 +148,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/common/feedback.js}"></script>
 <script src="/js/members/user/user-mypage.js" th:src="@{/js/members/user/user-mypage.js}"></script>
 
 

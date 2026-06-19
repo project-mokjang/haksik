@@ -24,8 +24,10 @@ public class NotificationResponse {
         // 🚨 핵심 관절: targetType과 targetId를 조합해서 프론트가 이동할 URL을 완성해 줌
         if ("POST".equals(noti.getTargetType())) {
             this.targetUrl = "/api/view/community/" + noti.getTargetId();
+        } else if ("MATCHING".equals(noti.getTargetType())) {
+            this.targetUrl = "/api/view/user/main";
         } else {
-            this.targetUrl = "#"; // 추후 다른 타입(채팅 등)이 생기면 여기에 분기 추가
+            this.targetUrl = "#";
         }
     }
 }

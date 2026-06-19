@@ -4,6 +4,7 @@ package com.example.haksikmokjang.matching.matchingrequest.repository;
 
 import com.example.haksikmokjang.matching.matchingrequest.domain.Matching;
 import com.example.haksikmokjang.matching.matchingrequest.domain.MatchingStatus;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,5 +49,40 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
     List<Matching> findByTargetAndStatusOrderByRequestedAtDesc(
             UserProfile target,
             MatchingStatus status
+    );
+
+    // 내가 보낸 매칭 요청 목록 조회
+    List<Matching> findByRequesterAndStatusOrderByRequestedAtDesc(
+            UserProfile requester,
+            MatchingStatus status
+    );
+
+    // 내가 참여 중인 확정 매칭 조회
+    @Query("""
+    select m
+    from Matching m
+    where m.status = :status
+    and (
+        m.requester = :userProfile
+        or m.target = :userProfile
+    )
+    order by m.respondedAt desc
+""")
+    List<Matching> findByParticipantAndStatusOrderByRespondedAtDesc(
+            @Param("userProfile") UserProfile userProfile,
+            @Param("status") MatchingStatus status
+    );
+
+    // 특정 단체방에 연결된 매칭 요청 목록 조회
+    List<Matching> findByTargetWaitingAndStatusIn(
+            MatchingWaiting targetWaiting,
+            List<MatchingStatus> statuses
+    );
+
+    // 같은 모집방에 이미 요청/참여했는지 확인
+    boolean existsByRequesterAndTargetWaitingAndStatusIn(
+            UserProfile requester,
+            MatchingWaiting targetWaiting,
+            List<MatchingStatus> statuses
     );
 }

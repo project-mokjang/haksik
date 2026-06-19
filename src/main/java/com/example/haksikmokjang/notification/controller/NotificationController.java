@@ -19,9 +19,16 @@ public class NotificationController {
     public SseEmitter subscribe(Authentication auth) {
         return notificationService.subscribe(auth.getName());
     }
+
     @GetMapping
     public ResponseEntity<?> getNotis(Authentication auth) {
         return ResponseEntity.ok(notificationService.getMyNotifications(auth.getName()));
+    }
+
+    // 알림 전체 조회
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllNotis(Authentication auth) {
+        return ResponseEntity.ok(notificationService.getAllNotifications(auth.getName()));
     }
 
     @PutMapping("/{notiId}/read")

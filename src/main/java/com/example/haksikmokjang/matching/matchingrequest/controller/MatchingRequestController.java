@@ -2,8 +2,10 @@ package com.example.haksikmokjang.matching.matchingrequest.controller;
 
 import com.example.haksikmokjang.global.response.ApiResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
+import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingAcceptedResponse;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingReceivedResponse;
 import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingRequestCreateRequest;
+import com.example.haksikmokjang.matching.matchingrequest.dto.MatchingSentResponse;
 import com.example.haksikmokjang.matching.matchingrequest.service.MatchingRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,10 +26,6 @@ public class MatchingRequestController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody MatchingRequestCreateRequest request
     ) {
-        System.out.println("매칭 신청 API 호출");
-        System.out.println("userDetails = " + userDetails);
-        System.out.println("targetWaitingId = " + request.getTargetWaitingId());
-
         Long memberId = userDetails.getMemberId();
 
         matchingRequestService.requestMatching(memberId, request);
@@ -44,6 +42,32 @@ public class MatchingRequestController {
 
         List<MatchingReceivedResponse> responses =
                 matchingRequestService.getReceivedRequests(memberId);
+
+        return ApiResponse.success(responses);
+    }
+
+    // 내가 보낸 매칭 요청 목록 조회
+    @GetMapping("/sent")
+    public ApiResponse<List<MatchingSentResponse>> getSentRequests(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        List<MatchingSentResponse> responses =
+                matchingRequestService.getSentRequests(memberId);
+
+        return ApiResponse.success(responses);
+    }
+
+    // 확정된 매칭 목록 조회
+    @GetMapping("/accepted")
+    public ApiResponse<List<MatchingAcceptedResponse>> getAcceptedRequests(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        List<MatchingAcceptedResponse> responses =
+                matchingRequestService.getAcceptedRequests(memberId);
 
         return ApiResponse.success(responses);
     }
@@ -72,5 +96,31 @@ public class MatchingRequestController {
         matchingRequestService.rejectMatching(memberId, matchingId);
 
         return ApiResponse.success("매칭 요청을 거절했습니다.", null);
+    }
+
+    // 내가 보낸 매칭 요청 취소
+    @PatchMapping("/{matchingId}/cancel")
+    public ApiResponse<Void> cancelSentMatching(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long matchingId
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        matchingRequestService.cancelSentMatching(memberId, matchingId);
+
+        return ApiResponse.success("매칭 요청을 취소했습니다.", null);
+    }
+
+    // 확정된 매칭 취소
+    @PatchMapping("/{matchingId}/accepted/cancel")
+    public ApiResponse<Void> cancelAcceptedMatching(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long matchingId
+    ) {
+        Long memberId = userDetails.getMemberId();
+
+        matchingRequestService.cancelAcceptedMatching(memberId, matchingId);
+
+        return ApiResponse.success(null);
     }
 }

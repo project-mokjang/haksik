@@ -264,3 +264,187 @@
     cursor: pointer;
     font-weight: bold;
 }
+
+.received-request-card {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.received-request-label {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--green);
+}
+
+.received-request-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.received-request-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.received-request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+/* 현재 매칭 대기 카드 */
+.current-matching-card {
+    background-color: var(--paper);
+    border: 2px solid var(--green);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 현재 매칭 대기 라벨 */
+.current-matching-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 현재 매칭 대기 제목 */
+.current-matching-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 현재 매칭 대기 설명 */
+.current-matching-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 현재 매칭 대기 버튼 영역 */
+.current-matching-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 위험 버튼 */
+.ui-btn.danger {
+    background-color: var(--red);
+    color: white;
+}
+
+/* 보낸 매칭 요청 카드 */
+.sent-request-card {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 보낸 매칭 요청 라벨 */
+.sent-request-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--soil);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 보낸 매칭 요청 제목 */
+.sent-request-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 보낸 매칭 요청 설명 */
+.sent-request-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 보낸 매칭 요청 버튼 영역 */
+.sent-request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 확정된 매칭 카드 */
+.accepted-matching-card {
+    background-color: var(--paper);
+    border: 2px solid var(--green);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 확정된 매칭 라벨 */
+.accepted-matching-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 확정된 매칭 제목 */
+.accepted-matching-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 확정된 매칭 설명 */
+.accepted-matching-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 확정된 매칭 버튼 영역 */
+.accepted-matching-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 확정 매칭 카드 버튼 3개 세로 배치 */
+.accepted-matching-actions-three {
+    grid-template-columns: 1fr;
+}

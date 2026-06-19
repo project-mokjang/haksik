@@ -11,4 +11,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // 🚨 팩트: boolean 검사가 아닌 readYn("N" 또는 "Y") 검사로 교체
     int countByMemberAndReadYn(Member member, String readYn);
+
+    // 알림 전체 조회
+    List<Notification> findByMemberOrderByCreatedAtDesc(Member member);
 }
