@@ -69,6 +69,7 @@ public class StoreService {
                 Integer menuPrice = request.getMenuPrices().get(i);
                 MultipartFile menuImage = request.getMenuImages() != null ? request.getMenuImages().get(i) : null;
 
+                // 메뉴 엔티티 생성
                 Menu newMenu = Menu.builder()
                         .store(savedStore)
                         .name(menuName)
@@ -184,7 +185,7 @@ public class StoreService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
+        //menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
     }
 
     @Transactional(readOnly = true)

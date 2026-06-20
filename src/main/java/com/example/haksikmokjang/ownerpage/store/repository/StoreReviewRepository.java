@@ -8,14 +8,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface StoreReviewRepository extends JpaRepository<StoreReview, Long> {
-        boolean existsByReservation(Reservation reservation);
+    boolean existsByReservation(Reservation reservation);
 
-        // 리뷰 작성자(Member)와 식당(Store)을 Fetch Join하여 N+1 쿼리 폭발을 방어합니다.
-        @Query("SELECT sr FROM StoreReview sr " +
-                "JOIN FETCH sr.member m " +
-                "JOIN FETCH sr.store s " +
-                "WHERE s.member.loginId = :ownerLoginId " +
-                "ORDER BY sr.createdAt DESC")
-        List<StoreReview> findAllByStoreOwnerLoginId(@Param("ownerLoginId") String ownerLoginId);
+    @Query("""
+    select r
+    from StoreReview r
+    where r.store.member.loginId = :loginId
+""")
+    List<StoreReview> findAllByStoreOwnerLoginId(@Param("loginId") String loginId);
 }
 
