@@ -47,6 +47,7 @@ public class Store {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+
     @Builder
     public Store(Member member, String name, String address, Double latitude, Double longitude, String category, String phone, String operatingHours, BusinessStatus businessStatus) {
         this.member = member;
@@ -65,7 +66,7 @@ public class Store {
         this.businessStatus = status;
     }
 
-    // 가게 정보 수정용 메서드
+
     public void updateStoreInfo(String name, String address, String category, String phone, String operatingHours) {
         this.name = name;
         this.address = address;
@@ -73,4 +74,5 @@ public class Store {
         this.phone = phone;
         this.operatingHours = operatingHours;
     }
+
 }

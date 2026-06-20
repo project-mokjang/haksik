@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile; // 🚨 필수
 
 @Getter
 @Setter
@@ -21,4 +22,7 @@ public class ReviewCreateRequest {
 
     @NotBlank(message = "리뷰 내용은 필수입니다.")
     private String content;
+
+    // 🚨 팩트: 프론트에서 리뷰 인증샷 파일을 받을 수 있도록 개방
+    private MultipartFile reviewImage;
 }

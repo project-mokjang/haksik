@@ -42,11 +42,11 @@ public class StoreService {
 
     @Transactional
     public Long createStoreWithMenus(String loginId, StoreCreateRequest request) {
-        // 1. 점주 검증
+        //점주 검증
         Member owner = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2. 가게(Store) 먼저 DB에 꽂아넣기
+        //가게(Store) 먼저 DB에 꽂아넣기
         Store newStore = Store.builder()
                 .member(owner)
                 .name(request.getName())
@@ -60,15 +60,18 @@ public class StoreService {
                 .build();
 
         Store savedStore = storeRepository.save(newStore);
+        // 프론트가 간판 사진을 던졌다면 STORE 타겟으로 저장 격발
+        if (request.getStoreImage() != null && !request.getStoreImage().isEmpty()) {
+            saveImage(owner, savedStore.getStoreId(), "STORE", request.getStoreImage());
+        }
 
-        // 3. 메뉴(Menu)와 사진(FileAttachment) 묶어서 DB에 꽂아넣기
+        // 메뉴(Menu)와 사진(FileAttachment) 묶어서 DB에 꽂아넣기
         if (request.getMenuNames() != null && !request.getMenuNames().isEmpty()) {
             for (int i = 0; i < request.getMenuNames().size(); i++) {
                 String menuName = request.getMenuNames().get(i);
                 Integer menuPrice = request.getMenuPrices().get(i);
                 MultipartFile menuImage = request.getMenuImages() != null ? request.getMenuImages().get(i) : null;
 
-                // 메뉴 엔티티 생성
                 Menu newMenu = Menu.builder()
                         .store(savedStore)
                         .name(menuName)
@@ -77,9 +80,9 @@ public class StoreService {
                         .build();
                 Menu savedMenu = menuRepository.save(newMenu);
 
-                // 이미지가 존재하면 서버에 파일 저장 후 FileAttachment 생성
+                // 🚨 타점 2: 교체된 범용 메서드를 MENU 타겟으로 격발
                 if (menuImage != null && !menuImage.isEmpty()) {
-                    saveMenuImage(owner, savedMenu.getMenuId(), menuImage);
+                    saveImage(owner, savedMenu.getMenuId(), "MENU", menuImage);
                 }
             }
         }
@@ -87,7 +90,8 @@ public class StoreService {
     }
 
     // 파일 업로드 전용 프라이빗 메서드 (기존 커뮤니티 재활용)
-    private void saveMenuImage(Member uploader, Long menuId, MultipartFile file) {
+    // 간판(STORE)과 메뉴(MENU) 모두 재활용할 수 있도록 targetType 매개변수 추가
+    private void saveImage(Member uploader, Long targetId, String targetType, MultipartFile file) {
         File folder = new File(uploadDir);
         if (!folder.exists()) folder.mkdirs();
 
@@ -101,8 +105,8 @@ public class StoreService {
             file.transferTo(new File(storedPath));
             FileAttachment attachment = FileAttachment.builder()
                     .uploader(uploader)
-                    .targetType("MENU") // 🚨 타겟을 "MENU"로 지정
-                    .targetId(menuId)   // 🚨 타겟 아이디는 방금 저장한 메뉴의 PK
+                    .targetType(targetType) // 🚨 동적 할당
+                    .targetId(targetId)
                     .originalName(originalFilename)
                     .storedPath(storedPath)
                     .extension(extension.replace(".", ""))
@@ -114,12 +118,18 @@ public class StoreService {
         }
     }
 
-    // 주변 식당 리스트 긁어오기 (맵 렌더링용)
+    // 지도에 식당 리스트를 뿌릴 때 간판 사진 번호를 같이 말아서 던짐
     @Transactional(readOnly = true)
     public List<StoreMapResponse> getNearbyStores(Double lat, Double lng, Double radius) {
         return storeRepository.findNearbyStores(lat, lng, radius)
                 .stream()
-                .map(StoreMapResponse::new)
+                .map(store -> {
+                    // STORE 타겟으로 결속된 사진 번호를 DB에서 추출
+                    List<FileAttachment> attachments = fileAttachmentRepository.findByTargetTypeAndTargetId("STORE", store.getStoreId());
+                    Long imageId = attachments.isEmpty() ? null : attachments.get(0).getFileId(); // 첫 번째 사진 번호 추출
+
+                    return new StoreMapResponse(store, imageId);
+                })
                 .toList();
     }
 
@@ -177,6 +187,7 @@ public class StoreService {
 
         menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
     }
+
 
     
 }

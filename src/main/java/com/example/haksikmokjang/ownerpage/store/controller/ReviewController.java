@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
@@ -20,10 +22,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     // 🚨 팩트: 유저가 방문을 마치고 리뷰를 꽂아넣는 API
-    @PostMapping
+    @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Long> createReview(
             Authentication authentication,
-            @Valid @RequestBody ReviewCreateRequest request) {
+            @Valid @ModelAttribute ReviewCreateRequest request) {
 
         String loginId = authentication.getName();
         Long reviewId = reviewService.createReview(loginId, request);
