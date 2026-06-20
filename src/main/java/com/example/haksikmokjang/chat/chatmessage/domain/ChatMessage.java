@@ -31,7 +31,7 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
 
-    // 메시지 타입: 일반 텍스트 / 이미지
+    // 메시지 타입: 일반 텍스트 / 이미지 / 폼
     @Enumerated(EnumType.STRING)
     @Column(name = "message_type", nullable = false, length = 20)
     private ChatMessageType messageType;
@@ -45,6 +45,10 @@ public class ChatMessage extends BaseEntity {
     // 이미지 메시지일 때만 값이 들어간다.
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    // 폼 메시지일 때 연결되는 폼 ID
+    @Column(name = "form_id")
+    private Long formId;
 
     // 메시지 삭제 여부
     // 신고/관리자 확인을 위해 실제 삭제하지 않고 숨김 처리용으로 사용
@@ -66,6 +70,7 @@ public class ChatMessage extends BaseEntity {
         this.messageType = ChatMessageType.TEXT;
         this.message = message;
         this.imageUrl = null;
+        this.formId = null;
         this.deleted = false;
         this.edited = false;
     }
@@ -77,6 +82,21 @@ public class ChatMessage extends BaseEntity {
         this.messageType = ChatMessageType.IMAGE;
         this.message = message;
         this.imageUrl = imageUrl;
+        this.formId = null;
+        this.deleted = false;
+        this.edited = false;
+    }
+
+
+
+    // 폼 메시지 생성자
+    public ChatMessage(ChatRoom chatRoom, Member sender, String message, Long formId) {
+        this.chatRoom = chatRoom;
+        this.sender = sender;
+        this.messageType = ChatMessageType.FORM;
+        this.message = message;
+        this.imageUrl = null;
+        this.formId = formId;
         this.deleted = false;
         this.edited = false;
     }
@@ -101,5 +121,10 @@ public class ChatMessage extends BaseEntity {
     // 이미지 메시지인지 확인
     public boolean isImageMessage() {
         return this.messageType == ChatMessageType.IMAGE;
+    }
+
+    // 폼 메시지인지 확인
+    public boolean isFormMessage() {
+        return this.messageType == ChatMessageType.FORM;
     }
 }

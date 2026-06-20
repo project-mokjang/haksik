@@ -15,7 +15,9 @@ public class ChatMessageResponse {
     private String messageType;
     private String message;
     private String imageUrl;
+    private Long formId;
     private boolean imageMessage;
+    private boolean formMessage;
     private boolean deleted;
     private boolean edited;
     private LocalDateTime editedAt;
