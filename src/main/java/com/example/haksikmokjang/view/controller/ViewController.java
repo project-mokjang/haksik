@@ -139,6 +139,7 @@ public class ViewController {
     @GetMapping("/user/chat/rooms/{chatRoomId}")
     public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
         model.addAttribute("chatRoomId", chatRoomId);
+        model.addAttribute("naverMapClientId", naverMapClientId);
         return "chat/chat-room";
     }
 

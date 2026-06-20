@@ -977,3 +977,622 @@
 .hidden {
     display: none !important;
 }
+
+/* 채팅 폼 공통 모달 */
+.chat-form-modal-backdrop,
+.place-map-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 320;
+    background-color: rgba(23, 63, 53, 0.25);
+
+    display: flex;
+    align-items: flex-end;
+}
+
+.chat-form-select-modal,
+.chat-form-create-modal,
+.chat-form-detail-modal {
+    width: 100%;
+    max-height: 86vh;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.chat-form-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.chat-form-modal-header h3 {
+    margin: 0;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.chat-form-modal-header button,
+.place-map-header button {
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-form-type-card {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+    color: var(--forest);
+    text-align: left;
+    cursor: pointer;
+
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 4px 10px;
+    align-items: center;
+}
+
+.chat-form-type-card:hover {
+    border-color: var(--green);
+    background-color: var(--paper);
+}
+
+.chat-form-type-icon {
+    grid-row: span 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    font-size: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-form-type-title {
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.chat-form-type-desc {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.chat-form-help-text {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.chat-form-field {
+    margin-top: 14px;
+}
+
+.chat-form-field label,
+.chat-form-field-row label {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.chat-form-field input {
+    width: 100%;
+    height: 44px;
+    margin-top: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.chat-form-field input:focus {
+    border-color: var(--green);
+    background-color: var(--paper);
+}
+
+.chat-form-field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.chat-form-small-button {
+    height: 30px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.vote-option-input-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-option-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.vote-option-input-row .vote-option-input {
+    flex: 1;
+    margin-top: 0;
+}
+
+.vote-option-remove-button {
+    width: 38px;
+    height: 44px;
+    border: none;
+    border-radius: 14px;
+    background-color: #fff1f1;
+    color: var(--red);
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.chat-form-actions button {
+    flex: 1;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-cancel-button {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.chat-form-submit-button {
+    background-color: var(--green);
+    color: white;
+}
+
+.vote-detail-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-option-button {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background-color: var(--card);
+    color: var(--forest);
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.vote-option-button span {
+    font-size: 14px;
+    font-weight: 900;
+    text-align: left;
+}
+
+.vote-option-button strong {
+    flex-shrink: 0;
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.vote-option-button.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.form-result-section {
+    margin-top: 18px;
+}
+
+.form-result-title,
+.place-map-section-title {
+    margin: 14px 0 8px;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.vote-result-list,
+.place-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-result-item,
+.place-result-item {
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+}
+
+.vote-result-item.selected,
+.place-result-item.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.vote-result-top,
+.place-result-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.vote-result-top strong,
+.place-result-top strong {
+    flex-shrink: 0;
+    color: var(--green);
+    font-size: 12px;
+}
+
+.vote-result-bar {
+    height: 8px;
+    border-radius: 999px;
+    background-color: var(--paper);
+    overflow: hidden;
+}
+
+.vote-result-fill {
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--green);
+}
+
+.form-empty-text {
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+/* 장소 투표 지도 모달 */
+.place-map-modal-backdrop {
+    align-items: stretch;
+}
+
+.place-map-modal {
+    width: 100%;
+    height: 100%;
+    background-color: var(--paper);
+    display: flex;
+    flex-direction: column;
+}
+
+.place-map-header {
+    flex-shrink: 0;
+    min-height: 62px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.place-map-header h3 {
+    margin: 0;
+    color: var(--forest);
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.place-map-header p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.place-map-body {
+    position: relative;
+    flex: 1;
+    min-height: 260px;
+    background-color: var(--ivory2);
+}
+
+.place-vote-map {
+    width: 100%;
+    height: 100%;
+}
+
+.map-load-fail {
+    width: 100%;
+    height: 100%;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-map-guide {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    z-index: 5;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background-color: rgba(23, 63, 53, 0.88);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.custom-place-panel {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 5;
+    padding: 12px;
+    border-radius: 18px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.custom-place-title {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.custom-place-coordinate {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.custom-place-panel input {
+    width: 100%;
+    height: 38px;
+    margin-bottom: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.custom-place-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.custom-place-actions button {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.custom-place-actions button:first-child {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.custom-place-actions button:last-child {
+    background-color: var(--green);
+    color: white;
+}
+
+.place-map-bottom {
+    flex-shrink: 0;
+    max-height: 42%;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    background-color: var(--paper);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.place-map-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.place-map-action-row button {
+    height: 42px;
+    border: none;
+    border-radius: 999px;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.place-add-button {
+    background-color: var(--green);
+}
+
+.place-result-button {
+    background-color: var(--soil);
+}
+
+.place-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.place-option-card {
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background-color: var(--card);
+}
+
+.place-option-card.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.place-option-title {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.place-option-meta,
+.place-option-address {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.place-option-card button {
+    width: 100%;
+    height: 34px;
+    margin-top: 9px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.place-map-marker {
+    width: 34px;
+    height: 34px;
+    border-radius: 50% 50% 50% 8px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    transform: rotate(-45deg);
+    font-size: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-map-marker.candidate {
+    background-color: var(--green);
+}
+
+.place-map-marker.store {
+    background-color: var(--soil);
+}
+
+.place-map-marker.candidate,
+.place-map-marker.store {
+    color: white;
+}
+
+.place-map-marker::first-letter {
+    transform: rotate(45deg);
+}
+
+.place-info-window {
+    width: 185px;
+    padding: 10px;
+    color: var(--forest);
+    box-sizing: border-box;
+}
+
+.place-info-title {
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 3px;
+}
+
+.place-info-meta,
+.place-info-address {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-bottom: 5px;
+}
+
+.place-info-window button {
+    width: 100%;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}

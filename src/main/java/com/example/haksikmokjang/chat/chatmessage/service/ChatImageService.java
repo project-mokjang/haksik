@@ -33,6 +33,9 @@ public class ChatImageService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserProfileRepository userProfileRepository;
 
+    // 이미지 메시지 도착 시 종 알림 처리
+    private final ChatNotificationService chatNotificationService;
+
     // WebConfig에서 /uploads/** 를 src/main/resources/static/uploads/ 로 연결하고 있으므로 여기에 저장
     private final String uploadDir = "src/main/resources/static/uploads/chat";
 
@@ -70,7 +73,12 @@ public class ChatImageService {
         List<ChatRoomMember> chatRoomMembers =
                 chatRoomMemberRepository.findAllByChatRoom(chatRoom);
 
-        return createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+        ChatMessageResponse response = createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+
+        // 이미지 메시지 저장 후 채팅방 밖에 있는 상대방들에게만 종 알림 전송
+        chatNotificationService.sendMessageNotification(chatRoom, loginMember);
+
+        return response;
     }
 
     // 이미지 파일 검증

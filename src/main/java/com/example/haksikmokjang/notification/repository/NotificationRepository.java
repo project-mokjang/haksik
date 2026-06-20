@@ -14,4 +14,19 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // 알림 전체 조회
     List<Notification> findByMemberOrderByCreatedAtDesc(Member member);
+
+    // 같은 채팅방 알림 전체 조회
+    List<Notification> findAllByMemberAndTargetTypeAndTargetIdOrderByNotificationIdDesc(
+            Member member,
+            String targetType,
+            Long targetId
+    );
+
+    // 같은 채팅방의 안 읽은 알림 조회
+    List<Notification> findAllByMemberAndTargetTypeAndTargetIdAndReadYnOrderByNotificationIdDesc(
+            Member member,
+            String targetType,
+            Long targetId,
+            String readYn
+    );
 }

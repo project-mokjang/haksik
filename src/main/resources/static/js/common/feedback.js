@@ -39,24 +39,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // 알림 목록 긁어오기
 async function fetchNotifications() {
     const list = document.getElementById('notiList');
+
     try {
         const res = await fetch('/api/notifications');
 
         if (!res.ok) {
-            if (list) list.innerHTML = '<li class="noti-empty">알림을 불러올 수 없습니다.</li>';
+            if (list) {
+                list.innerHTML = '<li class="noti-empty">알림을 불러올 수 없습니다.</li>';
+            }
+
+            updateBellBadge(0);
             return;
         }
 
         const data = await res.json();
 
         // 빨간 점 뱃지 처리
-        const badge = document.getElementById('bellBadge');
-        if (badge) {
-            if (data.unreadCount > 0) badge.classList.add('show');
-            else badge.classList.remove('show');
+        // 기존 빨간 점에서 숫자 뱃지로 확장
+        updateBellBadge(Number(data.unreadCount || 0));
+
+        if (!list) {
+            return;
         }
 
-        if (!list) return;
         list.innerHTML = '';
 
         // 알림이 비어있는 경우
@@ -71,25 +76,73 @@ async function fetchNotifications() {
             const isRead = noti.read === true || noti.isRead === true;
             const unreadClass = isRead ? '' : 'unread';
 
-            list.innerHTML += `
-                <li class="noti-item ${unreadClass}" onclick="readAndMove(${noti.notificationId}, '${noti.targetUrl}')">
-                    <span class="noti-msg">${noti.content}</span>
-                    <span class="noti-time">${dateStr}</span>
-                </li>
-            `;
+            const item = document.createElement('li');
+            item.className = `noti-item ${unreadClass}`;
+
+            item.addEventListener('click', function () {
+                readAndMove(noti.notificationId, noti.targetUrl);
+            });
+
+            const isChatNotification =
+                noti.targetUrl &&
+                noti.targetUrl.startsWith('/api/view/user/chat/rooms/');
+
+            if (isChatNotification) {
+                // 채팅 알림만 한 줄 디자인 적용
+                item.innerHTML = `
+                    <div class="noti-main-row">
+                        <span class="noti-title">${escapeNotificationHtml(noti.title || '')}</span>
+                        <span class="noti-count">${escapeNotificationHtml(noti.content || '')}</span>
+                    </div>
+                    <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
+                `;
+            } else {
+                // 게시글/매칭 등 기존 알림은 기존 디자인 유지
+                item.innerHTML = `
+                    <span class="noti-msg">${escapeNotificationHtml(noti.content || '')}</span>
+                    <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
+                `;
+            }
+
+            list.appendChild(item);
         });
     } catch (e) {
         console.error('알림 로드 실패:', e);
-        if (list) list.innerHTML = '<li class="noti-empty">알림 서버와 연결할 수 없습니다.</li>';
+
+        if (list) {
+            list.innerHTML = '<li class="noti-empty">알림 서버와 연결할 수 없습니다.</li>';
+        }
+
+        updateBellBadge(0);
+    }
+}
+
+// 종 옆 숫자 표시
+function updateBellBadge(unreadCount) {
+    const badge = document.getElementById('bellBadge');
+
+    if (!badge) {
+        return;
+    }
+
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+        badge.classList.add('show');
+    } else {
+        badge.textContent = '';
+        badge.classList.remove('show');
     }
 }
 
 // 종 버튼 클릭 시 드롭다운 열기/닫기
 function toggleNoti(event) {
     event.stopPropagation();
+
     const dropdown = document.getElementById('notiDropdown');
+
     if (dropdown) {
         dropdown.classList.toggle('show');
+
         if (dropdown.classList.contains('show')) {
             fetchNotifications(); // 열 때마다 최신 알림 다시 긁어오기
         }
@@ -100,6 +153,7 @@ function toggleNoti(event) {
 window.addEventListener('click', function(event) {
     const dropdown = document.getElementById('notiDropdown');
     const bellWrap = document.querySelector('.header-bell-wrap');
+
     if (dropdown && dropdown.classList.contains('show') && bellWrap && !bellWrap.contains(event.target)) {
         dropdown.classList.remove('show');
     }
@@ -112,13 +166,8 @@ function connectSSE() {
     eventSource.addEventListener('notification', function(event) {
         console.log("실시간 알림 수신 완료!");
 
-        const badge = document.getElementById('bellBadge');
-        if (badge) badge.classList.add('show');
-
-        const dropdown = document.getElementById('notiDropdown');
-        if (dropdown && dropdown.classList.contains('show')) {
-            fetchNotifications();
-        }
+        // 알림이 오면 빨간 점만 켜는 게 아니라 목록과 숫자를 다시 조회
+        fetchNotifications();
     });
 
     eventSource.onerror = function(error) {
@@ -134,4 +183,18 @@ async function readAndMove(notiId, url) {
     } catch (e) {
         location.href = url;
     }
+}
+
+// 알림 HTML 특수문자 처리
+function escapeNotificationHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
 }
