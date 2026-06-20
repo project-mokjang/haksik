@@ -67,9 +67,11 @@ public class Store {
     }
 
 
-    public void updateStoreInfo(String name, String address, String category, String phone, String operatingHours) {
+    public void updateStoreInfo(String name, String address, Double latitude, Double longitude, String category, String phone, String operatingHours) {
         this.name = name;
         this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.category = category;
         this.phone = phone;
         this.operatingHours = operatingHours;

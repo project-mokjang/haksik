@@ -10,10 +10,7 @@ import com.example.haksikmokjang.ownerpage.store.domain.BusinessStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Menu;
 import com.example.haksikmokjang.ownerpage.store.domain.MenuStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Store;
-import com.example.haksikmokjang.ownerpage.store.dto.MenuUpdateRequest;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreCreateRequest;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreMapResponse;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreUpdateRequest;
+import com.example.haksikmokjang.ownerpage.store.dto.*;
 import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -144,10 +141,12 @@ public class StoreService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        //이 메서드만 호출하면 트랜잭션 종료 시점에 자동으로 UPDATE SQL이 날아갑니다.
+        //이 메서드만 호출하면 트랜잭션 종료 시점에 자동으로 UPDATE SQL이 날아감
         store.updateStoreInfo(
                 request.getName(),
                 request.getAddress(),
+                request.getLatitude(),
+                request.getLongitude(),
                 request.getCategory(),
                 request.getPhone(),
                 request.getOperatingHours()
@@ -188,6 +187,12 @@ public class StoreService {
         menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
     }
 
+    @Transactional(readOnly = true)
+    public StoreMyResponse getMyStoreInfo(String loginId) {
+        Store store = storeRepository.findByMember_LoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
+        return new StoreMyResponse(store);
+    }
     
 }

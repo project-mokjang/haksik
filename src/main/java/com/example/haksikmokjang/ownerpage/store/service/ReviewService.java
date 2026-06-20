@@ -95,8 +95,9 @@ public class ReviewService {
 
     @Transactional
     public void reportReview(String ownerLoginId, Long reviewId, ReviewReportRequest request) {
-        // ... (기존 reportReview 신고 처리 로직 100% 동일하게 유지. 수정 불필요) ...
-        StoreReview review = storeReviewRepository.findById(reviewId).orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+        StoreReview review = storeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
         if (!review.getStore().getMember().getLoginId().equals(ownerLoginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
 
         Report report = Report.builder()
@@ -108,6 +109,7 @@ public class ReviewService {
 
         reportRepository.save(report);
     }
+
     // 🚨 팩트: 하드디스크 저장 및 FileAttachment DB 결속 로직 (StoreService의 것과 100% 동일)
     private void saveImage(Member uploader, Long targetId, String targetType, org.springframework.web.multipart.MultipartFile file) {
         File folder = new File(uploadDir);
@@ -134,5 +136,13 @@ public class ReviewService {
         } catch (java.io.IOException e) {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
         }
+    }
+    @Transactional
+    public void writeOwnerReply(Long reviewId, String reply) {
+        // 🚨 팩트: 존재하지 않는 에러코드(NOT_FOUND) 대신 방금 만든 규격화된 에러 사용
+        StoreReview review = storeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+        review.writeOwnerReply(reply);
     }
 }

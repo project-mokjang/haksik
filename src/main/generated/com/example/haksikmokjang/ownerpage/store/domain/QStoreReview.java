@@ -28,6 +28,8 @@ public class QStoreReview extends EntityPathBase<StoreReview> {
 
     public final com.example.haksikmokjang.member.core.domain.QMember member;
 
+    public final StringPath ownerReply = createString("ownerReply");
+
     public final NumberPath<Integer> rating = createNumber("rating", Integer.class);
 
     public final QReservation reservation;

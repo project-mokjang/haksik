@@ -46,6 +46,8 @@ public class StoreReview {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String ownerReply; // 🚨 팩트: 사장님 답글을 저장할 공간
 
     @Builder
     public StoreReview(Store store, Member member, Reservation reservation, Integer rating, String content, ReviewStatus status) {
@@ -60,5 +62,9 @@ public class StoreReview {
     // 🚨 팩트: 노쇼 발생 시 강제로 이 메서드를 호출하여 블라인드 처리합니다.
     public void markAsDeleted() {
         this.status = ReviewStatus.DELETED;
+    }
+
+    public void writeOwnerReply(String reply) {
+        this.ownerReply = reply;
     }
 }

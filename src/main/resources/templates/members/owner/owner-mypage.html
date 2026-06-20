@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>학식목장 - 점주 마이페이지</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <style>
+        .mypage-card { background: var(--paper); border: 2px solid var(--line); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .mypage-title { font-size: 20px; font-weight: 900; color: var(--forest); margin-bottom: 16px; border-bottom: 2px solid var(--ivory2); padding-bottom: 10px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--muted); }
+        .info-value { color: var(--forest); font-weight: 900; }
+        .status-badge { padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 900; color: white; }
+        .status-APPROVED { background-color: var(--green); }
+        .status-PENDING { background-color: #f5a623; }
+        .action-btn { width: 100%; padding: 14px; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; margin-bottom: 10px; }
+        .btn-logout { background-color: var(--card); color: var(--forest); border: 2px solid var(--line); }
+    </style>
+</head>
+<body class="app-body">
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('마이페이지', 'back', 'none')}"></header>
+
+        <main class="app-scroll has-bottom-nav">
+            <section class="mypage-card">
+                <div class="mypage-title">내 정보</div>
+                <div class="info-row"><span>아이디</span><span class="info-value" id="myLoginId">-</span></div>
+                <div class="info-row"><span>대표자명</span><span class="info-value" id="myOwnerName">-</span></div>
+                <div class="info-row"><span>상호명</span><span class="info-value" id="myBusinessName">-</span></div>
+                <div class="info-row"><span>사업자번호</span><span class="info-value" id="myBusinessNumber">-</span></div>
+                <div class="info-row" style="align-items: center;">
+                    <span>가입 승인 상태</span>
+                    <span class="status-badge" id="myApprovalStatus">-</span>
+                </div>
+            </section>
+
+            <button class="action-btn btn-logout" onclick="logout()">로그아웃</button>
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: ownerBottomNav('my')}"></nav>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const response = await fetch('/api/owner-profiles/my');
+            if (!response.ok) throw new Error('정보를 불러오지 못했습니다.');
+
+            const data = await response.json();
+
+            document.getElementById('myLoginId').innerText = data.loginId;
+            document.getElementById('myOwnerName').innerText = data.ownerName;
+            document.getElementById('myBusinessName').innerText = data.businessName;
+            document.getElementById('myBusinessNumber').innerText = data.businessNumber;
+
+            const statusBadge = document.getElementById('myApprovalStatus');
+            statusBadge.innerText = data.approvalStatus === 'APPROVED' ? '승인 완료' : (data.approvalStatus === 'PENDING' ? '승인 대기' : '승인 거절');
+            statusBadge.classList.add('status-' + data.approvalStatus);
+
+        } catch (error) {
+            console.error(error);
+            alert('마이페이지 정보를 불러오는데 실패했습니다.');
+        }
+    });
+
+    function logout() {
+        if(confirm('로그아웃 하시겠습니까?')) {
+            location.href = '/logout'; // 시큐리티 기본 로그아웃 엔드포인트
+        }
+    }
+</script>
+</body>
+</html>

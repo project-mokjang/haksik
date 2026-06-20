@@ -13,7 +13,8 @@ public class ReviewOwnerResponse {
     private String writerLoginId; // 작성자 아이디
     private LocalDateTime createdAt;
     private String status;
-
+    // 리뷰 반환 DTO 내부에 추가
+    private String ownerReply;
     private List<Long> imageIds;
 
     public ReviewOwnerResponse(StoreReview review, List<Long> imageIds) {
@@ -24,5 +25,6 @@ public class ReviewOwnerResponse {
         this.createdAt = review.getCreatedAt();
         this.status = review.getStatus().name();
         this.imageIds = imageIds; // 장착 완료
+        this.ownerReply = review.getOwnerReply();
     }
 }
