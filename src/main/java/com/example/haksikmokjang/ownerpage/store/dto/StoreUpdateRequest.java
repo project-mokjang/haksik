@@ -16,4 +16,6 @@ public class StoreUpdateRequest {
     private String category;
     private String phone;
     private String operatingHours;
+
+    private String imageUrl;
 }

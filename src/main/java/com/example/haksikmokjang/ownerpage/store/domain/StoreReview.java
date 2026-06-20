@@ -46,6 +46,7 @@ public class StoreReview {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+
     @Builder
     public StoreReview(Store store, Member member, Reservation reservation, Integer rating, String content, ReviewStatus status) {
         this.store = store;

@@ -26,9 +26,13 @@ public class StoreCreateRequest {
 
     private String category;
     private String phone;
+
     private String operatingHours;
 
-    // --- 🚨 팩트: 메뉴 다중 등록용 배열 (프론트에서 순서대로 넘겨야 함) ---
+    //가게 대표 간판 사진을 받을 수 있도록 단일 파일 변수 개방
+    private MultipartFile storeImage;
+
+    // --- 메뉴 다중 등록용 배열 (프론트에서 순서대로 넘겨야 함) ---
     private List<String> menuNames;
     private List<Integer> menuPrices;
     private List<MultipartFile> menuImages;
