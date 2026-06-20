@@ -47,7 +47,6 @@ public class Store {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-
     @Builder
     public Store(Member member, String name, String address, Double latitude, Double longitude, String category, String phone, String operatingHours, BusinessStatus businessStatus) {
         this.member = member;

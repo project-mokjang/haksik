@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(pageTitle, activeMenu, headerTitle, content)">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">학식목장 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+
+<body class="admin-body">
+
+<aside class="admin-sidebar">
+    <div class="admin-logo">
+        <span>🐑</span>
+        <strong>학식목장<br>Admin</strong>
+    </div>
+
+    <nav class="admin-menu">
+        <a th:href="@{/api/view/admin/main}"
+           class="menu-item"
+           th:classappend="${activeMenu == 'main'} ? ' active'">
+            🏠 관리자 메인
+        </a>
+
+        <a th:href="@{/api/view/admin/members}"
+           class="menu-item"
+           th:classappend="${activeMenu == 'members'} ? ' active'">
+            👥 회원 관리
+        </a>
+
+        <a th:href="@{/api/view/admin/owners}"
+           class="menu-item"
+           th:classappend="${activeMenu == 'owners'} ? ' active'">
+            👨‍🍳 점주 승인 관리
+        </a>
+    </nav>
+</aside>
+
+<main class="admin-main">
+    <header class="admin-header">
+        <h2 class="admin-title" th:text="${headerTitle}">관리자 페이지</h2>
+        <div class="admin-profile">최고관리자 (admin)</div>
+    </header>
+
+    <section class="admin-content">
+        <th:block th:replace="${content}"></th:block>
+    </section>
+</main>
+
+</body>
+</html>

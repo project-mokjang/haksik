@@ -1,90 +1,164 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>학식목장 관리자 - 사용자 관리</title>
-  <link rel="stylesheet" href="/css/admin.css" th:href="@{/css/admin.css}">
-</head>
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 점주 승인 관리',
+        'owners',
+        '점주 승인 관리',
+        ~{::content}
+      )}">
 
-<aside class="admin-sidebar">
-  <div class="admin-logo"><span>🐑</span>학식목장 Admin</div>
-  <nav class="admin-menu">
-    <a href="/api/view/admin/users" th:href="@{/api/view/admin/users}" class="menu-item active">👥 사용자/제재 관리</a>
-    <a href="/api/view/admin/reports" th:href="@{/api/view/admin/reports}" class="menu-item">🚨 분쟁/신고 검토</a>
-    <a href="/api/view/admin/boards" th:href="@{/api/view/admin/boards}" class="menu-item">📝 게시판/공지 관리</a>
-    <a href="/api/view/admin/owners" th:href="@{/api/view/admin/owners}" class="menu-item">👨‍🍳 점주 권한 관리</a>
-    <a href="/api/view/admin/restaurants" th:href="@{/api/view/admin/restaurants}" class="menu-item">🍽️ 식당/리뷰 관리</a>
-    <a href="/api/view/admin/stats" th:href="@{/api/view/admin/stats}" class="menu-item">📊 서비스 통계 조회</a>
-  </nav>
-</aside>
+<th:block th:fragment="content">
 
-<main class="admin-main">
-  <header class="admin-header">
-    <h2 class="admin-title">점주 권한 관리</h2>
-    <div class="admin-profile">최고관리자 (admin_01)</div>
-  </header>
+  <div class="data-card">
 
-  <section class="admin-content">
-    <div class="data-card">
+    <div class="filter-bar">
+      <select class="filter-input" id="statusFilter" onchange="fetchOwners()">
+        <option value="ALL">전체</option>
+        <option value="PENDING">승인 대기</option>
+        <option value="APPROVED">승인 완료</option>
+        <option value="REJECTED">반려</option>
+      </select>
 
-      <div class="filter-bar">
-        <select class="filter-input" id="searchType">
-          <option value="loginId">아이디</option>
-          <option value="nickname">닉네임</option>
-          <option value="schoolName">학교명</option>
-        </select>
-        <input type="text" class="filter-input" id="keyword" placeholder="검색어를 입력하세요">
-        <select class="filter-input" id="statusFilter" style="max-width: 150px;">
-          <option value="ALL">상태 전체</option>
-          <option value="NORMAL">정상</option>
-          <option value="PENALTY">패널티</option>
-          <option value="BANNED">블랙리스트</option>
-        </select>
-        <button class="filter-btn" onclick="fetchUsers()">검색</button>
-      </div>
+      <button class="filter-btn" onclick="fetchOwners()">조회</button>
+    </div>
 
+    <div class="table-scroll">
       <table class="data-table">
         <thead>
         <tr>
-          <th>회원 ID (Login ID)</th>
-          <th>닉네임</th>
-          <th>소속 학교</th>
-          <th>매너 온도</th>
-          <th>신고 누적</th>
-          <th>현재 상태</th>
-          <th>패널티 기간</th>
+          <th>신청번호</th>
+          <th>회원 아이디</th>
+          <th>사업자명</th>
+          <th>대표자명</th>
+          <th>대표자 연락처</th>
+          <th>사업자번호</th>
+          <th>승인상태</th>
+          <th>처리일시</th>
           <th>관리</th>
         </tr>
         </thead>
-        <tbody id="userTableBody">
-        <tr>
-          <td>hakisk123</td>
-          <td>근손실오지마</td>
-          <td>목장대학교</td>
-          <td>36.5°C</td>
-          <td>0회</td>
-          <td><span class="badge normal">정상</span></td>
-          <td>-</td>
-          <td><button class="action-btn">상세/제재</button></td>
-        </tr>
-        <tr>
-          <td>badboy99</td>
-          <td>노쇼전문가</td>
-          <td>경기대학교</td>
-          <td>12.0°C</td>
-          <td>5회</td>
-          <td><span class="badge penalty">패널티 (이용정지)</span></td>
-          <td>~ 26.06.10</td>
-          <td><button class="action-btn">해제/블랙</button></td>
-        </tr>
-        </tbody>
+        <tbody id="ownerTableBody"></tbody>
       </table>
-
     </div>
-  </section>
-</main>
 
-</body>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchOwners();
+    });
+
+    function fetchOwners() {
+      const status = document.getElementById("statusFilter").value;
+
+      fetch(`/api/admin/members/owners?status=${status}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 신청 목록 조회 실패");
+                }
+                return response.json();
+              })
+              .then(data => renderOwners(data))
+              .catch(error => {
+                console.error(error);
+                alert("점주 신청 목록 조회 중 오류가 발생했습니다.");
+              });
+    }
+
+    function renderOwners(owners) {
+      const tbody = document.getElementById("ownerTableBody");
+      tbody.innerHTML = "";
+
+      if (!owners || owners.length === 0) {
+        tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">조회된 점주 신청이 없습니다.</td>
+                    </tr>
+                `;
+        return;
+      }
+
+      owners.forEach(owner => {
+        const processedAt = owner.processedAt || "-";
+
+        tbody.innerHTML += `
+                    <tr>
+                        <td>${owner.ownerProfileId}</td>
+                        <td>${owner.loginId}</td>
+                        <td>${owner.businessName}</td>
+                        <td>${owner.ownerName}</td>
+                        <td>${owner.ownerPhone}</td>
+                        <td>${owner.businessNumber}</td>
+                        <td>${owner.approvalStatus}</td>
+                        <td>${processedAt}</td>
+                        <td>${renderOwnerButtons(owner)}</td>
+                    </tr>
+                `;
+      });
+    }
+
+    function renderOwnerButtons(owner) {
+      if (owner.approvalStatus !== "PENDING") {
+        return "-";
+      }
+
+      return `
+                <button class="action-btn" onclick="approveOwner(${owner.ownerProfileId})">승인</button>
+                <button class="action-btn" onclick="rejectOwner(${owner.ownerProfileId})">반려</button>
+            `;
+    }
+
+    function approveOwner(ownerProfileId) {
+      if (!confirm("해당 점주 신청을 승인하시겠습니까?")) {
+        return;
+      }
+
+      fetch(`/api/admin/members/owners/${ownerProfileId}/approve`, {
+        method: "POST"
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 승인 실패");
+                }
+                alert("승인 처리되었습니다.");
+                fetchOwners();
+              })
+              .catch(error => {
+                console.error(error);
+                alert("점주 승인 중 오류가 발생했습니다.");
+              });
+    }
+
+    function rejectOwner(ownerProfileId) {
+      const rejectedReason = prompt("반려 사유를 입력하세요.");
+
+      if (!rejectedReason || rejectedReason.trim() === "") {
+        alert("반려 사유는 필수입니다.");
+        return;
+      }
+
+      fetch(`/api/admin/members/owners/${ownerProfileId}/reject`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          rejectedReason: rejectedReason
+        })
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("점주 반려 실패");
+                }
+                alert("반려 처리되었습니다.");
+                fetchOwners();
+              })
+              .catch(error => {
+                console.error(error);
+                alert("점주 반려 중 오류가 발생했습니다.");
+              });
+    }
+  </script>
+
+</th:block>
 </html>

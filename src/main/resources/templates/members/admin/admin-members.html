@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 회원 관리',
+        'members',
+        '회원 관리',
+        ~{::content}
+      )}">
+
+<th:block th:fragment="content">
+
+    <div class="data-card">
+
+        <div class="filter-bar">
+            <select class="filter-input" id="roleFilter" onchange="fetchMembers()">
+                <option value="ALL">전체</option>
+                <option value="USER">일반 회원</option>
+                <option value="OWNER">점주</option>
+                <option value="ADMIN">관리자</option>
+            </select>
+
+            <button class="filter-btn" onclick="fetchMembers()">조회</button>
+        </div>
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>회원번호</th>
+                    <th>아이디</th>
+                    <th>권한</th>
+                    <th>이름/닉네임</th>
+                    <th>학교</th>
+                    <th>매너온도</th>
+                    <th>노쇼</th>
+                    <th>계정상태</th>
+                    <th>잠금</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="memberTableBody"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchMembers();
+        });
+
+        function fetchMembers() {
+            const role = document.getElementById("roleFilter").value;
+
+            fetch(`/api/admin/members?role=${role}`)
+                .then(response => response.json())
+                .then(data => renderMembers(data))
+                .catch(error => {
+                    console.error(error);
+                    alert("회원 목록 조회 중 오류가 발생했습니다.");
+                });
+        }
+
+        function renderMembers(members) {
+            const tbody = document.getElementById("memberTableBody");
+            tbody.innerHTML = "";
+
+            if (!members || members.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10">조회된 회원이 없습니다.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            members.forEach(member => {
+                const displayName = member.nickname || member.ownerName || member.name || "-";
+                const schoolName = member.schoolName || "-";
+                const mannerTemperature = member.mannerTemperature !== null && member.mannerTemperature !== undefined
+                    ? `${member.mannerTemperature}°C`
+                    : "-";
+                const noShowCount = member.noShowCount !== null && member.noShowCount !== undefined
+                    ? `${member.noShowCount}회`
+                    : "-";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${member.memberId}</td>
+                        <td>${member.loginId}</td>
+                        <td>${member.role}</td>
+                        <td>${displayName}</td>
+                        <td>${schoolName}</td>
+                        <td>${mannerTemperature}</td>
+                        <td>${noShowCount}</td>
+                        <td>${member.accountStatus}</td>
+                        <td>${member.lockedYn}</td>
+                        <td>
+                            <button class="action-btn">상세</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+
+</th:block>
+</html>
