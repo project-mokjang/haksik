@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -50,4 +51,15 @@ public class ReviewController {
         reviewService.reportReview(loginId, reviewId, request);
         return ResponseEntity.ok("리뷰 신고가 정상적으로 접수되었습니다. 관리자 검토 후 처리됩니다.");
     }
+    // 사장님 답글 등록 API (PATCH)
+    @PatchMapping("/owner/{reviewId}/reply")
+    public ResponseEntity<Void> writeOwnerReply(
+            @PathVariable Long reviewId,
+            @RequestBody Map<String, String> request) {
+
+        String reply = request.get("reply");
+        reviewService.writeOwnerReply(reviewId, reply);
+        return ResponseEntity.ok().build();
+    }
+
 }

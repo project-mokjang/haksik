@@ -1,10 +1,7 @@
 package com.example.haksikmokjang.ownerpage.store.controller;
 
 import com.example.haksikmokjang.ownerpage.store.domain.BusinessStatus;
-import com.example.haksikmokjang.ownerpage.store.dto.MenuUpdateRequest;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreCreateRequest;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreMapResponse;
-import com.example.haksikmokjang.ownerpage.store.dto.StoreUpdateRequest;
+import com.example.haksikmokjang.ownerpage.store.dto.*;
 import com.example.haksikmokjang.ownerpage.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,5 +76,13 @@ public class StoreController {
 
         storeService.updateMenu(authentication.getName(), storeId, menuId, request);
         return ResponseEntity.ok("메뉴 정보가 성공적으로 수정되었습니다.");
+    }
+    // 프론트가 찌를 API 입구
+    @GetMapping("/my")
+    public ResponseEntity<StoreMyResponse> getMyStore(Authentication authentication) {
+        String loginId = authentication.getName();
+        StoreMyResponse response = storeService.getMyStoreInfo(loginId);
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -182,11 +182,22 @@ public class ViewController {
     // user -----------------------------------------
 
      // owner 관련 뷰 --------------------------
-    @GetMapping("/owner/main")
-    public String ownerMainPage() {
-        return "main/owner-main";
+     @GetMapping("/owner/main")
+     public String ownerMainPage() {
+         return "main/owner-main";
+     }
+
+    //점주 리뷰 관리
+    @GetMapping("/owner/reviews")
+    public String ownerReviewsPage() {
+        return "members/owner/owner-review";
     }
 
+    @GetMapping("/owner/store")
+    public String ownerStorePage(org.springframework.ui.Model model) {
+        model.addAttribute("naverMapClientId", naverMapClientId);
+        return "members/owner/owner-store";
+    }
     @GetMapping("/owner/pending")
     public String ownerPendingPage() {
         return "members/owner/owner-pending";
@@ -198,6 +209,15 @@ public class ViewController {
         return "members/owner/owner-rejected";
     }
 
+    @GetMapping("/owner/my-page")
+    public String ownerMyPage() {
+        return "members/owner/owner-mypage";
+    }
+    // 신메뉴 추가 페이지 길목 개방
+    @GetMapping("/owner/menu")
+    public String ownerMenuPage() {
+        return "members/owner/owner-menu";
+    }
     // owner ------------------------------------
 
 }
