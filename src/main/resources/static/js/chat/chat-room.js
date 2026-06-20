@@ -916,7 +916,7 @@ function renderPlaceFormMapShell(form) {
     }
 
     if (summary) {
-        summary.textContent = "후보 " + Number(form.optionCount || 0) + "개 · 참여 " + Number(form.answerCount || 0) + "명";
+        summary.textContent = "참여 " + Number(form.answerCount || 0) + "명";
     }
 
     renderPlaceOptionList(form);
@@ -1090,6 +1090,12 @@ function renderPlaceMarkers(form) {
             return;
         }
 
+        // 점주 등록 가게는 식당 마커(🍽️) 그대로 표시한다.
+        // 직접 추가한 장소만 후보 마커(📍)로 표시한다.
+        if (option.placeSource === "STORE") {
+            return;
+        }
+
         const marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(Number(option.latitude), Number(option.longitude)),
             map: placeVoteMap,
@@ -1146,10 +1152,6 @@ function renderStoreMarkers(stores) {
         }
 
         placeStoreCache[String(store.storeId)] = store;
-
-        if (hasCandidateStoreOption(store.storeId)) {
-            return;
-        }
 
         const marker = new naver.maps.Marker({
             position: new naver.maps.LatLng(Number(store.latitude), Number(store.longitude)),
