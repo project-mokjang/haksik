@@ -98,7 +98,7 @@ class ReviewServiceTest {
         ReflectionTestUtils.setField(mockReview, "reviewId", reviewId);
 
         ReviewReportRequest request = new ReviewReportRequest();
-        request.setReason("욕설이 포함되어 있습니다.");
+//        request.setReason("욕설이 포함되어 있습니다.");
 
         when(storeReviewRepository.findById(reviewId)).thenReturn(Optional.of(mockReview));
 
@@ -123,7 +123,7 @@ class ReviewServiceTest {
         StoreReview mockReview = StoreReview.builder().store(mockStore).build();
 
         ReviewReportRequest request = new ReviewReportRequest();
-        request.setReason("장난 신고");
+//        request.setReason("장난 신고");
 
         when(storeReviewRepository.findById(reviewId)).thenReturn(Optional.of(mockReview));
 

@@ -1,7 +1,9 @@
 package com.example.haksikmokjang.admin.member.service;
 
+import com.example.haksikmokjang.admin.member.dto.AdminMemberDetailResponse;
 import com.example.haksikmokjang.admin.member.dto.AdminMemberListResponse;
 import com.example.haksikmokjang.admin.member.dto.AdminOwnerApprovalResponse;
+import com.example.haksikmokjang.global.common.dto.PageResponse;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
@@ -10,8 +12,13 @@ import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.member.signup.owner.domain.ApprovalStatus;
 import com.example.haksikmokjang.member.signup.owner.domain.OwnerProfile;
 import com.example.haksikmokjang.member.signup.owner.repository.OwnerProfileRepository;
+import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,23 +33,42 @@ public class AdminMemberService {
     private final UserProfileRepository userProfileRepository;
     private final OwnerProfileRepository ownerProfileRepository;
 
-    public List<AdminMemberListResponse> findMembers(String role) {
-        List<Member> members = getMembersByRole(role);
+    // 회원 목록 검색 페이지 조회
+    public PageResponse<AdminMemberListResponse> findMembers(
+            String role,
+            String keyword,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "memberId")
+        );
 
-        return members.stream()
-                .map(this::toListResponse)
-                .toList();
+        MemberRole memberRole = getSearchRole(role);
+
+        Page<Member> members = memberRepository.searchMembers(
+                memberRole,
+                keyword,
+                pageable
+        );
+
+        Page<AdminMemberListResponse> response = members.map(this::toListResponse);
+
+        return PageResponse.from(response);
     }
 
-    private List<Member> getMembersByRole(String role) {
+    // 검색용 역할 조건 변환
+    private MemberRole getSearchRole(String role) {
         if (role == null || role.isBlank() || role.equals("ALL")) {
-            return memberRepository.findAllByOrderByMemberIdDesc();
+            return null;
         }
 
-        MemberRole memberRole = MemberRole.valueOf(role);
-        return memberRepository.findByRoleOrderByMemberIdDesc(memberRole);
+        return MemberRole.valueOf(role);
     }
 
+    // 회원 역할에 맞춰 일반 사용자, 점주, 관리자 응답 DTO로 변환
     private AdminMemberListResponse toListResponse(Member member) {
         if (member.getRole() == MemberRole.USER) {
             return userProfileRepository.findByMember(member)
@@ -59,6 +85,21 @@ public class AdminMemberService {
         return AdminMemberListResponse.fromMemberOnly(member);
     }
 
+    // 회원 상세 정보를 조회
+    public AdminMemberDetailResponse findMemberDetail(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        UserProfile userProfile = userProfileRepository.findByMember(member)
+                .orElse(null);
+
+        OwnerProfile ownerProfile = ownerProfileRepository.findByMember(member)
+                .orElse(null);
+
+        return AdminMemberDetailResponse.of(member, userProfile, ownerProfile);
+    }
+
+    // 점주 신청 목록을 승인 상태 조건에 따라 조회
     public List<AdminOwnerApprovalResponse> findOwnerApprovals(String status) {
         List<OwnerProfile> owners = getOwnersByStatus(status);
 
@@ -67,6 +108,7 @@ public class AdminMemberService {
                 .toList();
     }
 
+    // 승인 상태 조건에 맞는 점주 프로필 목록을 조회
     private List<OwnerProfile> getOwnersByStatus(String status) {
         if (status == null || status.isBlank() || status.equals("ALL")) {
             return ownerProfileRepository.findAllByOrderByOwnerProfileIdDesc();
@@ -76,6 +118,7 @@ public class AdminMemberService {
         return ownerProfileRepository.findByApprovalStatusOrderByOwnerProfileIdDesc(approvalStatus);
     }
 
+    // 점주 가입 신청을 승인 처리
     @Transactional
     public void approveOwner(Long ownerProfileId, String adminLoginId) {
         OwnerProfile ownerProfile = ownerProfileRepository.findById(ownerProfileId)
@@ -91,6 +134,7 @@ public class AdminMemberService {
         ownerProfile.approve(admin);
     }
 
+    // 점주 가입 신청을 반려 처리한다.
     @Transactional
     public void rejectOwner(Long ownerProfileId, String adminLoginId, String rejectedReason) {
         OwnerProfile ownerProfile = ownerProfileRepository.findById(ownerProfileId)
