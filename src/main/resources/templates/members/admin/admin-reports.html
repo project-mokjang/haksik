@@ -1,90 +1,109 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>학식목장 관리자 - 사용자 관리</title>
-  <link rel="stylesheet" href="/css/admin.css" th:href="@{/css/admin.css}">
-</head>
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 신고 관리',
+        'reports',
+        '신고 관리',
+        ~{::content}
+      )}">
 
-<aside class="admin-sidebar">
-  <div class="admin-logo"><span>🐑</span>학식목장 Admin</div>
-  <nav class="admin-menu">
-    <a href="/api/view/admin/users" th:href="@{/api/view/admin/users}" class="menu-item active">👥 사용자/제재 관리</a>
-    <a href="/api/view/admin/reports" th:href="@{/api/view/admin/reports}" class="menu-item">🚨 분쟁/신고 검토</a>
-    <a href="/api/view/admin/boards" th:href="@{/api/view/admin/boards}" class="menu-item">📝 게시판/공지 관리</a>
-    <a href="/api/view/admin/owners" th:href="@{/api/view/admin/owners}" class="menu-item">👨‍🍳 점주 권한 관리</a>
-    <a href="/api/view/admin/restaurants" th:href="@{/api/view/admin/restaurants}" class="menu-item">🍽️ 식당/리뷰 관리</a>
-    <a href="/api/view/admin/stats" th:href="@{/api/view/admin/stats}" class="menu-item">📊 서비스 통계 조회</a>
-  </nav>
-</aside>
+<th:block th:fragment="content">
 
-<main class="admin-main">
-  <header class="admin-header">
-    <h2 class="admin-title">분쟁/신고 검토</h2>
-    <div class="admin-profile">최고관리자 (admin_01)</div>
-  </header>
-
-  <section class="admin-content">
     <div class="data-card">
 
-      <div class="filter-bar">
-        <select class="filter-input" id="searchType">
-          <option value="loginId">아이디</option>
-          <option value="nickname">닉네임</option>
-          <option value="schoolName">학교명</option>
-        </select>
-        <input type="text" class="filter-input" id="keyword" placeholder="검색어를 입력하세요">
-        <select class="filter-input" id="statusFilter" style="max-width: 150px;">
-          <option value="ALL">상태 전체</option>
-          <option value="NORMAL">정상</option>
-          <option value="PENALTY">패널티</option>
-          <option value="BANNED">블랙리스트</option>
-        </select>
-        <button class="filter-btn" onclick="fetchUsers()">검색</button>
-      </div>
+        <div class="filter-bar">
+            <select class="filter-input" id="statusFilter" onchange="fetchReports(0)">
+                <option value="ALL">전체 상태</option>
+                <option value="PENDING">대기</option>
+                <option value="PROCESSING">처리중</option>
+                <option value="RESOLVED">처리완료</option>
+                <option value="REJECTED">반려</option>
+            </select>
 
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>회원 ID (Login ID)</th>
-          <th>닉네임</th>
-          <th>소속 학교</th>
-          <th>매너 온도</th>
-          <th>신고 누적</th>
-          <th>현재 상태</th>
-          <th>패널티 기간</th>
-          <th>관리</th>
-        </tr>
-        </thead>
-        <tbody id="userTableBody">
-        <tr>
-          <td>hakisk123</td>
-          <td>근손실오지마</td>
-          <td>목장대학교</td>
-          <td>36.5°C</td>
-          <td>0회</td>
-          <td><span class="badge normal">정상</span></td>
-          <td>-</td>
-          <td><button class="action-btn">상세/제재</button></td>
-        </tr>
-        <tr>
-          <td>badboy99</td>
-          <td>노쇼전문가</td>
-          <td>경기대학교</td>
-          <td>12.0°C</td>
-          <td>5회</td>
-          <td><span class="badge penalty">패널티 (이용정지)</span></td>
-          <td>~ 26.06.10</td>
-          <td><button class="action-btn">해제/블랙</button></td>
-        </tr>
-        </tbody>
-      </table>
+            <select class="filter-input" id="targetTypeFilter" onchange="fetchReports(0)">
+                <option value="ALL">전체 대상</option>
+                <option value="POST">게시글</option>
+                <option value="COMMENT">댓글</option>
+                <option value="CHAT_MESSAGE">채팅 메시지</option>
+                <option value="CHAT_MEMBER">채팅 상대</option>
+                <option value="REVIEW">리뷰</option>
+            </select>
+
+            <input
+                    type="text"
+                    class="filter-input"
+                    id="reportKeywordInput"
+                    placeholder="신고자 아이디 또는 사유 검색"
+                    onkeydown="handleReportSearchEnter(event)"
+            >
+
+            <button class="filter-btn" onclick="fetchReports(0)">조회</button>
+        </div>
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>신고번호</th>
+                    <th>신고자</th>
+                    <th>대상</th>
+                    <th>대상번호</th>
+                    <th>사유</th>
+                    <th>상태</th>
+                    <th>처리자</th>
+                    <th>처리일시</th>
+                    <th>상세</th>
+                    <th>처리</th>
+                </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="reportPaginationArea" class="pagination-area"></div>
 
     </div>
-  </section>
-</main>
 
-</body>
+    <!-- 신고 상세 모달 -->
+    <div id="reportDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 상세 정보</h3>
+                <button class="close-btn" onclick="closeReportDetail()">×</button>
+            </div>
+
+            <div id="reportDetailBody" class="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <!-- 신고 처리 사유 모달 -->
+    <div id="reportProcessModal" class="modal-overlay">
+        <div class="modal-content process-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 처리 사유 입력</h3>
+                <button class="close-btn" onclick="closeReportProcessModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="processReportId">
+                <input type="hidden" id="processAction">
+
+                <label class="modal-label" for="processedReasonInput">처리 사유</label>
+                <textarea
+                        id="processedReasonInput"
+                        class="modal-textarea"
+                        placeholder="예: 욕설 및 부적절한 표현으로 블라인드 처리"
+                ></textarea>
+
+                <div class="modal-footer clean-footer">
+                    <button class="btn-cancel" onclick="closeReportProcessModal()">취소</button>
+                    <button class="btn-submit" onclick="submitReportProcess()">처리</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin/admin-report.js}"></script>
+
+</th:block>
 </html>

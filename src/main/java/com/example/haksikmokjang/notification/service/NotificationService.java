@@ -1,12 +1,14 @@
 package com.example.haksikmokjang.notification.service;
 
+import com.example.haksikmokjang.global.exception.CustomException;
+import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import com.example.haksikmokjang.member.core.domain.Member;
-import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import com.example.haksikmokjang.notification.domain.Notification;
 import com.example.haksikmokjang.notification.dto.NotificationResponse; // 🚨 DTO 임포트 필수
 import com.example.haksikmokjang.notification.repository.NotificationRepository;
@@ -20,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final UserProfileRepository userProfileRepository;
+    private final MemberRepository memberRepository;
 
     //SSE방식을 위한 작업이에오
     //현재 접속중인 클라이언트들의 연결을 저장하는 매모리 맵. 이라고하네요? 뭔 소리임 근데 이거? 이 코드 보는사람 이해하면 설명좀 ;
@@ -185,7 +187,8 @@ public class NotificationService {
     // 🚨 팩트: 엔티티를 NotificationResponse DTO로 변환해서 프론트로 전달
     @Transactional(readOnly = true)
     public Map<String, Object> getMyNotifications(String loginId) {
-        Member member = userProfileRepository.findByMember_LoginId(loginId).orElseThrow().getMember();
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<Notification> collapsedNotifications = getCollapsedNotifications(member);
 
@@ -222,12 +225,25 @@ public class NotificationService {
         });
     }
 
+    // 알림 전체 읽음
+    @Transactional
+    public void readAllNotifications(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        List<Notification> notifications =
+                notificationRepository.findByMemberOrderByCreatedAtDesc(member);
+
+        notifications.forEach(Notification::markAsRead);
+
+        sendSseSignal(member);
+    }
+
     // 알림 전체 조회
     @Transactional(readOnly = true)
     public Map<String, Object> getAllNotifications(String loginId) {
-        Member member = userProfileRepository.findByMember_LoginId(loginId)
-                .orElseThrow()
-                .getMember();
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<Notification> collapsedNotifications = getCollapsedNotifications(member);
 

@@ -152,16 +152,20 @@ async function submitReply(reviewId) {
     }
 }
 
-// 신고 기능 (유지)
+// 리뷰 신고
 async function reportReview(reviewId) {
     const reason = prompt("신고 사유를 입력해주세요. (예: 욕설, 허위사실)");
     if (!reason || reason.trim() === '') return;
 
     try {
-        const response = await fetch(`/api/reviews/${reviewId}/report`, {
+        const response = await fetch('/api/reports', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason: reason.trim() })
+            body: JSON.stringify({
+                targetType: 'REVIEW',
+                targetId: reviewId,
+                reason: reason.trim()
+            })
         });
 
         if (!response.ok) throw new Error(await extractErrorMessage(response));

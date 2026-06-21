@@ -169,4 +169,13 @@ public class AdminMemberService {
 
         ownerProfile.reject(admin, rejectedReason);
     }
+
+    //회원 잠금 해제 메서드
+    @Transactional
+    public void unlockMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        member.unlock();
+    }
 }

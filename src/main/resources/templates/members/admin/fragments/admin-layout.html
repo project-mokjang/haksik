@@ -35,6 +35,12 @@
            th:classappend="${activeMenu == 'owners'} ? ' active'">
             👨‍🍳 점주 승인 관리
         </a>
+
+        <a th:href="@{/api/view/admin/reports}"
+           class="menu-item"
+           th:classappend="${activeMenu == 'reports'} ? ' active'">
+            🚨 신고 관리
+        </a>
     </nav>
 </aside>
 
@@ -42,6 +48,9 @@
     <header class="admin-header">
         <h2 class="admin-title" th:text="${headerTitle}">관리자 페이지</h2>
         <div class="admin-profile">최고관리자 (admin)</div>
+        <form th:action="@{/api/auth/logout}" method="post">
+            <button type="submit" class="admin-logout-btn">로그아웃</button>
+        </form>
     </header>
 
     <section class="admin-content">

@@ -69,4 +69,10 @@ public class AdminMemberController {
     public AdminMemberDetailResponse getMemberDetail(@PathVariable Long memberId) {
         return adminMemberService.findMemberDetail(memberId);
     }
+
+    // 회원 계정 잠금 해제
+    @PostMapping("/{memberId}/unlock")
+    public void unlockMember(@PathVariable Long memberId) {
+        adminMemberService.unlockMember(memberId);
+    }
 }

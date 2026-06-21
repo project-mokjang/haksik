@@ -10,8 +10,12 @@ import com.example.haksikmokjang.community.post.domain.Post;
 import com.example.haksikmokjang.community.post.repository.PostRepository;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.member.core.domain.Member;
+import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
+import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
+import com.example.haksikmokjang.ownerpage.store.repository.StoreReviewRepository;
 import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.report.dto.ReportRequest;
 import com.example.haksikmokjang.report.repository.ReportRepository;
@@ -30,15 +34,17 @@ public class ReportService {
     private final CommentRepository commentRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final StoreReviewRepository storeReviewRepository;
+    private final MemberRepository memberRepository;
 
     // 게시글/댓글 신고
     public void createReport(String loginId, ReportRequest request) {
-        UserProfile userProfile = userProfileRepository.findByMember_LoginId(loginId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+        Member reporter = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         //중복 신고 방어 로직 (이미 찔렀는지 체크)
         if (reportRepository.existsByReporterAndTargetTypeAndTargetId(
-                userProfile.getMember(), request.getTargetType(), request.getTargetId())) {
+                reporter, request.getTargetType(), request.getTargetId())) {
             throw new CustomException(ErrorCode.ALREADY_REPORTED);
         }
 
@@ -55,11 +61,18 @@ public class ReportService {
             if (comment.getMember().getLoginId().equals(loginId)) {
                 throw new CustomException(ErrorCode.CANNOT_REPORT_OWN_CONTENT);
             }
+        }else if ("REVIEW".equals(request.getTargetType())) {
+            StoreReview review = storeReviewRepository.findById(request.getTargetId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+            if (review.getMember().getLoginId().equals(loginId)) {
+                throw new CustomException(ErrorCode.CANNOT_REPORT_OWN_CONTENT);
+            }
         }
 
         //체크 통과 완료. 신고 접수
         Report report = Report.builder()
-                .reporter(userProfile.getMember())
+                .reporter(reporter)
                 .targetType(request.getTargetType())
                 .targetId(request.getTargetId())
                 .reason(request.getReason())

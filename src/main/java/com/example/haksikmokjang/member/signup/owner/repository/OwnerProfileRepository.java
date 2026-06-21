@@ -19,14 +19,7 @@ public interface OwnerProfileRepository extends JpaRepository<OwnerProfile, Long
 
     Optional<OwnerProfile> findByMember(Member member);
 
-    // 점주 신청 전체 페이지 조회
-    Page<OwnerProfile> findAllByOrderByOwnerProfileIdDesc(Pageable pageable);
-
-    // 점주 신청 상태별 페이지 조회
-    Page<OwnerProfile> findByApprovalStatusOrderByOwnerProfileIdDesc(
-            ApprovalStatus approvalStatus,
-            Pageable pageable
-    );
+    boolean existsByMember(Member member);
 
     // 점주 신청 검색 페이지 조회
     @Query("""

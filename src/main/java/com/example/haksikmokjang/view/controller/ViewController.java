@@ -109,6 +109,12 @@ public class ViewController {
         return "members/admin/admin-owners";
     }
 
+    // 관리자 신고관리 화면
+    @GetMapping("/admin/reports")
+    public String adminReportsPage() {
+        return "members/admin/admin-reports";
+    }
+
     // 관리자 -----------------------------
 
 

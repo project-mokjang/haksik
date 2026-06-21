@@ -15,8 +15,8 @@ public interface StoreReviewRepository extends JpaRepository<StoreReview, Long> 
                 "JOIN FETCH sr.member m " +
                 "JOIN FETCH sr.store s " +
                 "WHERE s.member.loginId = :ownerLoginId " +
+                "AND sr.status = com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus.ACTIVE " +
                 "ORDER BY sr.createdAt DESC")
-
         List<StoreReview> findAllByStoreOwnerLoginId(@Param("ownerLoginId") String ownerLoginId);
 }
 
