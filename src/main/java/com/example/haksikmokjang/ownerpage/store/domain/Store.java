@@ -58,11 +58,13 @@ public class Store {
         this.phone = phone;
         this.operatingHours = operatingHours;
         this.businessStatus = businessStatus;
+
     }
 
     // 영업 상태 변경 (객체 지향적 설계)
     public void changeBusinessStatus(BusinessStatus status) {
         this.businessStatus = status;
+
     }
 
 
@@ -74,6 +76,7 @@ public class Store {
         this.category = category;
         this.phone = phone;
         this.operatingHours = operatingHours;
+
     }
 
 }

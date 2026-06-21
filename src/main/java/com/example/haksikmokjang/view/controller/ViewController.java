@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/view")
 @RequiredArgsConstructor
 public class ViewController {
+
     private final MyPageService myPageService;
     private final TermsService termsService;
 

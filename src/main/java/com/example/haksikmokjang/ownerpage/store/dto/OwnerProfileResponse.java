@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OwnerProfileResponse {
+
+
     private String loginId;
     private String ownerName;
     private String businessName;

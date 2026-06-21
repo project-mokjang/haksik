@@ -321,8 +321,8 @@ public class MatchingRequestService {
             // 단체 학식 매칭 처리
             acceptGroupMealMatching(matching);
 
-            // 단체 학식은 정원이 다 찼을 때 3명 이상 채팅방 생성
-            chatRoomId = createGroupMealChatRoomIfFull(matching);
+            // 단체 학식은 첫 수락 시 채팅방을 생성하고, 이후 수락자는 기존 채팅방에 추가
+            chatRoomId = createOrJoinGroupMealChatRoom(matching);
 
         } else if (matching.getMatchingType() == MatchingType.GROUP_DATE) {
 
@@ -552,30 +552,53 @@ public class MatchingRequestService {
         return chatRoomResponse.getChatRoomId();
     }
 
-    // 단체 학식 매칭 성공 후 정원이 다 찼으면 채팅방 생성
-    private Long createGroupMealChatRoomIfFull(Matching matching) {
+    // 단체 학식은 첫 수락 시 채팅방을 만들고, 이후 수락자는 기존 채팅방에 추가
+    private Long createOrJoinGroupMealChatRoom(Matching matching) {
         MatchingWaiting targetWaiting = matching.getTargetWaiting();
-
-        if (!targetWaiting.isFull()) {
-            return null;
-        }
 
         List<Matching> acceptedMatchings = matchingRepository.findByTargetWaitingAndStatusIn(
                 targetWaiting,
                 List.of(MatchingStatus.ACCEPTED)
         );
 
+        Long existingChatRoomId = acceptedMatchings.stream()
+                .map(Matching::getChatRoomId)
+                .filter(chatRoomId -> chatRoomId != null)
+                .findFirst()
+                .orElse(null);
+
+        Long ownerMemberId = targetWaiting.getUserProfile().getMember().getMemberId();
+
+        if (existingChatRoomId != null) {
+            chatRoomCreateService.addMemberToChatRoom(existingChatRoomId, ownerMemberId);
+
+            acceptedMatchings.forEach(acceptedMatching -> {
+                Long requesterMemberId = acceptedMatching.getRequester().getMember().getMemberId();
+
+                chatRoomCreateService.addMemberToChatRoom(existingChatRoomId, requesterMemberId);
+                acceptedMatching.connectChatRoom(existingChatRoomId);
+            });
+
+            matchingRepository.saveAll(acceptedMatchings);
+
+            return existingChatRoomId;
+        }
+
         List<Long> memberIds = new ArrayList<>();
 
-        // 단체 학식 모집자
-        memberIds.add(targetWaiting.getUserProfile().getMember().getMemberId());
-
-        // 단체 학식 참가자들
-        acceptedMatchings.forEach(acceptedMatching ->
-                memberIds.add(acceptedMatching.getRequester().getMember().getMemberId())
+        addGroupMealMemberId(
+                memberIds,
+                ownerMemberId
         );
 
-        ChatRoomResponse chatRoomResponse = chatRoomCreateService.createMealChatRoom(
+        acceptedMatchings.forEach(acceptedMatching ->
+                addGroupMealMemberId(
+                        memberIds,
+                        acceptedMatching.getRequester().getMember().getMemberId()
+                )
+        );
+
+        ChatRoomResponse chatRoomResponse = chatRoomCreateService.createGroupMealChatRoom(
                 "학식메이트 채팅방",
                 memberIds
         );
@@ -587,6 +610,17 @@ public class MatchingRequestService {
         matchingRepository.saveAll(acceptedMatchings);
 
         return chatRoomResponse.getChatRoomId();
+    }
+
+    // 단체 학식 채팅방 멤버 중복 추가 방지
+    private void addGroupMealMemberId(List<Long> memberIds, Long memberId) {
+        if (memberId == null) {
+            return;
+        }
+
+        if (!memberIds.contains(memberId)) {
+            memberIds.add(memberId);
+        }
     }
 
     // 과팅 매칭 성공 후 리더 2명만 채팅방 생성

@@ -220,6 +220,7 @@ public class StoreService {
         if (request.getImage() != null && !request.getImage().isEmpty()) {
             saveImage(store.getMember(), savedMenu.getMenuId(), "MENU", request.getImage());
         }
+
     }
     
 }

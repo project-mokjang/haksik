@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile; // 🚨 필수
 @Setter
 public class ReviewCreateRequest {
 
+
     @NotNull(message = "예약 ID는 필수입니다.")
     private Long reservationId;
 

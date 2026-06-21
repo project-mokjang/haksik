@@ -62,9 +62,11 @@ public class StoreReview {
     // 🚨 팩트: 노쇼 발생 시 강제로 이 메서드를 호출하여 블라인드 처리합니다.
     public void markAsDeleted() {
         this.status = ReviewStatus.DELETED;
+
     }
 
     public void writeOwnerReply(String reply) {
         this.ownerReply = reply;
+
     }
 }

@@ -21,6 +21,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReservationService {
 
+
     private final ReservationRepository reservationRepository;
     private final StoreRepository storeRepository;
     private final MemberRepository memberRepository;

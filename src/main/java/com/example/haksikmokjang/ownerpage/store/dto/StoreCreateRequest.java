@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class StoreCreateRequest {
+
     // --- 가게 기본 정보 ---
     @NotBlank(message = "가게 이름은 필수입니다.")
     private String name;

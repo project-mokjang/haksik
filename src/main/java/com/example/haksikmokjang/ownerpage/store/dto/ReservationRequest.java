@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ReservationRequest {
+
+
     @NotNull(message = "가게 ID는 필수입니다.")
     private Long storeId;
 
