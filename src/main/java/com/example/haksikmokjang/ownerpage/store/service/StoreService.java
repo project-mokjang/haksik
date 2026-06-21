@@ -195,5 +195,31 @@ public class StoreService {
 
         return new StoreMyResponse(store);
     }
+    //기존 가게에 새로운 메뉴 1개를 추가하는 로직
+    @Transactional
+    public void addMenuToStore(String loginId, Long storeId, MenuCreateRequest request) {
+        // 가게가 내 소유인지 팩트 체크
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 새 메뉴 생성 및 결속
+        Menu newMenu = Menu.builder()
+                .store(store)
+                .name(request.getName())
+                .price(request.getPrice())
+                .salesStatus(MenuStatus.ON_SALE)
+                .build();
+
+        Menu savedMenu = menuRepository.save(newMenu);
+
+        // 메뉴 사진이 넘어왔다면 이미지 저장 모듈 격발
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            saveImage(store.getMember(), savedMenu.getMenuId(), "MENU", request.getImage());
+        }
+    }
     
 }

@@ -85,4 +85,14 @@ public class StoreController {
 
         return ResponseEntity.ok(response);
     }
+    // 신메뉴 추가 API
+    @PostMapping(value = "/{storeId}/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addMenu(
+            Authentication authentication,
+            @PathVariable Long storeId,
+            @Valid @ModelAttribute MenuCreateRequest request) {
+
+        storeService.addMenuToStore(authentication.getName(), storeId, request);
+        return ResponseEntity.ok("신규 메뉴가 성공적으로 추가되었습니다.");
+    }
 }
