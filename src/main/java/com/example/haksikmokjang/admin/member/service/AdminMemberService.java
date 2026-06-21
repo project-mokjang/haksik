@@ -99,23 +99,39 @@ public class AdminMemberService {
         return AdminMemberDetailResponse.of(member, userProfile, ownerProfile);
     }
 
-    // 점주 신청 목록을 승인 상태 조건에 따라 조회
-    public List<AdminOwnerApprovalResponse> findOwnerApprovals(String status) {
-        List<OwnerProfile> owners = getOwnersByStatus(status);
+    // 점주 신청 목록 검색 페이지 조회
+    public PageResponse<AdminOwnerApprovalResponse> findOwnerApprovals(
+            String status,
+            String keyword,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "ownerProfileId")
+        );
 
-        return owners.stream()
-                .map(AdminOwnerApprovalResponse::from)
-                .toList();
+        ApprovalStatus approvalStatus = getSearchApprovalStatus(status);
+
+        Page<OwnerProfile> owners = ownerProfileRepository.searchOwnerApprovals(
+                approvalStatus,
+                keyword,
+                pageable
+        );
+
+        Page<AdminOwnerApprovalResponse> response = owners.map(AdminOwnerApprovalResponse::from);
+
+        return PageResponse.from(response);
     }
 
-    // 승인 상태 조건에 맞는 점주 프로필 목록을 조회
-    private List<OwnerProfile> getOwnersByStatus(String status) {
+    // 검색용 점주 승인 상태 변환
+    private ApprovalStatus getSearchApprovalStatus(String status) {
         if (status == null || status.isBlank() || status.equals("ALL")) {
-            return ownerProfileRepository.findAllByOrderByOwnerProfileIdDesc();
+            return null;
         }
 
-        ApprovalStatus approvalStatus = ApprovalStatus.valueOf(status);
-        return ownerProfileRepository.findByApprovalStatusOrderByOwnerProfileIdDesc(approvalStatus);
+        return ApprovalStatus.valueOf(status);
     }
 
     // 점주 가입 신청을 승인 처리

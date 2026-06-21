@@ -31,17 +31,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             (@org.springframework.data.repository.query.Param("memberId") Long memberId,
              @org.springframework.data.repository.query.Param("newPassword") String newPassword);
 
-    List<Member> findAllByOrderByMemberIdDesc();
-
-    List<Member> findByRoleOrderByMemberIdDesc(MemberRole role);
-
-    List<Member> findByLoginIdContainingOrderByMemberIdDesc(String loginId);
-
-    List<Member> findByEmailContainingOrderByMemberIdDesc(String email);
-
-    // 역할별 회원 페이지 조회
-    Page<Member> findByRole(MemberRole role, Pageable pageable);
-
     // 회원 검색 페이지 조회
     @Query("""
         select m

@@ -30,12 +30,15 @@ public class AdminMemberController {
         return adminMemberService.findMembers(role, keyword, page, size);
     }
 
-    // 점주 신청 목록 조회
+    // 점주 신청 목록 검색 페이지 조회
     @GetMapping("/owners")
-    public List<AdminOwnerApprovalResponse> getOwnerApprovals(
-            @RequestParam(defaultValue = "ALL") String status
+    public PageResponse<AdminOwnerApprovalResponse> getOwnerApprovals(
+            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return adminMemberService.findOwnerApprovals(status);
+        return adminMemberService.findOwnerApprovals(status, keyword, page, size);
     }
 
     // 점주 신청 승인
