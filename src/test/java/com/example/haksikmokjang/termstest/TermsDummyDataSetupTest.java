@@ -7,29 +7,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 @SpringBootTest
-
 public class TermsDummyDataSetupTest {
+
     @Autowired
     private TermsRepository termsRepository;
 
     @Test
-    @Commit // 🚨 핵심 팩트: 테스트가 끝나도 롤백하지 않고 실제 DB에 튜플(로우)을 영구 저장시킵니다.
-    @DisplayName("팀원 로컬 DB 동기화용: 필수 약관 더미 데이터 4개 주입")
-    void insertTermsDummyData() {
-        // 1. 이미 약관 데이터(튜플)가 존재하면 중복 삽입 방지 (근손실 방지)
-        if (termsRepository.count() > 0) {
-            System.out.println("✅ 이미 약관 데이터가 존재합니다. 주입을 생략합니다.");
-            return;
-        }
+    @Commit
+    @Transactional
+    @DisplayName("팀원 로컬 DB 동기화용: 필수 약관 더미 데이터 4개 갱신 또는 주입")
+    void upsertTermsDummyData() {
+        LocalDateTime now = LocalDateTime.now();
 
-        // 2. 프론트엔드 value(1, 2, 3, 4)와 정확히 매핑될 약관 엔티티 조립
-        // (주의: 조장님이 만든 Terms 엔티티의 필드명과 생성자/빌더 패턴에 맞춰 수정하십시오)
         Terms term1 = Terms.builder()
                 .title("학식목장 서비스 이용약관 동의")
                 .version("v1.0")
@@ -49,7 +43,7 @@ public class TermsDummyDataSetupTest {
                         "\n" +
                         "③매칭(약속) 확정 후 일방적인 노쇼(No-Show)로 타인에게 피해를 주는 행위")
                 .requiredYn("Y")
-                .effectiveAt(LocalDateTime.now())
+                .effectiveAt(now)
                 .build();
 
         Terms term2 = Terms.builder()
@@ -72,7 +66,7 @@ public class TermsDummyDataSetupTest {
                         "\n" +
                         "예외: 단, 서비스 부정 이용 기록(노쇼, 신고 누적 등)은 재가입 방지를 위해 탈퇴일로부터 6개월간 보관 후 파기하며, 전자상거래법 등 관계 법령에 의해 보존할 필요가 있는 경우 법령이 정한 기간 동안 보관합니다.")
                 .requiredYn("Y")
-                .effectiveAt(LocalDateTime.now())
+                .effectiveAt(now)
                 .build();
 
         Terms term3 = Terms.builder()
@@ -88,7 +82,7 @@ public class TermsDummyDataSetupTest {
                         "제2조 (위치정보의 보호 및 파기)\n" +
                         "회사는 사용자의 실시간 위치정보를 매칭 및 거리 계산 목적 달성 즉시 파기하며, 별도의 위치 이동 경로를 DB에 영구적으로 저장하거나 추적하지 않습니다.")
                 .requiredYn("Y")
-                .effectiveAt(LocalDateTime.now())
+                .effectiveAt(now)
                 .build();
 
         Terms term4 = Terms.builder()
@@ -100,12 +94,29 @@ public class TermsDummyDataSetupTest {
                         "제2조 (권한 및 보안)\n" +
                         "신고가 접수된 채팅방의 내역은 보안 인가를 받은 최고 관리자만 제한적으로 열람할 수 있으며, 수사 기관의 적법한 영장 제시가 없는 한 제3자에게 절대 제공되거나 유출되지 않습니다.")
                 .requiredYn("Y")
-                .effectiveAt(LocalDateTime.now())
+                .effectiveAt(now)
                 .build();
 
-        // 3. DB 창고에 한 번에 Insert 때리기
-        termsRepository.saveAll(List.of(term1, term2, term3, term4));
+        upsertTerm(1L, term1);
+        upsertTerm(2L, term2);
+        upsertTerm(3L, term3);
+        upsertTerm(4L, term4);
 
-        System.out.println("4개의 약관 데이터가 DB에 박혔습니다! 짜란!");
+        System.out.println("✅ 약관 데이터 4개가 갱신 또는 주입되었습니다.");
+    }
+
+    private void upsertTerm(Long termsId, Terms source) {
+        Terms terms = termsRepository.findById(termsId)
+                .orElse(source);
+
+        terms.updateContent(
+                source.getTitle(),
+                source.getVersion(),
+                source.getContent(),
+                source.getRequiredYn(),
+                source.getEffectiveAt()
+        );
+
+        termsRepository.save(terms);
     }
 }

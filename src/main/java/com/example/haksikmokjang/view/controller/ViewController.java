@@ -5,7 +5,6 @@ import com.example.haksikmokjang.member.signup.user.dto.MyPageResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.member.signup.user.service.MyPageService;
 import com.example.haksikmokjang.member.terms.service.TermsService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -93,34 +92,21 @@ public class ViewController {
     // auth --------------------------------------
 
     //관리자 관련 view -------------------------------
-    @GetMapping("/admin/users")
-    public String adminUsersPage() {
-        return "members/admin/admin-users";
+    @GetMapping("/admin/main")
+    public String adminMainPage() {
+        return "members/admin/admin-main";
     }
 
-    @GetMapping("/admin/reports")
-    public String adminReportsPage() {
-        return "members/admin/admin-reports";
+    // 회원 관리
+    @GetMapping("/admin/members")
+    public String adminMembersPage() {
+        return "members/admin/admin-members";
     }
 
-    @GetMapping("/admin/boards")
-    public String adminBoardsPage() {
-        return "members/admin/admin-boards";
-    }
-
+    // 점주 승인 관리
     @GetMapping("/admin/owners")
     public String adminOwnersPage() {
         return "members/admin/admin-owners";
-    }
-
-    @GetMapping("/admin/restaurants")
-    public String adminRestaurantsPage() {
-        return "members/admin/admin-restaurants";
-    }
-
-    @GetMapping("/admin/stats")
-    public String adminStatsPage() {
-        return "members/admin/admin-stats";
     }
 
     // 관리자 -----------------------------
@@ -140,6 +126,7 @@ public class ViewController {
     @GetMapping("/user/chat/rooms/{chatRoomId}")
     public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
         model.addAttribute("chatRoomId", chatRoomId);
+        model.addAttribute("naverMapClientId", naverMapClientId);
         return "chat/chat-room";
     }
 

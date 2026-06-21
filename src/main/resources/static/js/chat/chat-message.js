@@ -147,7 +147,7 @@ function renderMessages() {
 
         const messageContent = getMessageContentHtml(message);
 
-        const editedText = message.edited && !message.deleted && !isImageMessage(message)
+        const editedText = message.edited && !message.deleted && !isImageMessage(message) && !isFormMessage(message)
             ? `<div class="edited-text">수정됨</div>`
             : "";
 
@@ -168,6 +168,10 @@ function renderMessages() {
             ? "image-bubble"
             : "";
 
+        const formBubbleClass = isFormMessage(message) && !message.deleted
+            ? "form-bubble"
+            : "";
+
         if (message.mine) {
             messageList.innerHTML += `
                 <div class="message-row mine" data-message-id="${Number(message.chatMessageId)}">
@@ -178,7 +182,7 @@ function renderMessages() {
                             ${timeText}
                         </div>
                         <div class="message-bubble-wrap">
-                            <div class="message-bubble ${editableClass} ${imageBubbleClass}" ${messageMenuEvent}>
+                            <div class="message-bubble ${editableClass} ${imageBubbleClass} ${formBubbleClass}" ${messageMenuEvent}>
                                 ${messageContent}
                             </div>
                             ${editedText}
@@ -200,7 +204,7 @@ function renderMessages() {
                             ${senderName}
                             <div class="message-line">
                                 <div class="message-bubble-wrap">
-                                    <div class="message-bubble ${editableClass} ${imageBubbleClass}" ${messageMenuEvent}>
+                                    <div class="message-bubble ${editableClass} ${imageBubbleClass} ${formBubbleClass}" ${messageMenuEvent}>
                                         ${messageContent}
                                     </div>
                                     ${editedText}
@@ -234,12 +238,57 @@ function getMessageContentHtml(message) {
         `;
     }
 
+    if (isFormMessage(message)) {
+        return getFormMessageCardHtml(message);
+    }
+
     return escapeHtml(message.message || "");
+}
+
+// 폼 메시지 카드 HTML 생성
+function getFormMessageCardHtml(message) {
+    const formTitle = getFormCardTitle(message);
+    const formTypeText = getFormTypeText(message);
+    const formButtonText = isPlaceFormCard(message) ? "지도에서 투표하기" : "투표하기";
+
+    return `
+        <button type="button" class="chat-form-card" onclick="openChatFormFromMessage(${Number(message.formId)})">
+            <span class="chat-form-badge">${formTypeText}</span>
+            <span class="chat-form-title">${escapeHtml(formTitle)}</span>
+            <span class="chat-form-desc">참여자들이 함께 선택할 수 있어요.</span>
+            <span class="chat-form-action">${formButtonText}</span>
+        </button>
+    `;
+}
+
+// 폼 카드 제목 추출
+function getFormCardTitle(message) {
+    const rawMessage = message.message || "폼";
+
+    return rawMessage
+        .replace("[장소 투표]", "")
+        .replace("[투표]", "")
+        .trim() || "폼";
+}
+
+// 폼 카드 타입 텍스트
+function getFormTypeText(message) {
+    return isPlaceFormCard(message) ? "장소 투표" : "투표";
+}
+
+// 장소 폼 카드 여부
+function isPlaceFormCard(message) {
+    return (message.message || "").startsWith("[장소 투표]");
 }
 
 // 이미지 메시지 여부
 function isImageMessage(message) {
     return message.messageType === "IMAGE" || message.imageMessage === true;
+}
+
+// 폼 메시지 여부
+function isFormMessage(message) {
+    return message.messageType === "FORM" || message.formMessage === true || !!message.formId;
 }
 
 // 상대방 프로필 이미지 표시
@@ -295,7 +344,7 @@ function openMessageMenu(event, chatMessageId) {
 
     if (selectedMessage.mine) {
         if (editMessageMenuButton) {
-            if (isImageMessage(selectedMessage)) {
+            if (isImageMessage(selectedMessage) || isFormMessage(selectedMessage)) {
                 editMessageMenuButton.classList.add("hidden");
             } else {
                 editMessageMenuButton.classList.remove("hidden");
@@ -396,7 +445,7 @@ function prepareEditMessage() {
         return;
     }
 
-    if (isImageMessage(selectedMessage)) {
+    if (isImageMessage(selectedMessage) || isFormMessage(selectedMessage)) {
         closeMessageMenu();
         return;
     }
@@ -453,7 +502,7 @@ function updateSelectedMessage() {
 
     const selectedMessage = messageCache[editingMessageId];
 
-    if (selectedMessage && isImageMessage(selectedMessage)) {
+    if (selectedMessage && (isImageMessage(selectedMessage) || isFormMessage(selectedMessage))) {
         cancelEditMessage();
         return;
     }

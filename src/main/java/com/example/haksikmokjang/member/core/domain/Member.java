@@ -53,12 +53,16 @@ public class Member extends BaseEntity {
     @Column(name = "locked_at")
     private LocalDateTime lockedAt;
 
+    @Column(name = "locked_reason", length = 500)
+    private String lockedReason;
+
     public void increaseLoginFailCount() {
         this.loginFailCount++;
 
         if (this.loginFailCount >= 5) {
             this.lockedYn = "Y";
             this.lockedAt = LocalDateTime.now();
+            this.lockedReason = "로그인 실패 5회 초과";
         }
     }
 
@@ -66,6 +70,7 @@ public class Member extends BaseEntity {
         this.loginFailCount = 0;
         this.lockedYn = "N";
         this.lockedAt = null;
+        this.lockedReason = null;
     }
 
     public boolean isLocked() {
