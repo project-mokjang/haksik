@@ -1,8 +1,11 @@
+
 let currentStoreId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     fetchMyStoreInfo();
     fetchOwnerReservations();
+    
+    setInterval(fetchOwnerReservations, 10000);
 });
 
 
@@ -134,7 +137,7 @@ function renderReservations(reservations) {
         else if(res.status === 'ACCEPTED') statusText = '예약 확정';
         else if(res.status === 'COMPLETED') statusText = '방문 완료';
         else if(res.status === 'REJECTED') statusText = '거절됨';
-        else if(res.status === 'NOSHOW') statusText = '노쇼';
+        else if(res.status === 'NO_SHOW') statusText = '노쇼';
 
         let innerHTML = `
             <div class="res-header">
@@ -160,7 +163,7 @@ function renderReservations(reservations) {
             `;
         } else if (res.status === 'ACCEPTED') {
             actionsHTML += `
-                <button class="btn-reject" onclick="updateReservationStatus(${res.reservationId}, 'NOSHOW')">노쇼 처리</button>
+                <button class="btn-reject" onclick="updateReservationStatus(${res.reservationId}, 'NO_SHOW')">노쇼 처리</button>
                 <button class="btn-complete" onclick="updateReservationStatus(${res.reservationId}, 'COMPLETED')">방문 완료</button>
             `;
         }

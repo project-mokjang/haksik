@@ -222,5 +222,17 @@ public class StoreService {
         }
 
     }
+    //가게의 전체 메뉴와 사진 번호를 긁어오는 로직
+    @Transactional(readOnly = true)
+    public List<MenuResponse> getStoreMenus(Long storeId) {
+        return menuRepository.findByStore_StoreId(storeId).stream()
+                .map(menu -> {
+                    // 메뉴에 결속된 사진 번호 추출
+                    List<FileAttachment> attachments = fileAttachmentRepository.findByTargetTypeAndTargetId("MENU", menu.getMenuId());
+                    Long imageId = attachments.isEmpty() ? null : attachments.get(0).getFileId();
+
+                    return new MenuResponse(menu, imageId);
+                }).toList();
+    }
     
 }
