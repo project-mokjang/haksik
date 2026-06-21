@@ -11,6 +11,7 @@ async function extractErrorMessage(response) {
     }
 }
 
+
 async function fetchOwnerReviews() {
     try {
         const response = await fetch('/api/reviews/owner');

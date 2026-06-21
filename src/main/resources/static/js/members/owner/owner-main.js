@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchOwnerReservations();
 });
 
-// 🚨 팩트: 백엔드에서 쏜 ErrorCode(JSON)의 message를 파싱해서 빼내는 공용 무기
+
+//백엔드에서 쏜 ErrorCode(JSON)의 message를 파싱해서 빼내는 공용 무기
 async function extractErrorMessage(response) {
     try {
         const errData = await response.json();
@@ -16,7 +17,7 @@ async function extractErrorMessage(response) {
     }
 }
 
-// 1. 내 가게 정보 조회
+//내 가게 정보 조회
 async function fetchMyStoreInfo() {
     try {
         const response = await fetch('/api/stores/my');

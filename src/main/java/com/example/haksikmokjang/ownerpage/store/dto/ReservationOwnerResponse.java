@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 
 @Getter
 public class ReservationOwnerResponse {
+
+
     private Long reservationId;
     private String memberName; // 예약자 이름
     private Integer peopleCount; // 인원수

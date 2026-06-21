@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class ReportController {
     private final ReportService reportService;
 
+
     // 게시글/댓글 신고
     @PostMapping
     public ResponseEntity<String> createReport(
