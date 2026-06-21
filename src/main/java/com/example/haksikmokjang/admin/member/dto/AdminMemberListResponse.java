@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -21,6 +22,8 @@ public class AdminMemberListResponse {
     private MemberRole role;
     private AccountStatus accountStatus;
     private String lockedYn;
+    private LocalDateTime lockedAt;
+    private String lockedReason;
 
     private String name;
     private String nickname;
@@ -41,6 +44,8 @@ public class AdminMemberListResponse {
                 .role(member.getRole())
                 .accountStatus(member.getAccountStatus())
                 .lockedYn(member.getLockedYn())
+                .lockedAt(member.getLockedAt())
+                .lockedReason(member.getLockedReason())
                 .name(userProfile.getName())
                 .nickname(userProfile.getNickname())
                 .schoolName(userProfile.getSchool().getSchoolName())
@@ -58,6 +63,8 @@ public class AdminMemberListResponse {
                 .role(member.getRole())
                 .accountStatus(member.getAccountStatus())
                 .lockedYn(member.getLockedYn())
+                .lockedAt(member.getLockedAt())
+                .lockedReason(member.getLockedReason())
                 .businessName(ownerProfile.getBusinessName())
                 .ownerName(ownerProfile.getOwnerName())
                 .approvalStatus(ownerProfile.getApprovalStatus().name())
@@ -73,6 +80,8 @@ public class AdminMemberListResponse {
                 .role(member.getRole())
                 .accountStatus(member.getAccountStatus())
                 .lockedYn(member.getLockedYn())
+                .lockedAt(member.getLockedAt())
+                .lockedReason(member.getLockedReason())
                 .build();
     }
 }

@@ -12,14 +12,21 @@
     <div class="data-card">
 
         <div class="filter-bar">
-            <select class="filter-input" id="roleFilter" onchange="fetchMembers()">
+            <select class="filter-input" id="roleFilter" onchange="fetchMembers(0)">
                 <option value="ALL">전체</option>
                 <option value="USER">일반 회원</option>
                 <option value="OWNER">점주</option>
                 <option value="ADMIN">관리자</option>
             </select>
+            <input
+                    type="text"
+                    class="filter-input"
+                    id="keywordInput"
+                    placeholder="아이디 또는 이메일 검색"
+                    onkeydown="handleSearchEnter(event)"
+            >
 
-            <button class="filter-btn" onclick="fetchMembers()">조회</button>
+            <button class="filter-btn" onclick="fetchMembers(0)">조회</button>
         </div>
 
         <div class="table-scroll">
@@ -41,68 +48,24 @@
                 <tbody id="memberTableBody"></tbody>
             </table>
         </div>
+        <div id="paginationArea" class="pagination-area"></div>
 
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchMembers();
-        });
+    <!-- 회원 상세 모달 -->
+    <div id="memberDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">회원 상세 정보</h3>
+                <button class="close-btn" onclick="closeMemberDetail()">×</button>
+            </div>
 
-        function fetchMembers() {
-            const role = document.getElementById("roleFilter").value;
+            <div id="memberDetailBody" class="modal-body">
+            </div>
+        </div>
+    </div>
 
-            fetch(`/api/admin/members?role=${role}`)
-                .then(response => response.json())
-                .then(data => renderMembers(data))
-                .catch(error => {
-                    console.error(error);
-                    alert("회원 목록 조회 중 오류가 발생했습니다.");
-                });
-        }
-
-        function renderMembers(members) {
-            const tbody = document.getElementById("memberTableBody");
-            tbody.innerHTML = "";
-
-            if (!members || members.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="10">조회된 회원이 없습니다.</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            members.forEach(member => {
-                const displayName = member.nickname || member.ownerName || member.name || "-";
-                const schoolName = member.schoolName || "-";
-                const mannerTemperature = member.mannerTemperature !== null && member.mannerTemperature !== undefined
-                    ? `${member.mannerTemperature}°C`
-                    : "-";
-                const noShowCount = member.noShowCount !== null && member.noShowCount !== undefined
-                    ? `${member.noShowCount}회`
-                    : "-";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${member.memberId}</td>
-                        <td>${member.loginId}</td>
-                        <td>${member.role}</td>
-                        <td>${displayName}</td>
-                        <td>${schoolName}</td>
-                        <td>${mannerTemperature}</td>
-                        <td>${noShowCount}</td>
-                        <td>${member.accountStatus}</td>
-                        <td>${member.lockedYn}</td>
-                        <td>
-                            <button class="action-btn">상세</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-    </script>
+    <script th:src="@{/js/admin/admin-member.js}"></script>
 
 </th:block>
 </html>
