@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminReportReviewService {
 
-
     private final ReportRepository reportRepository;
     private final StoreReviewRepository storeReviewRepository;
     private final MemberRepository memberRepository;

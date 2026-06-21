@@ -37,6 +37,8 @@ public class QChatMessage extends EntityPathBase<ChatMessage> {
 
     public final DateTimePath<java.time.LocalDateTime> editedAt = createDateTime("editedAt", java.time.LocalDateTime.class);
 
+    public final NumberPath<Long> formId = createNumber("formId", Long.class);
+
     public final StringPath imageUrl = createString("imageUrl");
 
     public final StringPath message = createString("message");

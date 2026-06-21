@@ -95,4 +95,9 @@ public class StoreController {
         storeService.addMenuToStore(authentication.getName(), storeId, request);
         return ResponseEntity.ok("신규 메뉴가 성공적으로 추가되었습니다.");
     }
+    // 프론트가 메뉴 리스트를 요청할 때 쏠 API
+    @GetMapping("/{storeId}/menus")
+    public ResponseEntity<List<MenuResponse>> getStoreMenus(@PathVariable Long storeId) {
+        return ResponseEntity.ok(storeService.getStoreMenus(storeId));
+    }
 }
