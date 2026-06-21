@@ -1,7 +1,7 @@
 package com.example.haksikmokjang.report.controller;
 
 import com.example.haksikmokjang.report.dto.ReportProcessRequest;
-import com.example.haksikmokjang.report.service.AdminReportService;
+import com.example.haksikmokjang.report.service.AdminReportReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,12 +9,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/reports")
+@RequestMapping("/api/admin/reports/review")
 @RequiredArgsConstructor
-public class AdminReportController {
+public class AdminReportReviewController {
 
 
-    private final AdminReportService adminReportService;
+    private final AdminReportReviewService adminReportService;
 
     @PatchMapping("/{reportId}/process")
     public ResponseEntity<String> processReport(

@@ -76,6 +76,33 @@
             </div>
         </div>
     </div>
+
+    <!-- 신고 처리 사유 모달 -->
+    <div id="reportProcessModal" class="modal-overlay">
+        <div class="modal-content process-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 처리 사유 입력</h3>
+                <button class="close-btn" onclick="closeReportProcessModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="processReportId">
+                <input type="hidden" id="processAction">
+
+                <label class="modal-label" for="processedReasonInput">처리 사유</label>
+                <textarea
+                        id="processedReasonInput"
+                        class="modal-textarea"
+                        placeholder="예: 욕설 및 부적절한 표현으로 블라인드 처리"
+                ></textarea>
+
+                <div class="modal-footer clean-footer">
+                    <button class="btn-cancel" onclick="closeReportProcessModal()">취소</button>
+                    <button class="btn-submit" onclick="submitReportProcess()">처리</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script th:src="@{/js/admin/admin-report.js}"></script>
 
 </th:block>

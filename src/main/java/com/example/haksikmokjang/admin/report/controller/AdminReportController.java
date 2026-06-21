@@ -2,6 +2,8 @@ package com.example.haksikmokjang.admin.report.controller;
 
 import com.example.haksikmokjang.admin.report.dto.AdminReportDetailResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportListResponse;
+import com.example.haksikmokjang.admin.report.dto.AdminReportProcessRequest;
+import com.example.haksikmokjang.admin.report.service.AdminCommunityReportService;
 import com.example.haksikmokjang.admin.report.service.AdminReportService;
 import com.example.haksikmokjang.global.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,17 +48,19 @@ public class AdminReportController {
     @PostMapping("/{reportId}/resolve")
     public void resolveReport(
             @PathVariable Long reportId,
+            @RequestBody AdminReportProcessRequest request,
             Authentication authentication
     ) {
-        adminReportService.resolveReport(reportId, authentication.getName());
+        adminReportService.resolveReport(reportId, authentication.getName(), request);
     }
 
     // 신고 반려
     @PostMapping("/{reportId}/reject")
     public void rejectReport(
             @PathVariable Long reportId,
+            @RequestBody AdminReportProcessRequest request,
             Authentication authentication
     ) {
-        adminReportService.rejectReport(reportId, authentication.getName());
+        adminReportService.rejectReport(reportId, authentication.getName(), request);
     }
 }

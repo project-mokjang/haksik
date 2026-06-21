@@ -2,11 +2,14 @@ package com.example.haksikmokjang.admin.report.service;
 
 import com.example.haksikmokjang.admin.report.dto.AdminReportDetailResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportListResponse;
+import com.example.haksikmokjang.admin.report.dto.AdminReportProcessRequest;
 import com.example.haksikmokjang.global.common.dto.PageResponse;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
+import com.example.haksikmokjang.notification.domain.Notification;
+import com.example.haksikmokjang.notification.repository.NotificationRepository;
 import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.report.domain.ReportStatus;
 import com.example.haksikmokjang.report.repository.ReportRepository;
@@ -25,6 +28,9 @@ public class AdminReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final NotificationRepository notificationRepository;
+    private final AdminCommunityReportService adminCommunityReportService;
+    private final AdminChatReportService adminChatReportService;
 
     // 신고 목록 검색 페이지 조회
     public PageResponse<AdminReportListResponse> findReports(
@@ -78,14 +84,35 @@ public class AdminReportService {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
 
-        return AdminReportDetailResponse.from(report);
+        if ("POST".equals(report.getTargetType())) {
+            return adminCommunityReportService.getPostReportDetail(report);
+        }
+
+        if ("COMMENT".equals(report.getTargetType())) {
+            return adminCommunityReportService.getCommentReportDetail(report);
+        }
+
+        if ("CHAT_MESSAGE".equals(report.getTargetType())) {
+            return adminChatReportService.getChatMessageReportDetail(report);
+        }
+
+        return AdminReportDetailResponse.from(
+                report,
+                null,
+                null,
+                null,
+                null
+        );
     }
+
 
     // 신고 처리중 변경
     @Transactional
     public void processingReport(Long reportId, String adminLoginId) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+
+        validateReportProcessable(report);
 
         Member admin = memberRepository.findByLoginId(adminLoginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADMIN_NOT_FOUND));
@@ -95,25 +122,139 @@ public class AdminReportService {
 
     // 신고 처리 완료
     @Transactional
-    public void resolveReport(Long reportId, String adminLoginId) {
+    public void resolveReport(
+            Long reportId,
+            String adminLoginId,
+            AdminReportProcessRequest request
+    ) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+
+        validateReportProcessable(report);
 
         Member admin = memberRepository.findByLoginId(adminLoginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADMIN_NOT_FOUND));
 
-        report.resolve(admin);
+        Member targetWriter = findReportedTargetWriter(report);
+
+        hideReportedTarget(report);
+
+        report.resolve(admin, request.getProcessedReason());
+
+        if (targetWriter != null) {
+            sendReportResolvedNotification(
+                    targetWriter,
+                    report,
+                    request.getProcessedReason()
+            );
+        }
+    }
+
+    // 신고 대상 숨김 처리
+    private void hideReportedTarget(Report report) {
+        if ("POST".equals(report.getTargetType())
+                || "COMMENT".equals(report.getTargetType())) {
+            adminCommunityReportService.hideCommunityTarget(report);
+            return;
+        }
+
+        if ("CHAT_MESSAGE".equals(report.getTargetType())) {
+            adminChatReportService.hideChatMessage(report);
+        }
     }
 
     // 신고 반려
     @Transactional
-    public void rejectReport(Long reportId, String adminLoginId) {
+    public void rejectReport(
+            Long reportId,
+            String adminLoginId,
+            AdminReportProcessRequest request
+    ) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
+
+        validateReportProcessable(report);
 
         Member admin = memberRepository.findByLoginId(adminLoginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADMIN_NOT_FOUND));
 
-        report.reject(admin);
+        report.reject(admin, request.getProcessedReason());
+
+        sendReportRejectedNotification(
+                report.getReporter(),
+                report,
+                request.getProcessedReason()
+        );
+    }
+
+    // 신고 최종 처리 여부 검증
+    private void validateReportProcessable(Report report) {
+        if (report.getStatus() == ReportStatus.RESOLVED
+                || report.getStatus() == ReportStatus.REJECTED) {
+            throw new CustomException(ErrorCode.REPORT_ALREADY_PROCESSED);
+        }
+    }
+
+    // 신고 처리 완료 알림 생성
+    private void sendReportResolvedNotification(
+            Member receiver,
+            Report report,
+            String processedReason
+    ) {
+        String reason = getProcessedReason(processedReason);
+
+        Notification notification = Notification.builder()
+                .member(receiver)
+                .notificationType("REPORT")
+                .title("작성한 콘텐츠가 블라인드 처리되었습니다.")
+                .content("신고 검토 결과, 작성하신 콘텐츠가 운영 정책에 따라 블라인드 처리되었습니다. 처리 사유: " + reason)
+                .targetType("REPORT")
+                .targetId(report.getReportId())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    // 신고 반려 알림 생성
+    private void sendReportRejectedNotification(
+            Member receiver,
+            Report report,
+            String processedReason
+    ) {
+        String reason = getProcessedReason(processedReason);
+
+        Notification notification = Notification.builder()
+                .member(receiver)
+                .notificationType("REPORT")
+                .title("신고가 반려되었습니다.")
+                .content("접수하신 신고를 검토한 결과, 반려 처리되었습니다. 처리 사유: " + reason)
+                .targetType("REPORT")
+                .targetId(report.getReportId())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    // 처리 사유 기본값 변환
+    private String getProcessedReason(String processedReason) {
+        if (processedReason == null || processedReason.isBlank()) {
+            return "관리자 판단에 따른 처리";
+        }
+
+        return processedReason;
+    }
+
+    // 신고 대상 작성자 조회
+    private Member findReportedTargetWriter(Report report) {
+        if ("POST".equals(report.getTargetType())
+                || "COMMENT".equals(report.getTargetType())) {
+            return adminCommunityReportService.findCommunityTargetWriter(report);
+        }
+
+        if ("CHAT_MESSAGE".equals(report.getTargetType())) {
+            return adminChatReportService.findChatMessageWriter(report);
+        }
+
+        return null;
     }
 }

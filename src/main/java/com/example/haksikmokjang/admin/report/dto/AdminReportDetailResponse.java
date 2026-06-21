@@ -25,9 +25,21 @@ public class AdminReportDetailResponse {
 
     private String processedByLoginId;
     private LocalDateTime processedAt;
+    private String processedReason;
+
+    private String targetTitle;
+    private String targetContent;
+    private String targetWriterLoginId;
+    private String targetStatus;
 
     // 신고 상세 응답 변환
-    public static AdminReportDetailResponse from(Report report) {
+    public static AdminReportDetailResponse from(
+            Report report,
+            String targetTitle,
+            String targetContent,
+            String targetWriterLoginId,
+            String targetStatus
+    ) {
         return AdminReportDetailResponse.builder()
                 .reportId(report.getReportId())
                 .reporterId(report.getReporter().getMemberId())
@@ -35,6 +47,10 @@ public class AdminReportDetailResponse {
                 .reporterEmail(report.getReporter().getEmail())
                 .targetType(report.getTargetType())
                 .targetId(report.getTargetId())
+                .targetTitle(targetTitle)
+                .targetContent(targetContent)
+                .targetWriterLoginId(targetWriterLoginId)
+                .targetStatus(targetStatus)
                 .reason(report.getReason())
                 .status(report.getStatus())
                 .processedByLoginId(
@@ -43,6 +59,7 @@ public class AdminReportDetailResponse {
                                 : null
                 )
                 .processedAt(report.getProcessedAt())
+                .processedReason(report.getProcessedReason())
                 .build();
     }
 }

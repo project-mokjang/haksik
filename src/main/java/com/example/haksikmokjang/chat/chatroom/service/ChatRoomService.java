@@ -51,12 +51,24 @@ public class ChatRoomService {
                             .roomStatus(chatRoom.getRoomStatus())
                             .roomName(chatRoom.getRoomName())
                             .displayRoomName(getDisplayRoomName(chatRoom, loginMember))
-                            .lastMessage(chatRoom.getLastMessage())
+                            .lastMessage(getLastMessageText(chatRoom))
                             .lastMessageAt(chatRoom.getLastMessageAt())
                             .unreadCount(unreadCount)
                             .build();
                 })
                 .toList();
+    }
+    // 마지막 메시지 표시 문구 조회
+    private String getLastMessageText(ChatRoom chatRoom) {
+        return chatMessageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom)
+                .map(chatMessage -> {
+                    if (chatMessage.isDeleted()) {
+                        return "관리자에 의해 가려진 메시지입니다.";
+                    }
+
+                    return chatMessage.getMessage();
+                })
+                .orElse(chatRoom.getLastMessage());
     }
 
     // 채팅방 상세 정보 조회

@@ -222,11 +222,39 @@ function renderReportDetail(report) {
                 </div>
             </div>
         </div>
+        
+        <div class="detail-section">
+            <h4 class="detail-section-title">신고 대상 내용</h4>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">대상 제목</span>
+                    <strong>${report.targetTitle || "-"}</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">작성자</span>
+                    <strong>${report.targetWriterLoginId || "-"}</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">대상 상태</span>
+                    <strong>${report.targetStatus || "-"}</strong>
+                </div>
+            </div>
+
+            <div class="detail-content-box">
+                ${report.targetContent || "-"}
+            </div>
+        </div>
 
         <div class="detail-section">
             <h4 class="detail-section-title">신고 사유</h4>
             <div class="detail-reason-box">
                 ${report.reason || "-"}
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4 class="detail-section-title">처리 사유</h4>
+            <div class="detail-reason-box">
+                ${report.processedReason || "-"}
             </div>
         </div>
     `;
@@ -273,6 +301,44 @@ function renderReportActionButtons(report) {
 
 // 신고 상태 변경
 function changeReportStatus(reportId, action) {
+    if (action === "processing") {
+        processReportWithoutReason(reportId, action);
+        return;
+    }
+
+    openReportProcessModal(reportId, action);
+}
+
+// 신고 처리 사유 모달 열기
+function openReportProcessModal(reportId, action) {
+    document.getElementById("processReportId").value = reportId;
+    document.getElementById("processAction").value = action;
+    document.getElementById("processedReasonInput").value = "";
+
+    document.getElementById("reportProcessModal").classList.add("active");
+}
+
+// 신고 처리 사유 모달 닫기
+function closeReportProcessModal() {
+    document.getElementById("reportProcessModal").classList.remove("active");
+}
+
+// 신고 처리 사유 제출
+function submitReportProcess() {
+    const reportId = document.getElementById("processReportId").value;
+    const action = document.getElementById("processAction").value;
+    const processedReason = document.getElementById("processedReasonInput").value;
+
+    if (!processedReason || processedReason.trim() === "") {
+        alert("처리 사유는 필수입니다.");
+        return;
+    }
+
+    processReportWithReason(reportId, action, processedReason);
+}
+
+// 신고 처리중 변경
+function processReportWithoutReason(reportId, action) {
     fetch(`/api/admin/reports/${reportId}/${action}`, {
         method: "POST"
     })
@@ -281,6 +347,32 @@ function changeReportStatus(reportId, action) {
                 throw new Error("신고 상태 변경 실패");
             }
 
+            alert("신고 상태가 변경되었습니다.");
+            fetchReports(currentReportPage);
+        })
+        .catch(error => {
+            console.error(error);
+            alert("신고 상태 변경 중 오류가 발생했습니다.");
+        });
+}
+
+// 신고 완료/반려 처리
+function processReportWithReason(reportId, action, processedReason) {
+    fetch(`/api/admin/reports/${reportId}/${action}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            processedReason: processedReason
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("신고 상태 변경 실패");
+            }
+
+            closeReportProcessModal();
             alert("신고 상태가 변경되었습니다.");
             fetchReports(currentReportPage);
         })

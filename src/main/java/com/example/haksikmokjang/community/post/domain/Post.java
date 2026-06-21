@@ -74,4 +74,9 @@ public class Post extends BaseEntity {
         // DB에서 날리지 않고 상태만 DELETE로 바꿔 화면에 안 보이게
         this.status = PostStatus.DELETE;
     }
+
+    // 게시글 숨김 처리
+    public void hide() {
+        this.status = PostStatus.HIDDEN;
+    }
 }

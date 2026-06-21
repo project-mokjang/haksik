@@ -490,3 +490,32 @@ body { display: flex; height: 100vh; background-color: var(--ivory); color: var(
     min-width: 1250px;
 }
 
+.detail-content-box {
+    margin-top: 12px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.process-modal {
+    max-width: 520px;
+}
+
+.clean-footer {
+    padding: 0;
+    margin-top: 16px;
+    background: transparent;
+    border-top: none;
+}
+
+.modal-textarea {
+    min-height: 130px;
+    line-height: 1.6;
+}
+

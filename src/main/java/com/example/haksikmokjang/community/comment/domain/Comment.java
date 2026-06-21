@@ -63,4 +63,9 @@ public class Comment extends CreatedTimeEntity {
     public void delete() {
         this.status = CommentStatus.DELETED;
     }
+
+    // 댓글 숨김 처리
+    public void hide() {
+        this.status = CommentStatus.HIDDEN;
+    }
 }
