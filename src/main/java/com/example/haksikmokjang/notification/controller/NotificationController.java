@@ -36,4 +36,11 @@ public class NotificationController {
         notificationService.readNotification(notiId);
         return ResponseEntity.ok("읽음 처리 완료");
     }
+
+    // 알림 전체 읽음 처리
+    @PutMapping("/read-all")
+    public ResponseEntity<?> readAllNotis(Authentication auth) {
+        notificationService.readAllNotifications(auth.getName());
+        return ResponseEntity.ok("전체 알림 읽음 처리 완료");
+    }
 }

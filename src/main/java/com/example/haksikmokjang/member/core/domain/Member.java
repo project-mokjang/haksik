@@ -73,6 +73,21 @@ public class Member extends BaseEntity {
         this.lockedReason = null;
     }
 
+    // 매너점수 0점 이하로 인한 계정 잠금
+    public void lockByTrust(String reason) {
+        this.lockedYn = "Y";
+        this.lockedAt = LocalDateTime.now();
+        this.lockedReason = reason;
+    }
+
+    // 관리자 계정 잠금 해제
+    public void unlock() {
+        this.lockedYn = "N";
+        this.lockedAt = null;
+        this.lockedReason = null;
+        this.loginFailCount = 0;
+    }
+
     public boolean isLocked() {
         return "Y".equals(this.lockedYn);
     }

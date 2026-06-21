@@ -14,10 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
+    private final LoginAttemptService loginAttemptService;
 
+    // 로그인 인증 전 만료된 로그인 실패 잠금을 자동 해제
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
+        loginAttemptService.unlockExpiredLoginFailLock(loginId);
+
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("아이디 또는 비밀번호가 일치하지 않습니다."));
 

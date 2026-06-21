@@ -36,7 +36,7 @@ class StoreServiceTest {
     void updateBusinessStatus_Success() {
         // 1. Given (준비 세트)
         String loginId = "owner123";
-        Long storeId = 1L;
+        Long storeId = 50L;
 
         // 가짜 멤버 생성
         Member mockOwner = Member.builder()

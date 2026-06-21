@@ -8,8 +8,9 @@ import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
+import com.example.haksikmokjang.member.trust.service.TrustService;
 import com.example.haksikmokjang.notification.domain.Notification;
-import com.example.haksikmokjang.notification.repository.NotificationRepository;
+import com.example.haksikmokjang.notification.service.NotificationService;
 import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.report.domain.ReportStatus;
 import com.example.haksikmokjang.report.repository.ReportRepository;
@@ -28,9 +29,11 @@ public class AdminReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final AdminCommunityReportService adminCommunityReportService;
     private final AdminChatReportService adminChatReportService;
+    private final AdminReviewReportService adminReviewReportService;
+    private final TrustService trustService;
 
     // 신고 목록 검색 페이지 조회
     public PageResponse<AdminReportListResponse> findReports(
@@ -95,6 +98,9 @@ public class AdminReportService {
         if ("CHAT_MESSAGE".equals(report.getTargetType())) {
             return adminChatReportService.getChatMessageReportDetail(report);
         }
+        if ("REVIEW".equals(report.getTargetType())) {
+            return adminReviewReportService.getReviewReportDetail(report);
+        }
 
         return AdminReportDetailResponse.from(
                 report,
@@ -142,12 +148,20 @@ public class AdminReportService {
         report.resolve(admin, request.getProcessedReason());
 
         if (targetWriter != null) {
+            trustService.applyReportPenalty(targetWriter, report.getReportId());
+
             sendReportResolvedNotification(
                     targetWriter,
                     report,
                     request.getProcessedReason()
             );
         }
+
+        sendReportReporterResolvedNotification(
+                report.getReporter(),
+                report,
+                request.getProcessedReason()
+        );
     }
 
     // 신고 대상 숨김 처리
@@ -160,6 +174,10 @@ public class AdminReportService {
 
         if ("CHAT_MESSAGE".equals(report.getTargetType())) {
             adminChatReportService.hideChatMessage(report);
+        }
+
+        if ("REVIEW".equals(report.getTargetType())) {
+            adminReviewReportService.hideReview(report);
         }
     }
 
@@ -203,16 +221,14 @@ public class AdminReportService {
     ) {
         String reason = getProcessedReason(processedReason);
 
-        Notification notification = Notification.builder()
-                .member(receiver)
-                .notificationType("REPORT")
-                .title("작성한 콘텐츠가 블라인드 처리되었습니다.")
-                .content("신고 검토 결과, 작성하신 콘텐츠가 운영 정책에 따라 블라인드 처리되었습니다. 처리 사유: " + reason)
-                .targetType("REPORT")
-                .targetId(report.getReportId())
-                .build();
-
-        notificationRepository.save(notification);
+        notificationService.sendNotification(
+                receiver,
+                "REPORT",
+                "작성한 콘텐츠가 블라인드 처리되었습니다.",
+                "신고 검토 결과, 작성하신 콘텐츠가 운영 정책에 따라 블라인드 처리되었습니다. 처리 사유: " + reason,
+                "REPORT",
+                report.getReportId()
+        );
     }
 
     // 신고 반려 알림 생성
@@ -223,16 +239,14 @@ public class AdminReportService {
     ) {
         String reason = getProcessedReason(processedReason);
 
-        Notification notification = Notification.builder()
-                .member(receiver)
-                .notificationType("REPORT")
-                .title("신고가 반려되었습니다.")
-                .content("접수하신 신고를 검토한 결과, 반려 처리되었습니다. 처리 사유: " + reason)
-                .targetType("REPORT")
-                .targetId(report.getReportId())
-                .build();
-
-        notificationRepository.save(notification);
+        notificationService.sendNotification(
+                receiver,
+                "REPORT",
+                "신고가 반려되었습니다.",
+                "접수하신 신고를 검토한 결과, 반려 처리되었습니다. 처리 사유: " + reason,
+                "REPORT",
+                report.getReportId()
+        );
     }
 
     // 처리 사유 기본값 변환
@@ -255,6 +269,28 @@ public class AdminReportService {
             return adminChatReportService.findChatMessageWriter(report);
         }
 
+        if ("REVIEW".equals(report.getTargetType())) {
+            return adminReviewReportService.findReviewWriter(report);
+        }
+
         return null;
+    }
+
+    // 신고자에게 처리 완료 알림 생성
+    private void sendReportReporterResolvedNotification(
+            Member receiver,
+            Report report,
+            String processedReason
+    ) {
+        String reason = getProcessedReason(processedReason);
+
+        notificationService.sendNotification(
+                receiver,
+                "REPORT",
+                "신고가 처리 완료되었습니다.",
+                "접수하신 신고가 관리자 검토 후 처리 완료되었습니다. 처리 사유: " + reason,
+                "REPORT",
+                report.getReportId()
+        );
     }
 }

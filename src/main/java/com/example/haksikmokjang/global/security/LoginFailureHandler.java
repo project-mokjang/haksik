@@ -15,24 +15,27 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 public class LoginFailureHandler implements AuthenticationFailureHandler {
+
     private final LoginAttemptService loginAttemptService;
 
+    // 로그인 실패 유형에 따라 실패 횟수 증가 또는 잠금 메시지를 처리
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        org.springframework.security.core.AuthenticationException exception)
-            throws IOException, ServletException {
+    public void onAuthenticationFailure(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            org.springframework.security.core.AuthenticationException exception
+    ) throws IOException, ServletException {
 
         String loginId = request.getParameter("loginId");
-
-        if (loginId != null && !loginId.isBlank()) {
-            loginAttemptService.loginFail(loginId);
-        }
 
         String message = "아이디 또는 비밀번호가 일치하지 않습니다.";
 
         if (exception instanceof LockedException) {
-            message = "계정이 잠겼습니다. 관리자에게 문의해주세요.";
+            message = loginAttemptService.getLockedMessage(loginId);
+        } else {
+            if (loginId != null && !loginId.isBlank()) {
+                loginAttemptService.loginFail(loginId);
+            }
         }
 
         String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);

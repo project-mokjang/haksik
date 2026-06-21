@@ -230,10 +230,52 @@ function renderMemberDetail(member) {
                 </div>
             </div>
         </div>
+        ${renderUnlockButton(member)}
     `;
 }
 
 // 회원 상세 모달 닫기
 function closeMemberDetail() {
     document.getElementById("memberDetailModal").classList.remove("active");
+}
+
+// 잠금 해제 버튼 출력
+function renderUnlockButton(member) {
+    if (member.lockedYn !== "Y") {
+        return "";
+    }
+
+    return `
+        <div class="detail-section">
+            <button class="action-btn"
+                    style="width: 100%; padding: 12px;"
+                    onclick="unlockMember(${member.memberId})">
+                계정 잠금 해제
+            </button>
+        </div>
+    `;
+}
+
+// 회원 계정 잠금 해제
+function unlockMember(memberId) {
+    if (!confirm("해당 회원의 계정 잠금을 해제하시겠습니까?")) {
+        return;
+    }
+
+    fetch(`/api/admin/members/${memberId}/unlock`, {
+        method: "POST"
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("계정 잠금 해제 실패");
+            }
+
+            alert("계정 잠금이 해제되었습니다.");
+            closeMemberDetail();
+            fetchMembers(currentPage);
+        })
+        .catch(error => {
+            console.error(error);
+            alert("계정 잠금 해제 중 오류가 발생했습니다.");
+        });
 }

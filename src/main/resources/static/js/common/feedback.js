@@ -185,6 +185,35 @@ async function readAndMove(notiId, url) {
     }
 }
 
+// 모든 알림 읽음 처리
+async function readAllNotifications(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+
+    try {
+        const res = await fetch('/api/notifications/read-all', {
+            method: 'PUT'
+        });
+
+        if (!res.ok) {
+            throw new Error('전체 읽음 처리 실패');
+        }
+
+        await fetchNotifications();
+
+        if (typeof showToast === 'function') {
+            showToast('모든 알림을 읽음 처리했습니다.', 'success');
+        }
+    } catch (e) {
+        console.error('전체 읽음 처리 실패:', e);
+
+        if (typeof showToast === 'function') {
+            showToast('알림 읽음 처리 중 오류가 발생했습니다.', 'error');
+        }
+    }
+}
+
 // 알림 HTML 특수문자 처리
 function escapeNotificationHtml(value) {
     if (value === null || value === undefined) {

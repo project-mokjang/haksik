@@ -18,6 +18,7 @@ import com.example.haksikmokjang.member.badge.service.BadgeAwardService;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
+import com.example.haksikmokjang.member.trust.service.TrustService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class ChatReviewService {
     private final ChatReviewRepository chatReviewRepository;
     private final ChatReviewUserProfileRepository userProfileRepository;
     private final BadgeAwardService badgeAwardService;
+    private final TrustService trustService;
 
     // 종료된 채팅방에서 내가 평가해야 할 상대 목록 조회
     @Transactional(readOnly = true)
@@ -102,7 +104,12 @@ public class ChatReviewService {
 
         ChatReview savedReview = chatReviewRepository.save(chatReview);
 
-        updateTrustInfo(targetMember, request.getMannerScore(), noShow);
+        if (noShow) {
+            trustService.applyNoShowPenalty(targetMember, chatRoom.getChatRoomId());
+        } else {
+            updateTrustInfo(targetMember, request.getMannerScore());
+        }
+
         badgeAwardService.awardChatReviewCreatedBadges(targetMember);
 
         return createReviewResponse(savedReview);
@@ -120,8 +127,8 @@ public class ChatReviewService {
                 .toList();
     }
 
-    // 평가 결과로 신뢰 온도와 노쇼 카운트 반영
-    private void updateTrustInfo(Member targetMember, Integer mannerScore, boolean noShow) {
+    // 평가 결과로 신뢰 온도 반영 (노쇼 제외)
+    private void updateTrustInfo(Member targetMember, Integer mannerScore) {
         UserProfile targetProfile = userProfileRepository.findByMember(targetMember)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
@@ -129,23 +136,22 @@ public class ChatReviewService {
                 ? DEFAULT_MANNER_TEMPERATURE
                 : targetProfile.getMannerTemperature();
 
+        BigDecimal changedTemperature = currentTemperature.add(getMannerDelta(mannerScore));
+        BigDecimal newTemperature = normalizeMannerTemperature(changedTemperature);
+
         int currentNoShowCount = targetProfile.getNoShowCount() == null
                 ? 0
                 : targetProfile.getNoShowCount();
 
-        BigDecimal changedTemperature = currentTemperature.add(getMannerDelta(mannerScore, noShow));
-        BigDecimal newTemperature = normalizeMannerTemperature(changedTemperature);
-        int newNoShowCount = noShow ? currentNoShowCount + 1 : currentNoShowCount;
-
-        userProfileRepository.updateTrustValues(targetMember, newTemperature, newNoShowCount);
+        userProfileRepository.updateTrustValues(
+                targetMember,
+                newTemperature,
+                currentNoShowCount
+        );
     }
 
     // 매너 점수별 신뢰 온도 변화량
-    private BigDecimal getMannerDelta(Integer mannerScore, boolean noShow) {
-        if (noShow) {
-            return BigDecimal.valueOf(-1.0);
-        }
-
+    private BigDecimal getMannerDelta(Integer mannerScore) {
         return switch (mannerScore) {
             case 5 -> BigDecimal.valueOf(0.5);
             case 4 -> BigDecimal.valueOf(0.3);
