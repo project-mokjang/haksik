@@ -40,6 +40,13 @@
                     메뉴 등록하기
                 </button>
             </form>
+            <div style="margin: 30px 0 20px 0; border-top: 2px dashed var(--line); padding-top: 25px;">
+                <div style="font-size: 16px; font-weight: 900; color: var(--forest); margin-bottom: 12px;">📋 등록된 메뉴 관리</div>
+
+                <ul id="menuListContainer" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align:center; padding: 20px; color: var(--muted); font-weight: 700;">메뉴 목록을 불러오는 중입니다...</div>
+                </ul>
+            </div>
         </main>
 
         <nav th:replace="~{fragments/mobile-layout :: ownerBottomNav('menu')}"></nav>

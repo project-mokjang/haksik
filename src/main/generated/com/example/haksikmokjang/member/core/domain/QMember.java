@@ -30,6 +30,8 @@ public class QMember extends EntityPathBase<Member> {
 
     public final DateTimePath<java.time.LocalDateTime> lockedAt = createDateTime("lockedAt", java.time.LocalDateTime.class);
 
+    public final StringPath lockedReason = createString("lockedReason");
+
     public final StringPath lockedYn = createString("lockedYn");
 
     public final NumberPath<Integer> loginFailCount = createNumber("loginFailCount", Integer.class);

@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminReportService {
 
-
     private final ReportRepository reportRepository;
     private final StoreReviewRepository storeReviewRepository;
     private final MemberRepository memberRepository;
@@ -34,7 +33,7 @@ public class AdminReportService {
 
         //상태 변경 및 처리자(Admin) 기록
         ReportStatus newStatus = ReportStatus.valueOf(request.getProcessStatus()); // RESOLVED 또는 REJECTED
-        report.processReport(newStatus, admin);
+        //report.processReport(newStatus, admin);
 
         //만약 "리뷰(REVIEW)" 신고 건이었고, 관리자가 "합당하다(RESOLVED)"고 판정했다면 원본 리뷰 삭제
         if (newStatus == ReportStatus.RESOLVED && "REVIEW".equals(report.getTargetType())) {
