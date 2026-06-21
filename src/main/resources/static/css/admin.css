@@ -453,3 +453,40 @@ body { display: flex; height: 100vh; background-color: var(--ivory); color: var(
     cursor: not-allowed;
 }
 
+.detail-reason-box {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+/* 신고관리 테이블 정리 */
+.action-cell {
+    min-width: 210px;
+}
+
+.action-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-group .action-btn {
+    min-width: 58px;
+    height: 36px;
+}
+
+.data-table td:nth-child(5) {
+    max-width: 260px;
+    white-space: normal;
+    line-height: 1.5;
+}
+
+.table-scroll .data-table {
+    min-width: 1250px;
+}
+

@@ -49,4 +49,26 @@ public class Report {
         this.reason = reason;
         this.status = ReportStatus.PENDING; // 기본값
     }
+
+    // 관리자 신고 관리
+    // 신고 처리 완료
+    public void resolve(Member admin) {
+        this.status = ReportStatus.RESOLVED;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+    }
+
+    // 신고 반려
+    public void reject(Member admin) {
+        this.status = ReportStatus.REJECTED;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+    }
+
+    // 신고 처리 중 변경
+    public void processing(Member admin) {
+        this.status = ReportStatus.PROCESSING;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+    }
 }

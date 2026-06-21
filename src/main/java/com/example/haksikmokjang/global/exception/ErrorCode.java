@@ -96,6 +96,7 @@ public enum ErrorCode {
 
     //Report
     INVALID_REPORT_TARGET(HttpStatus.BAD_REQUEST, "REPORT_001", "신고 대상 정보가 올바르지 않습니다."),
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_002", "신고 정보를 찾을 수 없습니다."),
 
     //신고 권한
     CANNOT_REPORT_OWN_CONTENT(HttpStatus.BAD_REQUEST, "COMMON_4001", "자신이 작성한 게시글이나 댓글은 신고할 수 없습니다."),

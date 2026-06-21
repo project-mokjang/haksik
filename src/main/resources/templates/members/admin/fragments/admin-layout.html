@@ -35,6 +35,12 @@
            th:classappend="${activeMenu == 'owners'} ? ' active'">
             👨‍🍳 점주 승인 관리
         </a>
+
+        <a th:href="@{/api/view/admin/reports}"
+           class="menu-item"
+           th:classappend="${activeMenu == 'reports'} ? ' active'">
+            🚨 신고 관리
+        </a>
     </nav>
 </aside>
 
