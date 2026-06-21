@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 public class ReservationUserResponse {
+
     private Long reservationId;
     private Long storeId; // 식당 상세 페이지 이동용
     private String storeName; // 🚨 Fetch Join으로 가져온 식당 이름

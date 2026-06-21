@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+
 async function extractErrorMessage(response) {
     try {
         const errData = await response.json();

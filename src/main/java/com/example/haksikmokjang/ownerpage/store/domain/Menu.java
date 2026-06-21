@@ -49,6 +49,7 @@ public class Menu {
         this.salesStatus = salesStatus;
     }
 
+
     public void changeSalesStatus(MenuStatus status) {
         this.salesStatus = status;
     }

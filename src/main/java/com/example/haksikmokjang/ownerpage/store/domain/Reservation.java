@@ -52,6 +52,7 @@ public class Reservation {
         this.status = status;
     }
 
+
     // 🚨 팩트: 상태 변경 로직. 노쇼 처리 시 타격점이 됩니다.
     public void changeStatus(ReservationStatus status) {
         this.status = status;

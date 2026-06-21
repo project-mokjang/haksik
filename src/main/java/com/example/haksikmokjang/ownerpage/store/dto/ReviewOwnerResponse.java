@@ -7,6 +7,7 @@ import java.util.List;
 
 @Getter
 public class ReviewOwnerResponse {
+
     private Long reviewId;
     private Integer rating;
     private String content;

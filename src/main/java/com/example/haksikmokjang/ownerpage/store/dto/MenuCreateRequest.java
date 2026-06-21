@@ -18,5 +18,6 @@ public class MenuCreateRequest {
     private Integer price;
 
     // 단건 메뉴 이미지 수신용
+
     private MultipartFile image;
 }

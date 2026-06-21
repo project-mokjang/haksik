@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class StoreMyResponse {
+
     private Long storeId;
     private String name;
     private String businessStatus;

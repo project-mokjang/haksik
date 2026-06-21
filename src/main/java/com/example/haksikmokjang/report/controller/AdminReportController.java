@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminReportController {
 
+
     private final AdminReportService adminReportService;
 
     @PatchMapping("/{reportId}/process")

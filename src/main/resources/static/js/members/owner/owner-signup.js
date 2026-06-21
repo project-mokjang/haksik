@@ -12,6 +12,7 @@ const EMAIL_CHECK_URL = '/api/members/check-owner-email';
 // 사업자등록번호 중복 확인 API
 const BUSINESS_NUMBER_CHECK_URL = '/api/members/check-business-number';
 
+
 // 중복 확인 완료 여부
 let isLoginIdChecked = false;
 let isEmailChecked = false;

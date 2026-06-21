@@ -18,6 +18,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             "sin(radians(:lat)) * sin(radians(latitude)))) <= :radius " +
             "AND business_status != 'CLOSED'",
             nativeQuery = true)
+
     List<Store> findNearbyStores(
             @Param("lat") Double lat,
             @Param("lng") Double lng,

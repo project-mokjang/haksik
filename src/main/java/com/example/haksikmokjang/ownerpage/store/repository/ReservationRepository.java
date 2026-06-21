@@ -13,6 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "JOIN FETCH r.member m " +
             "WHERE r.store.member.loginId = :ownerLoginId " +
             "ORDER BY r.reservationAt DESC")
+
     List<Reservation> findAllByOwnerLoginIdWithMember(@Param("ownerLoginId") String ownerLoginId);
 
     // 유저가 자신의 예약 내역을 볼 때 식당 이름(Store Name)이 필요하므로 Store를 Fetch Join 합니다.
@@ -20,5 +21,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "JOIN FETCH r.store s " +
             "WHERE r.member.loginId = :loginId " +
             "ORDER BY r.reservationAt DESC")
+
     List<Reservation> findAllByMemberLoginIdWithStore(@Param("loginId") String loginId);
 }
