@@ -44,7 +44,7 @@ public class ChatRoomCreateDummyTest {
     @Transactional
     @DisplayName("7번/8번 유저로 채팅방 3종 생성")
     void createBasicChatRoomsWithUser7And8() {
-        Member user7 = memberRepository.findById(7L)
+        Member user7 = memberRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("member_id 7 유저가 없습니다."));
         Member user8 = memberRepository.findById(8L)
                 .orElseThrow(() -> new RuntimeException("member_id 8 유저가 없습니다."));
