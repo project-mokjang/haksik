@@ -7,6 +7,7 @@ import com.example.haksikmokjang.member.signup.user.repository.UserProfileReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.*;
 
 @RestController
@@ -15,21 +16,18 @@ import java.util.*;
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
-
+    // 유저 프로필(DB)을 뒤지기 위해 창고 열쇠(Repository) 추가
     private final UserProfileRepository userProfileRepository;
 
-
-
     @PostMapping("/ask")
-<<<<<<< HEAD
     public Map<String, String> askToAi(
             @RequestBody Map<String, String> requestData,
-            @AuthenticationPrincipal CustomUserDetails userDetails) { //현재 챗봇에 말 건 사람이 누군지 정보 가져오기
+            @AuthenticationPrincipal CustomUserDetails userDetails) { // 현재 챗봇에 말 건 사람이 누군지 정보 가져오기
 
         // 프론트에서 보낸 질문 쏙 빼기
         String userMessage = requestData.get("message");
 
-        //유저의 선호 음식을 찾아서 꺼내오기 로직
+        //  유저의 선호 음식을 찾아서 꺼내오기 로직
         String preferredFood = "";
         if (userDetails != null && userDetails.getMember() != null) {
             Optional<UserProfile> profileOpt = userProfileRepository.findByMember(userDetails.getMember());
@@ -40,18 +38,10 @@ public class ChatbotController {
             }
         }
 
-        //  챗봇 두뇌로 질문이랑 사용자 식성을 같이 던져줌
+        //  챗봇 두뇌로 질문이랑 사용자 식성을 같이 던져주기
         String aiAnswer = chatbotService.getAiResponse(userMessage, preferredFood);
-=======
-    public Map<String, String> askToAi(@RequestBody Map<String, String> requestData) {
 
-        String userMessage = requestData.get("message");
-
-
-        String aiAnswer = chatbotService.getAiResponse(userMessage);
->>>>>>> 7b5143a8e8df9e346a7da4a312c37acf108201da
-
-
+        // 프론트가 data.answer 로 읽을 수 있게 돌려주기
         Map<String, String> response = new HashMap<>();
         response.put("answer", aiAnswer);
 
