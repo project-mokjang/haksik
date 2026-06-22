@@ -13,6 +13,14 @@
         &lt;
     </button>
 
+    <!-- 왼쪽: 채팅 목록으로 이동 -->
+    <button th:if="${leftType == 'chatBack'}"
+            type="button"
+            class="app-header-btn"
+            onclick="location.href='/api/view/user/chat'">
+        &lt;
+    </button>
+
     <a th:if="${leftType == 'menu'}"
        th:href="@{/api/view/user/main}"
        class="app-header-btn app-header-home-btn">
@@ -32,6 +40,15 @@
 
     <!-- 오른쪽: 없음 -->
     <div th:if="${rightType == 'none'}" class="app-header-right"></div>
+
+    <!-- 오른쪽: 채팅 메뉴 -->
+    <div th:if="${rightType == 'chatMenu'}" class="app-header-right">
+        <button type="button"
+                class="app-header-btn chat-menu-button"
+                onclick="toggleChatMenu()">
+            ⋮
+        </button>
+    </div>
 </header>
 
 

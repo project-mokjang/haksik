@@ -13,20 +13,10 @@
 <body class="app-body">
 
 <div class="app-page">
-  <div class="app-shell">
+  <div class="app-shell community-shell">
 
-    <header class="app-header">
-      <button type="button" class="app-header-btn" onclick="history.back()">
-        &lt;
-      </button>
+    <header th:replace="~{fragments/mobile-layout :: appHeader('커뮤니티', 'back', 'alarm')}"></header>
 
-      <div class="app-header-title">커뮤니티</div>
-
-      <div class="header-actions">
-        <div th:replace="~{fragments/mobile-layout :: notificationBell}"></div>
-        <button type="button" class="app-header-btn" id="writePostBtn">✏️</button>
-      </div>
-    </header>
 
     <main class="app-scroll has-bottom-nav board-list-scroll">
 
@@ -77,6 +67,12 @@
       <div id="observerTarget" class="board-observer-target"></div>
 
     </main>
+
+    <button type="button"
+            id="writePostBtn"
+            class="community-write-floating">
+      ✏️ 새 글쓰기
+    </button>
 
     <nav th:replace="~{fragments/mobile-layout :: bottomNav('community')}"></nav>
 

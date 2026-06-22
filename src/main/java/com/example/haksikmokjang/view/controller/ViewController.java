@@ -196,12 +196,6 @@ public class ViewController {
         return "members/owner/owner-pending";
     }
 
-
-    @GetMapping("/owner/rejected")
-    public String ownerRejectedPage() {
-        return "members/owner/owner-rejected";
-    }
-
     @GetMapping("/owner/my-page")
     public String ownerMyPage() {
         return "members/owner/owner-mypage";
