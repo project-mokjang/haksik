@@ -15,7 +15,7 @@
 <div class="app-page">
     <div class="app-shell">
 
-        <header th:replace="~{fragments/mobile-layout :: appHeader('프로필 수정', 'back', 'none')}"></header>
+        <header th:replace="~{fragments/mobile-layout :: appHeader('프로필 수정', 'back', 'alarm')}"></header>
 
         <form id="profileUpdateForm" class="profile-update-form">
 
@@ -90,6 +90,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/common/feedback.js}"></script>
 <script th:src="@{/js/members/user/profile-update.js}"></script>
 
 </body>

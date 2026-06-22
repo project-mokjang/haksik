@@ -1,10 +1,13 @@
 package com.example.haksikmokjang.matching.matchingwaiting.repository;
 
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaiting;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingWaitingStatus;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,5 +34,22 @@ public interface MatchingWaitingRepository extends JpaRepository<MatchingWaiting
     List<MatchingWaiting> findByStatusAndExpiredAtBefore(
             MatchingWaitingStatus status,
             LocalDateTime now
+    );
+
+    // 필터 조건으로 매칭 대기 마커 조회
+    @Query("""
+    select mw
+    from MatchingWaiting mw
+    join fetch mw.userProfile up
+    where mw.mode = :mode
+    and mw.status = :status
+    and mw.expiredAt > :now
+    and (:matchingType is null or mw.matchingType = :matchingType)
+""")
+    List<MatchingWaiting> findMarkersByFilter(
+            @Param("mode") MatchingMode mode,
+            @Param("status") MatchingWaitingStatus status,
+            @Param("now") LocalDateTime now,
+            @Param("matchingType") MatchingType matchingType
     );
 }

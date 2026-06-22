@@ -246,3 +246,20 @@
     align-items: center;
     justify-content: center;
 }
+
+.app-header.right-none .header-bell-wrap,
+.app-header.right-none .bell-btn,
+.app-header.right-none .bell-badge,
+.app-header.right-none .noti-dropdown {
+    display: none !important;
+}
+
+.app-header.right-none {
+    display: grid !important;
+    grid-template-columns: 40px 1fr 40px !important;
+    align-items: center !important;
+}
+
+.app-header.right-none .app-header-title {
+    text-align: center;
+}

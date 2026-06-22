@@ -65,6 +65,11 @@ public enum ErrorCode {
     MATCHING_ALREADY_PARTICIPATED(HttpStatus.CONFLICT, "MATCHING_015", "이미 신청했거나 참여 중인 단체 학식입니다."),
     MATCHING_GROUP_OWNER_CANNOT_REQUEST(HttpStatus.CONFLICT, "MATCHING_019", "단체방 모집 중에는 다른 매칭을 신청할 수 없습니다. 모집을 취소한 뒤 손들기 모드로 변경해주세요."),
     MATCHING_ACCEPTED_ALREADY_EXISTS(HttpStatus.CONFLICT, "MATCHING_020", "이미 확정된 매칭이 있어 새로운 매칭 대기를 시작할 수 없습니다."),
+    PREFERRED_FOOD_CATEGORY_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "MATCHING_021",
+            "선호 음식 카테고리가 지정되어 있지 않습니다. 마이페이지에서 선호 음식을 먼저 선택해주세요."
+    ),
 
     // Chat
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT_001", "채팅방을 찾을 수 없습니다."),

@@ -16,14 +16,7 @@
 <div class="app-page">
   <div class="app-shell chat-shell" th:data-chat-room-id="${chatRoomId}">
 
-    <header class="app-header">
-      <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/chat'">‹</button>
-      <div id="chatRoomTitle" class="app-header-title">채팅방</div>
-
-      <div class="app-header-right">
-        <button type="button" class="chat-menu-button" onclick="toggleChatMenu()">⋮</button>
-      </div>
-    </header>
+    <header th:replace="~{fragments/mobile-layout :: appHeader('채팅방', 'chatBack', 'chatMenu')}"></header>
 
     <main id="messageList" class="message-list">
       <!-- JS로 메시지 목록 추가 -->

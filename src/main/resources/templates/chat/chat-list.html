@@ -13,11 +13,7 @@
 <div class="app-page">
   <div class="app-shell chat-list-shell">
 
-    <header class="app-header">
-      <button type="button" class="app-header-btn" onclick="location.href='/api/view/user/main'">‹</button>
-      <div class="app-header-title">채팅</div>
-      <div class="app-header-right"></div>
-    </header>
+    <header th:replace="~{fragments/mobile-layout :: appHeader('채팅방', 'menu', 'alarm')}"></header>
 
     <main class="app-scroll chat-list-scroll">
       <div class="chat-tab-bar">
@@ -41,10 +37,11 @@
         <p>참여 중인 채팅방이 없습니다.</p>
       </div>
     </main>
-
+    <nav th:replace="~{fragments/mobile-layout :: bottomNav('chat')}"></nav>
   </div>
 </div>
 
+<script th:src="@{/js/common/feedback.js}"></script>
 <script th:src="@{/js/chat/chat-list.js}"></script>
 </body>
 </html>

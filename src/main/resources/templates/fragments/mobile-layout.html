@@ -3,13 +3,22 @@
 <body>
 
 <!-- 공통 헤더 -->
-<header th:fragment="appHeader(title, leftType, rightType)" class="app-header">
+<header th:fragment="appHeader(title, leftType, rightType)" class="app-header"
+        th:classappend="${rightType == 'none'} ? ' right-none' : ''">
 
     <!-- 왼쪽 -->
     <button th:if="${leftType == 'back'}"
             type="button"
             class="app-header-btn"
             onclick="history.back()">
+        &lt;
+    </button>
+
+    <!-- 왼쪽: 채팅 목록으로 이동 -->
+    <button th:if="${leftType == 'chatBack'}"
+            type="button"
+            class="app-header-btn"
+            onclick="location.href='/api/view/user/chat'">
         &lt;
     </button>
 
@@ -32,6 +41,15 @@
 
     <!-- 오른쪽: 없음 -->
     <div th:if="${rightType == 'none'}" class="app-header-right"></div>
+
+    <!-- 오른쪽: 채팅 메뉴 -->
+    <div th:if="${rightType == 'chatMenu'}" class="app-header-right">
+        <button type="button"
+                class="app-header-btn chat-menu-button"
+                onclick="toggleChatMenu()">
+            ⋮
+        </button>
+    </div>
 </header>
 
 

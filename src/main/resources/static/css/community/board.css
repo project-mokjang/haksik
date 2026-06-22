@@ -710,3 +710,37 @@
     margin-right: 6px;
     vertical-align: middle;
 }
+
+.community-shell {
+    position: relative;
+}
+
+.community-scroll {
+    padding-bottom: 120px;
+}
+
+.community-write-floating {
+    position: absolute;
+    right: 28px;
+    bottom: 88px;
+    z-index: 60;
+
+    height: 44px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 999px;
+
+    background: #f5ead8;
+    color: #123f35;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+    cursor: pointer;
+}
+
+.community-write-floating:active {
+    transform: scale(0.97);
+}
