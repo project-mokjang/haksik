@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 회원 관리',
+        'members',
+        '회원 관리',
+        ~{::content}
+      )}">
+
+<th:block th:fragment="content">
+
+    <div class="data-card">
+
+        <div class="filter-bar">
+            <select class="filter-input" id="roleFilter" onchange="fetchMembers(0)">
+                <option value="ALL">전체</option>
+                <option value="USER">일반 회원</option>
+                <option value="OWNER">점주</option>
+                <option value="ADMIN">관리자</option>
+            </select>
+            <input
+                    type="text"
+                    class="filter-input"
+                    id="keywordInput"
+                    placeholder="아이디 또는 이메일 검색"
+                    onkeydown="handleSearchEnter(event)"
+            >
+
+            <button class="filter-btn" onclick="fetchMembers(0)">조회</button>
+        </div>
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>회원번호</th>
+                    <th>아이디</th>
+                    <th>권한</th>
+                    <th>이름/닉네임</th>
+                    <th>학교</th>
+                    <th>매너온도</th>
+                    <th>노쇼</th>
+                    <th>계정상태</th>
+                    <th>잠금</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="memberTableBody"></tbody>
+            </table>
+        </div>
+        <div id="paginationArea" class="pagination-area"></div>
+
+    </div>
+
+    <!-- 회원 상세 모달 -->
+    <div id="memberDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">회원 상세 정보</h3>
+                <button class="close-btn" onclick="closeMemberDetail()">×</button>
+            </div>
+
+            <div id="memberDetailBody" class="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/admin/admin-member.js}"></script>
+
+</th:block>
+</html>

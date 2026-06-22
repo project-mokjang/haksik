@@ -33,6 +33,9 @@ public class ChatMessageService {
     private final ChatMessageEditHistoryRepository chatMessageEditHistoryRepository;
     private final UserProfileRepository userProfileRepository;
 
+    // 채팅 메시지 도착 시 종 알림 처리
+    private final ChatNotificationService chatNotificationService;
+
     // 메시지 목록 조회
     @Transactional
     public List<ChatMessageResponse> getChatMessages(Long chatRoomId, Member loginMember) {
@@ -47,6 +50,9 @@ public class ChatMessageService {
             ChatMessage lastMessage = chatMessages.get(chatMessages.size() - 1);
             loginChatRoomMember.updateLastReadMessage(lastMessage.getChatMessageId());
         }
+
+        // 채팅방에 들어왔으므로 해당 채팅방 종 알림 읽음 처리
+        chatNotificationService.markChatRoomNotificationAsRead(chatRoom, loginMember);
 
         return chatMessages.stream()
                 .map(chatMessage -> createChatMessageResponse(chatMessage, chatRoomMembers, loginMember))
@@ -80,7 +86,51 @@ public class ChatMessageService {
 
         List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findAllByChatRoom(chatRoom);
 
-        return createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+        ChatMessageResponse response = createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+
+        // 메시지 저장 후 채팅방 밖에 있는 상대방들에게만 종 알림 전송
+        chatNotificationService.sendMessageNotification(chatRoom, loginMember);
+
+        return response;
+    }
+
+
+
+    // 폼 메시지 전송
+    @Transactional
+    public ChatMessageResponse sendFormMessage(
+            Long chatRoomId,
+            Long formId,
+            String formMessage,
+            Member loginMember
+    ) {
+        ChatRoom chatRoom = getChatRoom(chatRoomId);
+
+        getChatRoomMember(chatRoom, loginMember);
+
+        if (!chatRoom.isActive()) {
+            throw new CustomException(ErrorCode.CHAT_ROOM_CLOSED);
+        }
+
+        ChatMessage chatMessage = new ChatMessage(
+                chatRoom,
+                loginMember,
+                formMessage,
+                formId
+        );
+
+        ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
+
+        chatRoom.updateLastMessage(formMessage);
+
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findAllByChatRoom(chatRoom);
+
+        ChatMessageResponse response = createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+
+        // 폼 메시지 저장 후 채팅방 밖에 있는 상대방들에게만 종 알림 전송
+        chatNotificationService.sendMessageNotification(chatRoom, loginMember);
+
+        return response;
     }
 
     // 메시지 수정
@@ -109,7 +159,7 @@ public class ChatMessageService {
             throw new CustomException(ErrorCode.CHAT_MESSAGE_ALREADY_DELETED);
         }
 
-        if (chatMessage.isImageMessage()) {
+        if (chatMessage.isImageMessage() || chatMessage.isFormMessage()) {
             throw new CustomException(ErrorCode.CHAT_MESSAGE_UPDATE_FORBIDDEN);
         }
 
@@ -161,6 +211,31 @@ public class ChatMessageService {
         return createChatMessageResponse(chatMessage, chatRoomMembers, loginMember);
     }
 
+
+    // 메시지가 속한 채팅방 ID 조회
+    public Long getChatRoomIdByMessageId(Long chatMessageId) {
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+
+        return chatMessage.getChatRoom().getChatRoomId();
+    }
+
+    // 읽음 처리
+    @Transactional
+    public void readMessages(Long chatRoomId, Long lastReadMessageId, Member loginMember) {
+        if (lastReadMessageId == null) {
+            return;
+        }
+
+        ChatRoom chatRoom = getChatRoom(chatRoomId);
+        ChatRoomMember loginChatRoomMember = getChatRoomMember(chatRoom, loginMember);
+
+        loginChatRoomMember.updateLastReadMessage(lastReadMessageId);
+
+        // WebSocket 읽음 처리 시에도 해당 채팅방 종 알림 읽음 처리
+        chatNotificationService.markChatRoomNotificationAsRead(chatRoom, loginMember);
+    }
+
     // 메시지 응답 생성
     private ChatMessageResponse createChatMessageResponse(
             ChatMessage chatMessage,
@@ -175,7 +250,9 @@ public class ChatMessageService {
                 .messageType(chatMessage.getMessageType().name())
                 .message(chatMessage.getMessage())
                 .imageUrl(chatMessage.getImageUrl())
+                .formId(chatMessage.getFormId())
                 .imageMessage(chatMessage.isImageMessage())
+                .formMessage(chatMessage.isFormMessage())
                 .deleted(chatMessage.isDeleted())
                 .edited(chatMessage.isEdited())
                 .editedAt(chatMessage.getEditedAt())

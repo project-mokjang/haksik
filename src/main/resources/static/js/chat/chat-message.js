@@ -1,8 +1,10 @@
 let selectedMessageId = null;
 let editingMessageId = null;
 let messageCache = {};
+let messageOrder = [];
 let longPressTimer = null;
 
+// 메시지 목록 화면 클릭 시 메시지 메뉴 닫기
 document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("click", function (event) {
         const messageMenu = document.getElementById("messageMenu");
@@ -18,130 +20,206 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // 메시지 목록 조회
-function loadMessages() {
+function loadMessages(sendReadEvent) {
     const chatRoomId = getChatRoomId();
 
     if (!chatRoomId) {
-        return;
+        return Promise.resolve([]);
     }
 
-    fetch("/api/chat/rooms/" + chatRoomId + "/messages")
+    const shouldSendReadEvent = sendReadEvent !== false;
+
+    return fetch("/api/chat/rooms/" + chatRoomId + "/messages")
         .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
             return response.json();
         })
         .then(function (messages) {
-            const messageList = document.getElementById("messageList");
+            setMessages(messages || []);
+            scrollToBottom();
 
-            messageList.innerHTML = "";
-            messageCache = {};
+            if (shouldSendReadEvent) {
+                sendReadForLatestMessage();
+            }
 
-            messages.forEach(function (message, index) {
-                messageCache[message.chatMessageId] = message;
+            return messages || [];
+        })
+        .catch(function () {
+            alert("메시지를 불러오지 못했습니다.");
+            return [];
+        });
+}
 
-                const previousMessage = messages[index - 1];
-                const nextMessage = messages[index + 1];
+// 전체 메시지 캐시 교체
+function setMessages(messages) {
+    messageCache = {};
+    messageOrder = [];
 
-                const sameSenderAsPrevious = previousMessage
-                    && previousMessage.senderId === message.senderId;
+    messages.forEach(function (message) {
+        const normalizedMessage = normalizeMessage(message);
+        const messageId = Number(normalizedMessage.chatMessageId);
 
-                const sameSenderAsNext = nextMessage
-                    && nextMessage.senderId === message.senderId;
+        messageCache[messageId] = normalizedMessage;
+        messageOrder.push(messageId);
+    });
 
-                const sameMinuteAsNext = nextMessage
-                    && formatMessageTime(nextMessage.createdAt) === formatMessageTime(message.createdAt);
+    renderMessages();
+}
 
-                const showSenderName = !sameSenderAsPrevious;
-                const showTime = !(sameSenderAsNext && sameMinuteAsNext);
+// WebSocket으로 받은 메시지 추가 또는 교체
+function appendOrReplaceMessage(message) {
+    if (!message || !message.chatMessageId) {
+        return;
+    }
 
-                const senderName = showSenderName
-                    ? `<div class="sender-name">${escapeHtml(message.senderNickname || "나")}</div>`
-                    : "";
+    const normalizedMessage = normalizeMessage(message);
+    const messageId = Number(normalizedMessage.chatMessageId);
 
-                const unreadText = message.unreadMemberCount > 0
-                    ? `<div class="message-unread">${message.unreadMemberCount}</div>`
-                    : "";
+    if (!messageCache[messageId]) {
+        messageOrder.push(messageId);
+    }
 
-                const timeText = showTime
-                    ? `<div>${formatMessageTime(message.createdAt)}</div>`
-                    : "";
+    messageCache[messageId] = normalizedMessage;
 
-                const messageContent = getMessageContentHtml(message);
+    renderMessages();
+    scrollToBottom();
+}
 
-                const editedText = message.edited && !message.deleted && !isImageMessage(message)
-                    ? `<div class="edited-text">수정됨</div>`
-                    : "";
+// 메시지 mine 값 보정
+function normalizeMessage(message) {
+    const normalizedMessage = Object.assign({}, message);
 
-                const messageMenuEvent = !message.deleted
-                    ? `
-                        oncontextmenu="openMessageMenu(event, ${message.chatMessageId})"
-                        ontouchstart="startLongPress(event, ${message.chatMessageId})"
-                        ontouchend="cancelLongPress()"
-                        ontouchmove="cancelLongPress()"
-                      `
-                    : "";
+    if (typeof currentLoginMemberId !== "undefined" && currentLoginMemberId !== null) {
+        normalizedMessage.mine = String(normalizedMessage.senderId) === String(currentLoginMemberId);
+    }
 
-                const editableClass = !message.deleted
-                    ? "editable"
-                    : "";
+    return normalizedMessage;
+}
 
-                const imageBubbleClass = isImageMessage(message) && !message.deleted
-                    ? "image-bubble"
-                    : "";
+// 메시지 목록 렌더링
+function renderMessages() {
+    const messageList = document.getElementById("messageList");
 
-                if (message.mine) {
-                    messageList.innerHTML += `
-                        <div class="message-row mine">
+    if (!messageList) {
+        return;
+    }
+
+    const messages = messageOrder
+        .map(function (messageId) {
+            return messageCache[messageId];
+        })
+        .filter(function (message) {
+            return !!message;
+        });
+
+    messageList.innerHTML = "";
+
+    messages.forEach(function (message, index) {
+        const previousMessage = messages[index - 1];
+        const nextMessage = messages[index + 1];
+
+        const sameSenderAsPrevious = previousMessage
+            && String(previousMessage.senderId) === String(message.senderId);
+
+        const sameSenderAsNext = nextMessage
+            && String(nextMessage.senderId) === String(message.senderId);
+
+        const sameMinuteAsNext = nextMessage
+            && formatMessageTime(nextMessage.createdAt) === formatMessageTime(message.createdAt);
+
+        const showSenderName = !sameSenderAsPrevious;
+        const showTime = !(sameSenderAsNext && sameMinuteAsNext);
+
+        const senderName = showSenderName
+            ? `<div class="sender-name">${escapeHtml(message.senderNickname || "나")}</div>`
+            : "";
+
+        const unreadText = message.unreadMemberCount > 0
+            ? `<div class="message-unread">${message.unreadMemberCount}</div>`
+            : "";
+
+        const timeText = showTime
+            ? `<div>${formatMessageTime(message.createdAt)}</div>`
+            : "";
+
+        const messageContent = getMessageContentHtml(message);
+
+        const editedText = message.edited && !message.deleted && !isImageMessage(message) && !isFormMessage(message)
+            ? `<div class="edited-text">수정됨</div>`
+            : "";
+
+        const messageMenuEvent = !message.deleted
+            ? `
+                oncontextmenu="openMessageMenu(event, ${Number(message.chatMessageId)})"
+                ontouchstart="startLongPress(event, ${Number(message.chatMessageId)})"
+                ontouchend="cancelLongPress()"
+                ontouchmove="cancelLongPress()"
+              `
+            : "";
+
+        const editableClass = !message.deleted
+            ? "editable"
+            : "";
+
+        const imageBubbleClass = isImageMessage(message) && !message.deleted
+            ? "image-bubble"
+            : "";
+
+        const formBubbleClass = isFormMessage(message) && !message.deleted
+            ? "form-bubble"
+            : "";
+
+        if (message.mine) {
+            messageList.innerHTML += `
+                <div class="message-row mine" data-message-id="${Number(message.chatMessageId)}">
+                    ${senderName}
+                    <div class="message-line">
+                        <div class="message-info">
+                            ${unreadText}
+                            ${timeText}
+                        </div>
+                        <div class="message-bubble-wrap">
+                            <div class="message-bubble ${editableClass} ${imageBubbleClass} ${formBubbleClass}" ${messageMenuEvent}>
+                                ${messageContent}
+                            </div>
+                            ${editedText}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const profileHtml = showSenderName
+                ? getProfileHtml(message)
+                : `<div class="profile-placeholder"></div>`;
+
+            messageList.innerHTML += `
+                <div class="message-row other" data-message-id="${Number(message.chatMessageId)}">
+                    <div class="other-message-wrap">
+                        ${profileHtml}
+
+                        <div class="other-message-body">
                             ${senderName}
                             <div class="message-line">
-                                <div class="message-info">
-                                    ${unreadText}
-                                    ${timeText}
-                                </div>
                                 <div class="message-bubble-wrap">
-                                    <div class="message-bubble ${editableClass} ${imageBubbleClass}" ${messageMenuEvent}>
+                                    <div class="message-bubble ${editableClass} ${imageBubbleClass} ${formBubbleClass}" ${messageMenuEvent}>
                                         ${messageContent}
                                     </div>
                                     ${editedText}
                                 </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const profileHtml = showSenderName
-                        ? getProfileHtml(message)
-                        : `<div class="profile-placeholder"></div>`;
-
-                    messageList.innerHTML += `
-                        <div class="message-row other">
-                            <div class="other-message-wrap">
-                                ${profileHtml}
-
-                                <div class="other-message-body">
-                                    ${senderName}
-                                    <div class="message-line">
-                                        <div class="message-bubble-wrap">
-                                            <div class="message-bubble ${editableClass} ${imageBubbleClass}" ${messageMenuEvent}>
-                                                ${messageContent}
-                                            </div>
-                                            ${editedText}
-                                        </div>
-                                        <div class="message-info">
-                                            ${unreadText}
-                                            ${timeText}
-                                        </div>
-                                    </div>
+                                <div class="message-info">
+                                    ${unreadText}
+                                    ${timeText}
                                 </div>
                             </div>
                         </div>
-                    `;
-                }
-            });
-
-            scrollToBottom();
-        })
-        .catch(function () {
-            alert("메시지를 불러오지 못했습니다.");
-        });
+                    </div>
+                </div>
+            `;
+        }
+    });
 }
 
 // 메시지 내용 HTML 생성
@@ -160,12 +238,57 @@ function getMessageContentHtml(message) {
         `;
     }
 
+    if (isFormMessage(message)) {
+        return getFormMessageCardHtml(message);
+    }
+
     return escapeHtml(message.message || "");
+}
+
+// 폼 메시지 카드 HTML 생성
+function getFormMessageCardHtml(message) {
+    const formTitle = getFormCardTitle(message);
+    const formTypeText = getFormTypeText(message);
+    const formButtonText = isPlaceFormCard(message) ? "지도에서 투표하기" : "투표하기";
+
+    return `
+        <button type="button" class="chat-form-card" onclick="openChatFormFromMessage(${Number(message.formId)})">
+            <span class="chat-form-badge">${formTypeText}</span>
+            <span class="chat-form-title">${escapeHtml(formTitle)}</span>
+            <span class="chat-form-desc">참여자들이 함께 선택할 수 있어요.</span>
+            <span class="chat-form-action">${formButtonText}</span>
+        </button>
+    `;
+}
+
+// 폼 카드 제목 추출
+function getFormCardTitle(message) {
+    const rawMessage = message.message || "폼";
+
+    return rawMessage
+        .replace("[장소 투표]", "")
+        .replace("[투표]", "")
+        .trim() || "폼";
+}
+
+// 폼 카드 타입 텍스트
+function getFormTypeText(message) {
+    return isPlaceFormCard(message) ? "장소 투표" : "투표";
+}
+
+// 장소 폼 카드 여부
+function isPlaceFormCard(message) {
+    return (message.message || "").startsWith("[장소 투표]");
 }
 
 // 이미지 메시지 여부
 function isImageMessage(message) {
-    return message.messageType === "IMAGE";
+    return message.messageType === "IMAGE" || message.imageMessage === true;
+}
+
+// 폼 메시지 여부
+function isFormMessage(message) {
+    return message.messageType === "FORM" || message.formMessage === true || !!message.formId;
 }
 
 // 상대방 프로필 이미지 표시
@@ -187,6 +310,15 @@ function getProfileHtml(message) {
     return `<div class="profile-default">${escapeHtml(firstLetter)}</div>`;
 }
 
+// 마지막 메시지 ID 조회
+function getLastCachedMessageId() {
+    if (messageOrder.length === 0) {
+        return null;
+    }
+
+    return messageOrder[messageOrder.length - 1];
+}
+
 // 메시지 수정 중 여부
 function isEditingMessage() {
     return editingMessageId !== null;
@@ -197,7 +329,7 @@ function openMessageMenu(event, chatMessageId) {
     event.preventDefault();
     event.stopPropagation();
 
-    selectedMessageId = chatMessageId;
+    selectedMessageId = Number(chatMessageId);
 
     const selectedMessage = messageCache[selectedMessageId];
     const messageMenu = document.getElementById("messageMenu");
@@ -212,7 +344,7 @@ function openMessageMenu(event, chatMessageId) {
 
     if (selectedMessage.mine) {
         if (editMessageMenuButton) {
-            if (isImageMessage(selectedMessage)) {
+            if (isImageMessage(selectedMessage) || isFormMessage(selectedMessage)) {
                 editMessageMenuButton.classList.add("hidden");
             } else {
                 editMessageMenuButton.classList.remove("hidden");
@@ -313,7 +445,7 @@ function prepareEditMessage() {
         return;
     }
 
-    if (isImageMessage(selectedMessage)) {
+    if (isImageMessage(selectedMessage) || isFormMessage(selectedMessage)) {
         closeMessageMenu();
         return;
     }
@@ -370,7 +502,7 @@ function updateSelectedMessage() {
 
     const selectedMessage = messageCache[editingMessageId];
 
-    if (selectedMessage && isImageMessage(selectedMessage)) {
+    if (selectedMessage && (isImageMessage(selectedMessage) || isFormMessage(selectedMessage))) {
         cancelEditMessage();
         return;
     }
@@ -380,6 +512,11 @@ function updateSelectedMessage() {
 
     if (message === "") {
         alert("메시지를 입력해 주세요.");
+        return;
+    }
+
+    if (sendEditMessageRequest(editingMessageId, message)) {
+        cancelEditMessage();
         return;
     }
 
@@ -399,9 +536,9 @@ function updateSelectedMessage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (updatedMessage) {
             cancelEditMessage();
-            loadMessages();
+            appendOrReplaceMessage(updatedMessage);
         })
         .catch(function () {
             alert("메시지 수정에 실패했습니다.");
@@ -414,11 +551,18 @@ function deleteSelectedMessage() {
         return;
     }
 
+    const deleteMessageId = selectedMessageId;
+
     if (!confirm("메시지를 삭제할까요?")) {
         return;
     }
 
-    fetch("/api/chat/messages/" + selectedMessageId, {
+    if (sendDeleteMessageRequest(deleteMessageId)) {
+        closeMessageMenu();
+        return;
+    }
+
+    fetch("/api/chat/messages/" + deleteMessageId, {
         method: "DELETE"
     })
         .then(function (response) {
@@ -428,9 +572,9 @@ function deleteSelectedMessage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (deletedMessage) {
             closeMessageMenu();
-            loadMessages();
+            appendOrReplaceMessage(deletedMessage);
         })
         .catch(function () {
             alert("메시지 삭제에 실패했습니다.");

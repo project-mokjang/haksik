@@ -1,0 +1,29 @@
+package com.example.haksikmokjang.ownerpage.store.dto;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile; // 🚨 필수
+
+@Getter
+@Setter
+public class ReviewCreateRequest {
+
+
+    @NotNull(message = "예약 ID는 필수입니다.")
+    private Long reservationId;
+
+    @NotNull(message = "별점은 필수입니다.")
+    @Min(value = 1, message = "별점은 최소 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "별점은 최대 5점까지만 가능합니다.")
+    private Integer rating;
+
+    @NotBlank(message = "리뷰 내용은 필수입니다.")
+    private String content;
+
+    // 🚨 팩트: 프론트에서 리뷰 인증샷 파일을 받을 수 있도록 개방
+    private MultipartFile reviewImage;
+}

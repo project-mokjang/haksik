@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Report {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_id")
     private Long reportId;
@@ -41,6 +42,9 @@ public class Report {
     @Column(name = "processed_at")
     private java.time.LocalDateTime processedAt; // 처리 일시
 
+    @Column(name = "processed_reason", length = 500)
+    private String processedReason;
+
     @Builder
     public Report(Member reporter, String targetType, Long targetId, String reason) {
         this.reporter = reporter;
@@ -48,5 +52,29 @@ public class Report {
         this.targetId = targetId;
         this.reason = reason;
         this.status = ReportStatus.PENDING; // 기본값
+    }
+
+    // 관리자 신고 관리
+    // 신고 처리 완료
+    public void resolve(Member admin, String processedReason) {
+        this.status = ReportStatus.RESOLVED;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+        this.processedReason = processedReason;
+    }
+
+    // 신고 반려
+    public void reject(Member admin, String processedReason) {
+        this.status = ReportStatus.REJECTED;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
+        this.processedReason = processedReason;
+    }
+
+    // 신고 처리 중 변경
+    public void processing(Member admin) {
+        this.status = ReportStatus.PROCESSING;
+        this.processedBy = admin;
+        this.processedAt = java.time.LocalDateTime.now();
     }
 }

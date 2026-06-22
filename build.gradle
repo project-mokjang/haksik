@@ -19,7 +19,6 @@ repositories {
 }
 
 dependencies {
-
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -43,6 +42,7 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"     //진우 - 커뮤니티 스크롤관련
     implementation 'org.modelmapper:modelmapper:3.2.0'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket' // 전정수 - 채팅 실시간 - Websocket
     implementation 'com.google.cloud:google-cloud-aiplatform:3.46.0' // 제미나이 api
 }
 

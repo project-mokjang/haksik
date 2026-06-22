@@ -26,7 +26,12 @@ public class NotificationResponse {
             this.targetUrl = "/api/view/community/" + noti.getTargetId();
         } else if ("MATCHING".equals(noti.getTargetType())) {
             this.targetUrl = "/api/view/user/main";
-        } else {
+        } else if ("RESERVATION".equals(noti.getTargetType())) {
+            // 🚨 팩트: 예약 알림을 눌렀을 때 프론트가 띄워줄 URL 경로 추가
+            this.targetUrl = "/api/view/reservations/" + noti.getTargetId();
+        } else if ("CHAT_ROOM".equals(noti.getTargetType())) {
+            this.targetUrl = "/api/view/user/chat/rooms/" + noti.getTargetId();
+        }else {
             this.targetUrl = "#";
         }
     }

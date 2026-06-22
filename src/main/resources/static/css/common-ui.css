@@ -7,6 +7,7 @@
     color: var(--forest);
 }
 
+
 /* 모바일 앱 화면 바깥 */
 .app-page {
     min-height: 100vh;
@@ -223,6 +224,20 @@
 .noti-time { font-size: 11px; color: var(--muted); font-weight: 700; }
 .noti-empty { padding: 30px; text-align: center; font-size: 13px; color: var(--muted); font-weight: 700; }
 
+.noti-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.noti-read-all-btn {
+    border: none;
+    background: transparent;
+    color: var(--forest);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
 
 .app-header-home-btn {
     text-decoration: none;

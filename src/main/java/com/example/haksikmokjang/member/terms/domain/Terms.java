@@ -34,5 +34,11 @@ public class Terms {
     @Column(name = "effective_at", nullable = false)
     private LocalDateTime effectiveAt;
 
-
+    public void updateContent(String title, String version, String content, String requiredYn, LocalDateTime effectiveAt) {
+        this.title = title;
+        this.version = version;
+        this.content = content;
+        this.requiredYn = requiredYn;
+        this.effectiveAt = effectiveAt;
+    }
 }

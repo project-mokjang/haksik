@@ -213,3 +213,75 @@
 .hidden {
     display: none !important;
 }
+
+/* 채팅 폼 카드 메시지 */
+.message-bubble.form-bubble {
+    width: 230px;
+    max-width: 230px;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.chat-form-card {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--paper);
+    color: var(--forest);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(55, 42, 26, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.mine .chat-form-card {
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+.chat-form-card:hover {
+    transform: translateY(-1px);
+}
+
+.chat-form-badge {
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.chat-form-title {
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.chat-form-desc {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.chat-form-action {
+    margin-top: 4px;
+    height: 34px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

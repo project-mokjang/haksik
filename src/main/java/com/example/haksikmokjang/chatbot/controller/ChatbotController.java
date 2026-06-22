@@ -21,6 +21,7 @@ public class ChatbotController {
 
 
     @PostMapping("/ask")
+<<<<<<< HEAD
     public Map<String, String> askToAi(
             @RequestBody Map<String, String> requestData,
             @AuthenticationPrincipal CustomUserDetails userDetails) { //현재 챗봇에 말 건 사람이 누군지 정보 가져오기
@@ -41,8 +42,16 @@ public class ChatbotController {
 
         //  챗봇 두뇌로 질문이랑 사용자 식성을 같이 던져줌
         String aiAnswer = chatbotService.getAiResponse(userMessage, preferredFood);
+=======
+    public Map<String, String> askToAi(@RequestBody Map<String, String> requestData) {
 
-        // 프론트가 data.answer 로 읽을 수 있게 돌려주기
+        String userMessage = requestData.get("message");
+
+
+        String aiAnswer = chatbotService.getAiResponse(userMessage);
+>>>>>>> 7b5143a8e8df9e346a7da4a312c37acf108201da
+
+
         Map<String, String> response = new HashMap<>();
         response.put("answer", aiAnswer);
 

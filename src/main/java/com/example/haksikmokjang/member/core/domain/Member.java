@@ -53,12 +53,16 @@ public class Member extends BaseEntity {
     @Column(name = "locked_at")
     private LocalDateTime lockedAt;
 
+    @Column(name = "locked_reason", length = 500)
+    private String lockedReason;
+
     public void increaseLoginFailCount() {
         this.loginFailCount++;
 
         if (this.loginFailCount >= 5) {
             this.lockedYn = "Y";
             this.lockedAt = LocalDateTime.now();
+            this.lockedReason = "로그인 실패 5회 초과";
         }
     }
 
@@ -66,6 +70,22 @@ public class Member extends BaseEntity {
         this.loginFailCount = 0;
         this.lockedYn = "N";
         this.lockedAt = null;
+        this.lockedReason = null;
+    }
+
+    // 매너점수 0점 이하로 인한 계정 잠금
+    public void lockByTrust(String reason) {
+        this.lockedYn = "Y";
+        this.lockedAt = LocalDateTime.now();
+        this.lockedReason = reason;
+    }
+
+    // 관리자 계정 잠금 해제
+    public void unlock() {
+        this.lockedYn = "N";
+        this.lockedAt = null;
+        this.lockedReason = null;
+        this.loginFailCount = 0;
     }
 
     public boolean isLocked() {

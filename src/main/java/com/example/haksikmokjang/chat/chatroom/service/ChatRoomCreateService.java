@@ -92,6 +92,32 @@ public class ChatRoomCreateService {
         );
     }
 
+    // 학식메이트 단체 채팅방 생성
+    // 첫 수락 시에는 2명이어도 단체 채팅방으로 생성한다.
+    @Transactional
+    public ChatRoomResponse createGroupMealChatRoom(
+            String roomName,
+            List<Long> memberIds
+    ) {
+        List<Long> safeMemberIds = safeList(memberIds);
+
+        validateNoDuplicatedMemberIds(
+                safeMemberIds,
+                ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM
+        );
+
+        if (safeMemberIds.size() < 2) {
+            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+        }
+
+        return createGroupRoom(
+                normalizeRoomName(roomName, "학식메이트 채팅방"),
+                Collections.emptyList(),
+                safeMemberIds,
+                ChatMatchingMode.MEAL
+        );
+    }
+
     // 소개팅 1:1 채팅방 생성
     @Transactional
     public ChatRoomResponse createBlindDateChatRoom(
@@ -282,6 +308,36 @@ public class ChatRoomCreateService {
                 .lastMessageAt(savedChatRoom.getLastMessageAt())
                 .unreadCount(0)
                 .build();
+    }
+
+    // 기존 학식메이트 단체 채팅방에 멤버 추가
+    @Transactional
+    public void addMemberToChatRoom(Long chatRoomId, Long memberId) {
+        if (chatRoomId == null || memberId == null) {
+            throw new CustomException(ErrorCode.INVALID_GROUP_DATE_CHAT_ROOM);
+        }
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        Member member = getMember(memberId);
+
+        boolean alreadyJoined = chatRoomMemberRepository.existsByChatRoomAndMember(
+                chatRoom,
+                member
+        );
+
+        if (alreadyJoined) {
+            return;
+        }
+
+        ChatRoomMember chatRoomMember = new ChatRoomMember(
+                chatRoom,
+                member,
+                ChatRoomMemberRole.MEMBER
+        );
+
+        chatRoomMemberRepository.save(chatRoomMember);
     }
 
     // 회원 조회

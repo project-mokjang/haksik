@@ -25,6 +25,13 @@ public enum ErrorCode {
 
     //Owner
     DUPLICATED_BUSINESS_NUMBER(HttpStatus.CONFLICT,"OWNER_001","이미 사용 중인 사업자등록번호입니다."),
+    OWNER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "OWNER_002", "점주 신청 정보를 찾을 수 없습니다."),
+    OWNER_ALREADY_PROCESSED(HttpStatus.CONFLICT, "OWNER_003", "이미 처리된 점주 신청입니다."),
+    REJECT_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "OWNER_004", "반려 사유는 필수입니다."),
+
+    // Admin
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "ADMIN_001", "관리자 정보를 찾을 수 없습니다."),
+
     // School
     SCHOOL_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHOOL_001", "학교를 찾을 수 없습니다."),
     INVALID_SCHOOL_EMAIL_DOMAIN(HttpStatus.BAD_REQUEST, "SCHOOL_002", "학교 이메일 도메인이 일치하지 않습니다."),
@@ -89,10 +96,23 @@ public enum ErrorCode {
 
     //Report
     INVALID_REPORT_TARGET(HttpStatus.BAD_REQUEST, "REPORT_001", "신고 대상 정보가 올바르지 않습니다."),
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_002", "신고 정보를 찾을 수 없습니다."),
+    REPORT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "REPORT_002", "이미 처리된 신고입니다."),
 
     //신고 권한
     CANNOT_REPORT_OWN_CONTENT(HttpStatus.BAD_REQUEST, "COMMON_4001", "자신이 작성한 게시글이나 댓글은 신고할 수 없습니다."),
-    ALREADY_REPORTED(HttpStatus.CONFLICT, "COMMON_4002", "이미 신고가 접수된 항목입니다.");
+    ALREADY_REPORTED(HttpStatus.CONFLICT, "COMMON_4002", "이미 신고가 접수된 항목입니다."),
+
+    //Store, 예약 관련 에러코드
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_002", "가게 정보를 찾을 수 없습니다."),
+    UNAUTHORIZED_REVIEW(HttpStatus.FORBIDDEN,"REVIEW_001", "리뷰 작성 권한이 없습니다. (예약 완료 후 30분~4시간 내에만 가능합니다.)"),
+    NO_SHOW_REPORT_EXPIRED(HttpStatus.NOT_FOUND, "OWNER_004","노쇼 신고 가능 시간이 지났습니다. (예약 시간 2시간 이내에만 가능합니다.)"),
+    RESERVATION_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "REVIEW_002", "이미 리뷰 작성을 하셨습니다."),
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND,"OWNER_003", "예약 정보를 찾을 수 없습니다."),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_003", "리뷰 정보를 찾을 수 없습니다.");
+
+
+
 
     private final HttpStatus status;
     private final String code;

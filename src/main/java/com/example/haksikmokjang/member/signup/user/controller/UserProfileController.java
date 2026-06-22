@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserProfileController {
     private final UserProfileService userProfileService;
 
-    // 사진(파일)이랑 데이터를 같이 받기 때문에 consumes = MediaType.MULTIPART_FORM_DATA_VALUE가 꼭 들어가야 해!
+
     @PostMapping(value = "/profile/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> updateProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails, // 현재 로그인한 유저 정보 가져오기!

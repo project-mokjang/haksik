@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ReportRequest {
+
     @NotBlank(message = "신고 대상 유형을 입력해주세요.")
     private String targetType; // "POST" or "COMMENT"
 

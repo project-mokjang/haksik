@@ -5,7 +5,6 @@ import com.example.haksikmokjang.member.signup.user.dto.MyPageResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.member.signup.user.service.MyPageService;
 import com.example.haksikmokjang.member.terms.service.TermsService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/view")
 @RequiredArgsConstructor
 public class ViewController {
+
     private final MyPageService myPageService;
     private final TermsService termsService;
 
@@ -92,34 +92,27 @@ public class ViewController {
     // auth --------------------------------------
 
     //관리자 관련 view -------------------------------
-    @GetMapping("/admin/users")
-    public String adminUsersPage() {
-        return "members/admin/admin-users";
+    @GetMapping("/admin/main")
+    public String adminMainPage() {
+        return "members/admin/admin-main";
     }
 
-    @GetMapping("/admin/reports")
-    public String adminReportsPage() {
-        return "members/admin/admin-reports";
+    // 회원 관리
+    @GetMapping("/admin/members")
+    public String adminMembersPage() {
+        return "members/admin/admin-members";
     }
 
-    @GetMapping("/admin/boards")
-    public String adminBoardsPage() {
-        return "members/admin/admin-boards";
-    }
-
+    // 점주 승인 관리
     @GetMapping("/admin/owners")
     public String adminOwnersPage() {
         return "members/admin/admin-owners";
     }
 
-    @GetMapping("/admin/restaurants")
-    public String adminRestaurantsPage() {
-        return "members/admin/admin-restaurants";
-    }
-
-    @GetMapping("/admin/stats")
-    public String adminStatsPage() {
-        return "members/admin/admin-stats";
+    // 관리자 신고관리 화면
+    @GetMapping("/admin/reports")
+    public String adminReportsPage() {
+        return "members/admin/admin-reports";
     }
 
     // 관리자 -----------------------------
@@ -139,6 +132,7 @@ public class ViewController {
     @GetMapping("/user/chat/rooms/{chatRoomId}")
     public String chatRoomPage(@PathVariable Long chatRoomId, Model model) {
         model.addAttribute("chatRoomId", chatRoomId);
+        model.addAttribute("naverMapClientId", naverMapClientId);
         return "chat/chat-room";
     }
 
@@ -181,11 +175,22 @@ public class ViewController {
     // user -----------------------------------------
 
      // owner 관련 뷰 --------------------------
-    @GetMapping("/owner/main")
-    public String ownerMainPage() {
-        return "main/owner-main";
+     @GetMapping("/owner/main")
+     public String ownerMainPage() {
+         return "main/owner-main";
+     }
+
+    //점주 리뷰 관리
+    @GetMapping("/owner/reviews")
+    public String ownerReviewsPage() {
+        return "members/owner/owner-review";
     }
 
+    @GetMapping("/owner/store")
+    public String ownerStorePage(org.springframework.ui.Model model) {
+        model.addAttribute("naverMapClientId", naverMapClientId);
+        return "members/owner/owner-store";
+    }
     @GetMapping("/owner/pending")
     public String ownerPendingPage() {
         return "members/owner/owner-pending";
@@ -197,6 +202,15 @@ public class ViewController {
         return "members/owner/owner-rejected";
     }
 
+    @GetMapping("/owner/my-page")
+    public String ownerMyPage() {
+        return "members/owner/owner-mypage";
+    }
+    // 신메뉴 추가 페이지 길목 개방
+    @GetMapping("/owner/menu")
+    public String ownerMenuPage() {
+        return "members/owner/owner-menu";
+    }
     // owner ------------------------------------
 
 }

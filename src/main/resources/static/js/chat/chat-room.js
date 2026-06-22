@@ -1,13 +1,31 @@
 let currentChatRoomDetail = null;
+let currentLoginMemberId = null;
 let reportTargetType = null;
 let reportTargetId = null;
 let reportTargetUrl = null;
 let reviewTargets = [];
 let currentReviewIndex = 0;
+let chatStompClient = null;
+let chatSocketConnected = false;
+let lastSentReadMessageId = null;
+let currentVoteFormId = null;
+let currentPlaceFormId = null;
+let currentPlaceFormDetail = null;
+let placeVoteMap = null;
+let placeVoteInfoWindow = null;
+let placeVoteMarkers = [];
+let placeStoreMarkers = [];
+let placeStoreCache = {};
+let placeAddMode = false;
+let pendingCustomPlace = null;
+
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadChatRoomDetail();
-    loadMessages();
+    loadChatRoomDetail()
+        .finally(function () {
+            loadMessages(true);
+            connectChatSocket();
+        });
 
     const messageForm = document.getElementById("messageForm");
 
@@ -18,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         initChatPlusMenu();
+        initChatFormUi();
     }
 });
 
@@ -38,19 +57,26 @@ function loadChatRoomDetail() {
     const chatRoomId = getChatRoomId();
 
     if (!chatRoomId) {
-        return;
+        return Promise.resolve(null);
     }
 
-    fetch("/api/chat/rooms/" + chatRoomId)
+    return fetch("/api/chat/rooms/" + chatRoomId)
         .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
             return response.json();
         })
         .then(function (roomDetail) {
             currentChatRoomDetail = roomDetail;
+            currentLoginMemberId = roomDetail.loginMemberId || null;
             applyChatRoomDetail(roomDetail);
+            return roomDetail;
         })
         .catch(function () {
             alert("채팅방 정보를 불러오지 못했습니다.");
+            return null;
         });
 }
 
@@ -243,6 +269,11 @@ function sendMessage() {
         return;
     }
 
+    if (sendSocketTextMessage(chatRoomId, message)) {
+        messageInput.value = "";
+        return;
+    }
+
     fetch("/api/chat/rooms/" + chatRoomId + "/messages", {
         method: "POST",
         headers: {
@@ -259,9 +290,10 @@ function sendMessage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (savedMessage) {
             messageInput.value = "";
-            loadMessages();
+            appendOrReplaceMessage(savedMessage);
+            sendReadForLatestMessage();
         })
         .catch(function () {
             alert("메시지를 전송하지 못했습니다.");
@@ -311,7 +343,7 @@ function initChatPlusMenu() {
     if (sendFormMenuButton) {
         sendFormMenuButton.addEventListener("click", function () {
             chatPlusMenu.classList.add("hidden");
-            alert("폼 보내기 기능은 나중에 연결할 예정입니다.");
+            openChatFormTypeModal();
         });
     }
 
@@ -343,6 +375,1214 @@ function closeChatPlusMenu() {
     }
 
     chatPlusMenu.classList.add("hidden");
+}
+
+
+// 채팅 폼 UI 초기화
+function initChatFormUi() {
+    const voteOptionList = document.getElementById("voteOptionList");
+
+    if (voteOptionList && voteOptionList.children.length === 0) {
+        addVoteOptionInput();
+        addVoteOptionInput();
+    }
+}
+
+// 폼 종류 선택 모달 열기
+function openChatFormTypeModal() {
+    closeChatPlusMenu();
+
+    if (currentChatRoomDetail && currentChatRoomDetail.roomStatus === "CLOSED") {
+        alert("종료된 채팅방에는 폼을 보낼 수 없습니다.");
+        return;
+    }
+
+    const modal = document.getElementById("chatFormTypeModal");
+
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+}
+
+// 폼 종류 선택 모달 닫기
+function closeChatFormTypeModal() {
+    const modal = document.getElementById("chatFormTypeModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 일반 투표 폼 생성 모달 열기
+function openVoteFormCreateModal() {
+    closeChatFormTypeModal();
+
+    const modal = document.getElementById("voteFormCreateModal");
+    const titleInput = document.getElementById("voteFormTitleInput");
+    const voteOptionList = document.getElementById("voteOptionList");
+
+    if (!modal) {
+        return;
+    }
+
+    if (titleInput) {
+        titleInput.value = "";
+    }
+
+    if (voteOptionList) {
+        voteOptionList.innerHTML = "";
+        addVoteOptionInput();
+        addVoteOptionInput();
+    }
+
+    modal.classList.remove("hidden");
+
+    if (titleInput) {
+        titleInput.focus();
+    }
+}
+
+// 일반 투표 폼 생성 모달 닫기
+function closeVoteFormCreateModal() {
+    const modal = document.getElementById("voteFormCreateModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 일반 투표 선택지 입력칸 추가
+function addVoteOptionInput(value) {
+    const voteOptionList = document.getElementById("voteOptionList");
+
+    if (!voteOptionList) {
+        return;
+    }
+
+    const optionItem = document.createElement("div");
+    optionItem.className = "vote-option-input-row";
+    optionItem.innerHTML = `
+        <input
+            type="text"
+            class="vote-option-input"
+            placeholder="선택지 입력"
+            maxlength="100"
+            value="${escapeAttribute(value || "")}">
+        <button type="button" class="vote-option-remove-button" onclick="removeVoteOptionInput(this)">×</button>
+    `;
+
+    voteOptionList.appendChild(optionItem);
+}
+
+// 일반 투표 선택지 입력칸 제거
+function removeVoteOptionInput(button) {
+    const voteOptionList = document.getElementById("voteOptionList");
+
+    if (!voteOptionList || !button) {
+        return;
+    }
+
+    if (voteOptionList.children.length <= 2) {
+        alert("선택지는 최소 2개가 필요합니다.");
+        return;
+    }
+
+    button.closest(".vote-option-input-row").remove();
+}
+
+// 일반 투표 폼 생성
+function submitVoteForm() {
+    const chatRoomId = getChatRoomId();
+    const titleInput = document.getElementById("voteFormTitleInput");
+    const optionInputs = document.querySelectorAll("#voteOptionList .vote-option-input");
+
+    if (!chatRoomId || !titleInput) {
+        return;
+    }
+
+    const title = titleInput.value.trim();
+
+    if (title === "") {
+        alert("투표 제목을 입력해 주세요.");
+        titleInput.focus();
+        return;
+    }
+
+    const options = Array.from(optionInputs)
+        .map(function (input) {
+            return input.value.trim();
+        })
+        .filter(function (value) {
+            return value !== "";
+        });
+
+    if (options.length < 2) {
+        alert("선택지를 2개 이상 입력해 주세요.");
+        return;
+    }
+
+    fetch("/api/chat/rooms/" + chatRoomId + "/forms", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            formType: "VOTE",
+            title: title,
+            options: options.map(function (optionText) {
+                return {
+                    optionText: optionText
+                };
+            })
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (savedMessage) {
+            closeVoteFormCreateModal();
+
+            if (!isChatSocketReady()) {
+                appendOrReplaceMessage(savedMessage);
+                sendReadForLatestMessage();
+            }
+        })
+        .catch(function () {
+            alert("투표 폼 생성에 실패했습니다.");
+        });
+}
+
+// 장소 투표 폼 생성 모달 열기
+function openPlaceFormCreateModal() {
+    closeChatFormTypeModal();
+
+    const modal = document.getElementById("placeFormCreateModal");
+    const titleInput = document.getElementById("placeFormTitleInput");
+
+    if (!modal) {
+        return;
+    }
+
+    if (titleInput) {
+        titleInput.value = "";
+    }
+
+    modal.classList.remove("hidden");
+
+    if (titleInput) {
+        titleInput.focus();
+    }
+}
+
+// 장소 투표 폼 생성 모달 닫기
+function closePlaceFormCreateModal() {
+    const modal = document.getElementById("placeFormCreateModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 장소 투표 폼 생성
+function submitPlaceForm() {
+    const chatRoomId = getChatRoomId();
+    const titleInput = document.getElementById("placeFormTitleInput");
+
+    if (!chatRoomId || !titleInput) {
+        return;
+    }
+
+    const title = titleInput.value.trim();
+
+    if (title === "") {
+        alert("장소 투표 제목을 입력해 주세요.");
+        titleInput.focus();
+        return;
+    }
+
+    fetch("/api/chat/rooms/" + chatRoomId + "/forms", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            formType: "PLACE",
+            title: title,
+            options: []
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (savedMessage) {
+            closePlaceFormCreateModal();
+
+            if (!isChatSocketReady()) {
+                appendOrReplaceMessage(savedMessage);
+                sendReadForLatestMessage();
+            }
+
+            if (savedMessage && savedMessage.formId) {
+                setTimeout(function () {
+                    openPlaceFormMapModal(savedMessage.formId);
+                }, 200);
+            }
+        })
+        .catch(function () {
+            alert("장소 투표 폼 생성에 실패했습니다.");
+        });
+}
+
+// 채팅 FORM 카드 클릭 처리
+function openChatFormFromMessage(formId) {
+    if (!formId) {
+        alert("폼 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    fetch("/api/chat/forms/" + formId)
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (form) {
+            if (form.formType === "PLACE") {
+                openPlaceFormMapModal(form.formId, form);
+                return;
+            }
+
+            openVoteFormDetailModal(form.formId, form);
+        })
+        .catch(function () {
+            alert("폼 정보를 불러오지 못했습니다.");
+        });
+}
+
+// 일반 투표 상세 모달 열기
+function openVoteFormDetailModal(formId, form) {
+    currentVoteFormId = formId;
+
+    const modal = document.getElementById("voteFormDetailModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("hidden");
+
+    if (form) {
+        renderVoteFormDetail(form);
+        loadVoteFormResult(formId);
+        return;
+    }
+
+    fetch("/api/chat/forms/" + formId)
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (loadedForm) {
+            renderVoteFormDetail(loadedForm);
+            loadVoteFormResult(formId);
+        })
+        .catch(function () {
+            alert("투표 폼을 불러오지 못했습니다.");
+        });
+}
+
+// 일반 투표 상세 모달 닫기
+function closeVoteFormDetailModal() {
+    const modal = document.getElementById("voteFormDetailModal");
+
+    currentVoteFormId = null;
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 일반 투표 상세 렌더링
+function renderVoteFormDetail(form) {
+    const title = document.getElementById("voteDetailTitle");
+    const optionList = document.getElementById("voteDetailOptionList");
+
+    if (title) {
+        title.textContent = form.title || "투표";
+    }
+
+    if (!optionList) {
+        return;
+    }
+
+    optionList.innerHTML = "";
+
+    if (!form.options || form.options.length === 0) {
+        optionList.innerHTML = `<div class="form-empty-text">선택지가 없습니다.</div>`;
+        return;
+    }
+
+    form.options.forEach(function (option) {
+        const selectedClass = option.selectedByMe ? "selected" : "";
+        const optionButton = document.createElement("button");
+        optionButton.type = "button";
+        optionButton.className = "vote-option-button " + selectedClass;
+        optionButton.innerHTML = `
+            <span>${escapeHtml(option.optionText || "선택지")}</span>
+            <strong>${option.selectedByMe ? "내 선택" : "선택"}</strong>
+        `;
+        optionButton.addEventListener("click", function () {
+            submitFormAnswer(form.formId, option.optionId, function (updatedForm) {
+                renderVoteFormDetail(updatedForm);
+                loadVoteFormResult(form.formId);
+            });
+        });
+
+        optionList.appendChild(optionButton);
+    });
+}
+
+// 폼 응답 제출/수정
+function submitFormAnswer(formId, optionId, callback) {
+    fetch("/api/chat/forms/" + formId + "/answers", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            optionId: Number(optionId)
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (updatedForm) {
+            if (typeof callback === "function") {
+                callback(updatedForm);
+            }
+        })
+        .catch(function () {
+            alert("투표 저장에 실패했습니다.");
+        });
+}
+
+// 일반 투표 결과 조회
+function loadVoteFormResult(formId) {
+    const resultBox = document.getElementById("voteResultList");
+
+    if (!resultBox) {
+        return;
+    }
+
+    fetch("/api/chat/forms/" + formId + "/results")
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (result) {
+            renderVoteFormResult(result, resultBox);
+        })
+        .catch(function () {
+            resultBox.innerHTML = `<div class="form-empty-text">결과를 불러오지 못했습니다.</div>`;
+        });
+}
+
+// 일반 투표 결과 렌더링
+function renderVoteFormResult(result, resultBox) {
+    const totalVoteCount = Number(result.totalVoteCount || 0);
+
+    if (!result.results || result.results.length === 0) {
+        resultBox.innerHTML = `<div class="form-empty-text">아직 결과가 없습니다.</div>`;
+        return;
+    }
+
+    resultBox.innerHTML = result.results.map(function (item) {
+        const voteCount = Number(item.voteCount || 0);
+        const percent = totalVoteCount === 0 ? 0 : Math.round((voteCount / totalVoteCount) * 100);
+        const selectedClass = item.selectedByMe ? "selected" : "";
+
+        return `
+            <div class="vote-result-item ${selectedClass}">
+                <div class="vote-result-top">
+                    <span>${escapeHtml(item.optionText || "선택지")}</span>
+                    <strong>${voteCount}표 · ${percent}%</strong>
+                </div>
+                <div class="vote-result-bar">
+                    <div class="vote-result-fill" style="width: ${percent}%;"></div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+// 장소 투표 지도 모달 열기
+function openPlaceFormMapModal(formId, form) {
+    currentPlaceFormId = formId;
+
+    const modal = document.getElementById("placeFormMapModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("hidden");
+    hideCustomPlacePanel();
+
+    if (form) {
+        currentPlaceFormDetail = form;
+        renderPlaceFormMapShell(form);
+        setTimeout(function () {
+            initPlaceVoteMap(form);
+        }, 80);
+        return;
+    }
+
+    reloadPlaceFormDetail();
+}
+
+// 장소 투표 지도 모달 닫기
+function closePlaceFormMapModal() {
+    const modal = document.getElementById("placeFormMapModal");
+
+    currentPlaceFormId = null;
+    currentPlaceFormDetail = null;
+    placeAddMode = false;
+    pendingCustomPlace = null;
+    clearPlaceMarkers();
+    clearStoreMarkers();
+
+    if (placeVoteInfoWindow) {
+        placeVoteInfoWindow.close();
+    }
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 장소 폼 상세 다시 조회
+function reloadPlaceFormDetail() {
+    if (!currentPlaceFormId) {
+        return;
+    }
+
+    fetch("/api/chat/forms/" + currentPlaceFormId)
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (form) {
+            currentPlaceFormDetail = form;
+            renderPlaceFormMapShell(form);
+            setTimeout(function () {
+                initPlaceVoteMap(form);
+            }, 80);
+        })
+        .catch(function () {
+            alert("장소 투표 정보를 불러오지 못했습니다.");
+        });
+}
+
+// 장소 투표 모달 기본 정보 렌더링
+function renderPlaceFormMapShell(form) {
+    const title = document.getElementById("placeMapTitle");
+    const summary = document.getElementById("placeMapSummary");
+
+    if (title) {
+        title.textContent = form.title || "장소 투표";
+    }
+
+    if (summary) {
+        summary.textContent = "참여 " + Number(form.answerCount || 0) + "명";
+    }
+
+    renderPlaceOptionList(form);
+}
+
+// 장소 후보 목록 렌더링
+function renderPlaceOptionList(form) {
+    const list = document.getElementById("placeOptionList");
+
+    if (!list) {
+        return;
+    }
+
+    if (!form.options || form.options.length === 0) {
+        list.innerHTML = `<div class="form-empty-text">아직 장소 후보가 없습니다. 장소 추가 버튼으로 후보를 추가해 주세요.</div>`;
+        return;
+    }
+
+    list.innerHTML = form.options.map(function (option) {
+        const selectedClass = option.selectedByMe ? "selected" : "";
+        const sourceText = option.placeSource === "STORE" ? "점주 등록 가게" : "직접 추가한 장소";
+        const addressText = option.address ? `<div class="place-option-address">${escapeHtml(option.address)}</div>` : "";
+        const nicknameText = option.createdByNickname ? ` · ${escapeHtml(option.createdByNickname)}님 추가` : "";
+
+        return `
+            <div class="place-option-card ${selectedClass}">
+                <div class="place-option-title">${escapeHtml(option.placeName || option.optionText || "장소")}</div>
+                <div class="place-option-meta">${sourceText}${nicknameText}</div>
+                ${addressText}
+                <button type="button" onclick="submitPlaceVoteOption(${Number(option.optionId)})">
+                    ${option.selectedByMe ? "선택됨" : "이 장소에 투표"}
+                </button>
+            </div>
+        `;
+    }).join("");
+}
+
+// 장소 투표 지도 초기화
+function initPlaceVoteMap(form) {
+    const mapElement = document.getElementById("placeVoteMap");
+
+    if (!mapElement) {
+        return;
+    }
+
+    if (typeof naver === "undefined" || !naver.maps) {
+        mapElement.innerHTML = `<div class="map-load-fail">네이버 지도를 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    const fallbackCenter = getPlaceMapInitialCenter(form);
+
+    if (!placeVoteMap) {
+        placeVoteMap = new naver.maps.Map(mapElement, {
+            center: new naver.maps.LatLng(fallbackCenter.lat, fallbackCenter.lng),
+            zoom: 16
+        });
+
+        placeVoteInfoWindow = new naver.maps.InfoWindow({
+            content: ""
+        });
+
+        naver.maps.Event.addListener(placeVoteMap, "click", function (event) {
+            handlePlaceMapClick(event);
+        });
+    } else {
+        placeVoteMap.setCenter(new naver.maps.LatLng(fallbackCenter.lat, fallbackCenter.lng));
+    }
+
+    renderPlaceMarkers(form);
+
+    setTimeout(function () {
+        naver.maps.Event.trigger(placeVoteMap, "resize");
+        movePlaceMapToCurrentLocationOrFallback(fallbackCenter);
+    }, 120);
+}
+
+// 내 현재 위치 기준으로 지도 중심 이동
+function movePlaceMapToCurrentLocationOrFallback(fallbackCenter) {
+    if (!placeVoteMap) {
+        return;
+    }
+
+    if (!navigator.geolocation) {
+        movePlaceMapCenterAndLoadStores(fallbackCenter.lat, fallbackCenter.lng);
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            movePlaceMapCenterAndLoadStores(lat, lng);
+        },
+        function () {
+            movePlaceMapCenterAndLoadStores(fallbackCenter.lat, fallbackCenter.lng);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 7000,
+            maximumAge: 60000
+        }
+    );
+}
+
+// 지도 중심 이동 후 주변 점주 가게 조회
+function movePlaceMapCenterAndLoadStores(lat, lng) {
+    if (!placeVoteMap || !isValidCoordinate(lat, lng)) {
+        return;
+    }
+
+    const center = new naver.maps.LatLng(Number(lat), Number(lng));
+
+    placeVoteMap.setCenter(center);
+    loadNearbyStoresForPlaceMap(lat, lng);
+}
+
+// 지도 초기 중심 좌표
+function getPlaceMapInitialCenter(form) {
+    if (form && form.options) {
+        for (let i = 0; i < form.options.length; i++) {
+            const option = form.options[i];
+
+            if (isValidCoordinate(option.latitude, option.longitude)) {
+                return {
+                    lat: Number(option.latitude),
+                    lng: Number(option.longitude)
+                };
+            }
+        }
+    }
+
+    return {
+        lat: 37.5666103,
+        lng: 126.9783882
+    };
+}
+
+// 장소 후보 좌표 존재 여부
+function hasPlaceOptionLocation(form) {
+    if (!form || !form.options) {
+        return false;
+    }
+
+    return form.options.some(function (option) {
+        return isValidCoordinate(option.latitude, option.longitude);
+    });
+}
+
+// 좌표 유효 여부
+function isValidCoordinate(lat, lng) {
+    return lat !== null
+        && lat !== undefined
+        && lng !== null
+        && lng !== undefined
+        && !Number.isNaN(Number(lat))
+        && !Number.isNaN(Number(lng));
+}
+
+// 장소 후보 마커 렌더링
+function renderPlaceMarkers(form) {
+    clearPlaceMarkers();
+
+    if (!placeVoteMap || !form || !form.options) {
+        return;
+    }
+
+    form.options.forEach(function (option) {
+        if (!isValidCoordinate(option.latitude, option.longitude)) {
+            return;
+        }
+
+        // 점주 등록 가게는 식당 마커(🍽️) 그대로 표시한다.
+        // 직접 추가한 장소만 후보 마커(📍)로 표시한다.
+        if (option.placeSource === "STORE") {
+            return;
+        }
+
+        const marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(Number(option.latitude), Number(option.longitude)),
+            map: placeVoteMap,
+            title: option.placeName || option.optionText || "장소 후보",
+            icon: {
+                content: `<div class="place-map-marker candidate">📍</div>`,
+                size: new naver.maps.Size(34, 34),
+                anchor: new naver.maps.Point(17, 34)
+            }
+        });
+
+        naver.maps.Event.addListener(marker, "click", function () {
+            openPlaceOptionInfo(marker, option);
+        });
+
+        placeVoteMarkers.push(marker);
+    });
+}
+
+// 점주 가게 마커 조회 및 렌더링
+function loadNearbyStoresForPlaceMap(lat, lng) {
+    if (!placeVoteMap || !isValidCoordinate(lat, lng)) {
+        return;
+    }
+
+    fetch("/api/chat/forms/stores/nearby?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng) + "&radius=3")
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (stores) {
+            renderStoreMarkers(stores || []);
+        })
+        .catch(function () {
+            clearStoreMarkers();
+        });
+}
+
+// 점주 가게 마커 렌더링
+function renderStoreMarkers(stores) {
+    clearStoreMarkers();
+    placeStoreCache = {};
+
+    if (!placeVoteMap) {
+        return;
+    }
+
+    stores.forEach(function (store) {
+        if (!isValidCoordinate(store.latitude, store.longitude)) {
+            return;
+        }
+
+        placeStoreCache[String(store.storeId)] = store;
+
+        const marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(Number(store.latitude), Number(store.longitude)),
+            map: placeVoteMap,
+            title: store.name || "점주 가게",
+            icon: {
+                content: `<div class="place-map-marker store">🍽️</div>`,
+                size: new naver.maps.Size(34, 34),
+                anchor: new naver.maps.Point(17, 34)
+            }
+        });
+
+        naver.maps.Event.addListener(marker, "click", function () {
+            openStoreInfo(marker, store);
+        });
+
+        placeStoreMarkers.push(marker);
+    });
+}
+
+// 이미 후보에 추가된 점주 가게인지 확인
+function hasCandidateStoreOption(storeId) {
+    if (!currentPlaceFormDetail || !currentPlaceFormDetail.options) {
+        return false;
+    }
+
+    return currentPlaceFormDetail.options.some(function (option) {
+        return option.placeSource === "STORE" && String(option.storeId) === String(storeId);
+    });
+}
+
+// 이미 후보에 추가된 점주 가게 옵션 조회
+function getExistingStoreOption(storeId) {
+    if (!currentPlaceFormDetail || !currentPlaceFormDetail.options) {
+        return null;
+    }
+
+    return currentPlaceFormDetail.options.find(function (option) {
+        return option.placeSource === "STORE" && String(option.storeId) === String(storeId);
+    }) || null;
+}
+
+// 장소 후보 마커 정보창
+function openPlaceOptionInfo(marker, option) {
+    if (!placeVoteInfoWindow) {
+        return;
+    }
+
+    const sourceText = option.placeSource === "STORE" ? "점주 등록 가게" : "직접 추가한 장소";
+    const addressText = option.address ? `<div class="place-info-address">${escapeHtml(option.address)}</div>` : "";
+
+    placeVoteInfoWindow.setContent(`
+        <div class="place-info-window">
+            <div class="place-info-title">${escapeHtml(option.placeName || option.optionText || "장소")}</div>
+            <div class="place-info-meta">${sourceText}</div>
+            ${addressText}
+            <button type="button" onclick="submitPlaceVoteOption(${Number(option.optionId)})">
+                ${option.selectedByMe ? "선택됨" : "이 장소에 투표"}
+            </button>
+        </div>
+    `);
+
+    placeVoteInfoWindow.open(placeVoteMap, marker);
+}
+
+// 점주 가게 마커 정보창
+function openStoreInfo(marker, store) {
+    if (!placeVoteInfoWindow) {
+        return;
+    }
+
+    const statusText = store.businessStatus ? ` · ${escapeHtml(store.businessStatus)}` : "";
+    const categoryText = store.category ? `${escapeHtml(store.category)}${statusText}` : `점주 등록 가게${statusText}`;
+    const addressText = store.address ? `<div class="place-info-address">${escapeHtml(store.address)}</div>` : "";
+
+    placeVoteInfoWindow.setContent(`
+        <div class="place-info-window">
+            <div class="place-info-title">${escapeHtml(store.name || "점주 가게")}</div>
+            <div class="place-info-meta">${categoryText}</div>
+            ${addressText}
+            <button type="button" onclick="addStoreOptionAndVoteById(${Number(store.storeId)})">
+                이 식당에 투표
+            </button>
+        </div>
+    `);
+
+    placeVoteInfoWindow.open(placeVoteMap, marker);
+}
+
+// 점주 가게 후보 추가 후 바로 투표
+function addStoreOptionAndVoteById(storeId) {
+    const store = placeStoreCache[String(storeId)];
+
+    if (!store || !currentPlaceFormId) {
+        alert("가게 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    const existingOption = getExistingStoreOption(storeId);
+
+    if (existingOption && existingOption.optionId) {
+        submitPlaceVoteOption(existingOption.optionId);
+        return;
+    }
+
+    fetch("/api/chat/forms/" + currentPlaceFormId + "/options", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            placeSource: "STORE",
+            storeId: Number(store.storeId),
+            placeName: store.name,
+            optionText: store.name,
+            address: store.address,
+            latitude: Number(store.latitude),
+            longitude: Number(store.longitude),
+            mapUrl: ""
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (option) {
+            if (option && option.optionId) {
+                submitPlaceVoteOption(option.optionId);
+                return;
+            }
+
+            // 혹시 응답에 optionId가 없으면 폼 다시 조회해서 storeId로 후보 찾고 투표
+            voteStoreAfterReload(storeId);
+        })
+        .catch(function () {
+            alert("식당 투표에 실패했습니다.");
+        });
+}
+
+// 후보 추가 응답에 optionId가 없을 때 다시 조회해서 투표
+function voteStoreAfterReload(storeId) {
+    if (!currentPlaceFormId) {
+        return;
+    }
+
+    fetch("/api/chat/forms/" + currentPlaceFormId)
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (form) {
+            currentPlaceFormDetail = form;
+            renderPlaceFormMapShell(form);
+            renderPlaceMarkers(form);
+
+            const option = getExistingStoreOption(storeId);
+
+            if (!option || !option.optionId) {
+                alert("후보는 추가됐지만 투표할 후보 정보를 찾지 못했습니다.");
+                return;
+            }
+
+            submitPlaceVoteOption(option.optionId);
+        })
+        .catch(function () {
+            alert("식당 후보 정보를 다시 불러오지 못했습니다.");
+        });
+}
+
+// 장소 투표 제출
+function submitPlaceVoteOption(optionId) {
+    if (!currentPlaceFormId || !optionId) {
+        alert("투표할 장소 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    submitFormAnswer(currentPlaceFormId, optionId, function (updatedForm) {
+        currentPlaceFormDetail = updatedForm;
+        renderPlaceFormMapShell(updatedForm);
+        renderPlaceMarkers(updatedForm);
+
+        if (placeVoteInfoWindow) {
+            placeVoteInfoWindow.close();
+        }
+
+        alert("투표가 저장되었습니다.");
+    });
+}
+
+// 장소 추가 모드 시작
+function startAddCustomPlaceMode() {
+    if (!placeVoteMap) {
+        alert("지도를 먼저 불러와 주세요.");
+        return;
+    }
+
+    placeAddMode = true;
+    pendingCustomPlace = null;
+    hideCustomPlacePanel();
+
+    const guide = document.getElementById("placeMapGuide");
+
+    if (guide) {
+        guide.textContent = "지도에서 추가할 장소 위치를 눌러 주세요.";
+        guide.classList.remove("hidden");
+    }
+
+    if (placeVoteInfoWindow) {
+        placeVoteInfoWindow.close();
+    }
+}
+
+// 지도 클릭 처리
+function handlePlaceMapClick(event) {
+    if (!placeAddMode || !event || !event.coord) {
+        return;
+    }
+
+    const lat = event.coord.lat();
+    const lng = event.coord.lng();
+
+    pendingCustomPlace = {
+        latitude: lat,
+        longitude: lng
+    };
+
+    showCustomPlacePanel(lat, lng);
+}
+
+// 직접 장소 입력 패널 표시
+function showCustomPlacePanel(lat, lng) {
+    const panel = document.getElementById("customPlacePanel");
+    const nameInput = document.getElementById("customPlaceNameInput");
+    const addressInput = document.getElementById("customPlaceAddressInput");
+    const coordinateText = document.getElementById("customPlaceCoordinateText");
+    const guide = document.getElementById("placeMapGuide");
+
+    if (guide) {
+        guide.classList.add("hidden");
+    }
+
+    if (coordinateText) {
+        coordinateText.textContent = "선택 좌표: " + Number(lat).toFixed(6) + ", " + Number(lng).toFixed(6);
+    }
+
+    if (nameInput) {
+        nameInput.value = "";
+    }
+
+    if (addressInput) {
+        addressInput.value = "";
+    }
+
+    if (panel) {
+        panel.classList.remove("hidden");
+    }
+
+    if (nameInput) {
+        nameInput.focus();
+    }
+}
+
+// 직접 장소 입력 패널 숨김
+function hideCustomPlacePanel() {
+    const panel = document.getElementById("customPlacePanel");
+    const guide = document.getElementById("placeMapGuide");
+
+    if (panel) {
+        panel.classList.add("hidden");
+    }
+
+    if (guide) {
+        guide.classList.add("hidden");
+    }
+}
+
+// 직접 장소 추가 취소
+function cancelCustomPlaceAdd() {
+    placeAddMode = false;
+    pendingCustomPlace = null;
+    hideCustomPlacePanel();
+}
+
+// 직접 장소 후보 추가
+function submitCustomPlaceOption() {
+    const nameInput = document.getElementById("customPlaceNameInput");
+    const addressInput = document.getElementById("customPlaceAddressInput");
+
+    if (!currentPlaceFormId || !pendingCustomPlace || !nameInput) {
+        alert("장소 위치를 먼저 선택해 주세요.");
+        return;
+    }
+
+    const placeName = nameInput.value.trim();
+    const address = addressInput ? addressInput.value.trim() : "";
+
+    if (placeName === "") {
+        alert("장소명을 입력해 주세요.");
+        nameInput.focus();
+        return;
+    }
+
+    fetch("/api/chat/forms/" + currentPlaceFormId + "/options", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            placeSource: "CUSTOM",
+            placeName: placeName,
+            optionText: placeName,
+            address: address,
+            latitude: Number(pendingCustomPlace.latitude),
+            longitude: Number(pendingCustomPlace.longitude),
+            mapUrl: ""
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function () {
+            placeAddMode = false;
+            pendingCustomPlace = null;
+            hideCustomPlacePanel();
+
+            alert("장소 후보에 추가되었습니다. 지도 위 후보 마커를 눌러 투표해 주세요.");
+            reloadPlaceFormDetail();
+        })
+        .catch(function () {
+            alert("장소 후보 추가에 실패했습니다.");
+        });
+}
+
+// 장소 투표 결과 조회
+function loadPlaceFormResult() {
+    const resultPanel = document.getElementById("placeResultPanel");
+    const resultList = document.getElementById("placeResultList");
+
+    if (resultPanel) {
+        resultPanel.classList.remove("hidden");
+    }
+
+    if (!currentPlaceFormId || !resultList) {
+        return;
+    }
+
+    resultList.innerHTML = `<div class="form-empty-text">결과를 불러오는 중입니다.</div>`;
+
+    fetch("/api/chat/forms/" + currentPlaceFormId + "/results")
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (result) {
+            renderPlaceFormResult(result);
+        })
+        .catch(function () {
+            resultList.innerHTML = `<div class="form-empty-text">결과를 불러오지 못했습니다.</div>`;
+        });
+}
+
+// 장소 투표 결과 렌더링
+function renderPlaceFormResult(result) {
+    const resultList = document.getElementById("placeResultList");
+
+    if (!resultList) {
+        return;
+    }
+
+    const votedResults = (result.results || []).filter(function (item) {
+        return Number(item.voteCount || 0) > 0;
+    });
+
+    const totalVoteCount = votedResults.reduce(function (sum, item) {
+        return sum + Number(item.voteCount || 0);
+    }, 0);
+
+    if (votedResults.length === 0) {
+        resultList.innerHTML = `<div class="form-empty-text">아직 투표된 장소가 없습니다.</div>`;
+        return;
+    }
+
+    resultList.innerHTML = votedResults.map(function (item) {
+        const voteCount = Number(item.voteCount || 0);
+        const percent = totalVoteCount === 0 ? 0 : Math.round((voteCount / totalVoteCount) * 100);
+        const selectedClass = item.selectedByMe ? "selected" : "";
+        const placeName = item.placeName || item.optionText || "장소";
+
+        return `
+            <div class="place-result-item ${selectedClass}">
+                <div class="place-result-top">
+                    <span>${escapeHtml(placeName)}</span>
+                    <strong>${voteCount}표 · ${percent}%</strong>
+                </div>
+                <div class="vote-result-bar">
+                    <div class="vote-result-fill" style="width: ${percent}%;"></div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+// 장소 후보 마커 제거
+function clearPlaceMarkers() {
+    placeVoteMarkers.forEach(function (marker) {
+        marker.setMap(null);
+    });
+
+    placeVoteMarkers = [];
+}
+
+// 점주 가게 마커 제거
+function clearStoreMarkers() {
+    placeStoreMarkers.forEach(function (marker) {
+        marker.setMap(null);
+    });
+
+    placeStoreMarkers = [];
 }
 
 // 채팅 이미지 전송
@@ -391,9 +1631,13 @@ function sendChatImage() {
 
             return response.json();
         })
-        .then(function () {
+        .then(function (savedMessage) {
             chatImageInput.value = "";
-            loadMessages();
+
+            if (!isChatSocketReady()) {
+                appendOrReplaceMessage(savedMessage);
+                sendReadForLatestMessage();
+            }
         })
         .catch(function () {
             chatImageInput.value = "";
@@ -1200,6 +2444,163 @@ function closeMessageForm() {
         chatPlusMenu.classList.add("hidden");
     }
 }
+
+
+// WebSocket 연결
+function connectChatSocket() {
+    const chatRoomId = getChatRoomId();
+
+    if (!chatRoomId) {
+        return;
+    }
+
+    if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
+        console.warn("SockJS 또는 STOMP 스크립트를 불러오지 못했습니다. REST 방식으로 동작합니다.");
+        return;
+    }
+
+    const socket = new SockJS("/ws/chat");
+    chatStompClient = Stomp.over(socket);
+    chatStompClient.debug = null;
+
+    chatStompClient.connect({}, function () {
+        chatSocketConnected = true;
+
+        chatStompClient.subscribe("/sub/chat/rooms/" + chatRoomId, function (message) {
+            handleChatSocketEvent(message);
+        });
+
+        sendReadForLatestMessage();
+    }, function () {
+        chatSocketConnected = false;
+    });
+}
+
+// WebSocket 연결 여부
+function isChatSocketReady() {
+    return chatStompClient !== null && chatSocketConnected === true;
+}
+
+// WebSocket 이벤트 처리
+function handleChatSocketEvent(socketMessage) {
+    if (!socketMessage || !socketMessage.body) {
+        return;
+    }
+
+    const event = JSON.parse(socketMessage.body);
+    const chatRoomId = getChatRoomId();
+
+    if (!event || String(event.chatRoomId) !== String(chatRoomId)) {
+        return;
+    }
+
+    if (event.eventType === "SEND") {
+        appendOrReplaceMessage(event.message);
+        sendReadForLatestMessage();
+        return;
+    }
+
+    if (event.eventType === "EDIT") {
+        appendOrReplaceMessage(event.message);
+        return;
+    }
+
+    if (event.eventType === "DELETE") {
+        appendOrReplaceMessage(event.message);
+        return;
+    }
+
+    if (event.eventType === "READ") {
+        loadMessages(false);
+    }
+}
+
+// 텍스트 메시지 WebSocket 전송
+function sendSocketTextMessage(chatRoomId, message) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/send",
+        {},
+        JSON.stringify({
+            chatRoomId: Number(chatRoomId),
+            message: message
+        })
+    );
+
+    return true;
+}
+
+// 메시지 수정 WebSocket 전송
+function sendEditMessageRequest(chatMessageId, message) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/edit",
+        {},
+        JSON.stringify({
+            chatMessageId: Number(chatMessageId),
+            message: message
+        })
+    );
+
+    return true;
+}
+
+// 메시지 삭제 WebSocket 전송
+function sendDeleteMessageRequest(chatMessageId) {
+    if (!isChatSocketReady()) {
+        return false;
+    }
+
+    chatStompClient.send(
+        "/pub/chat/message/delete",
+        {},
+        JSON.stringify({
+            chatMessageId: Number(chatMessageId)
+        })
+    );
+
+    return true;
+}
+
+// 현재 방의 마지막 메시지까지 읽음 처리
+function sendReadForLatestMessage() {
+    const chatRoomId = getChatRoomId();
+    const lastMessageId = getLastCachedMessageId();
+
+    if (!chatRoomId || !lastMessageId || !isChatSocketReady()) {
+        return;
+    }
+
+    if (String(lastSentReadMessageId) === String(lastMessageId)) {
+        return;
+    }
+
+    lastSentReadMessageId = lastMessageId;
+
+    chatStompClient.send(
+        "/pub/chat/message/read",
+        {},
+        JSON.stringify({
+            chatRoomId: Number(chatRoomId),
+            lastReadMessageId: Number(lastMessageId)
+        })
+    );
+}
+
+// 페이지 이탈 시 WebSocket 연결 해제
+window.addEventListener("beforeunload", function () {
+    if (chatStompClient !== null && chatSocketConnected) {
+        chatStompClient.disconnect(function () {
+            chatSocketConnected = false;
+        });
+    }
+});
 
 // HTML 특수문자 처리
 function escapeHtml(value) {

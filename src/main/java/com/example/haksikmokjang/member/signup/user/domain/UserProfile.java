@@ -71,9 +71,40 @@ public class UserProfile extends BaseEntity {
         this.profileImage = profileImage;
     }
 
+<<<<<<< HEAD
     // 선호 음식 메서드
     public void updatePreferredFood(String preferredFoodCategory) {
         this.preferredFoodCategory = preferredFoodCategory;
+=======
+    // 매너온도 감소
+    public void decreaseMannerTemperature(BigDecimal point) {
+        if (point == null || point.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        BigDecimal decreasedTemperature = this.mannerTemperature.subtract(point);
+
+        if (decreasedTemperature.compareTo(BigDecimal.ZERO) < 0) {
+            this.mannerTemperature = BigDecimal.ZERO;
+            return;
+        }
+
+        this.mannerTemperature = decreasedTemperature;
+    }
+
+    // 노쇼 횟수 증가
+    public void increaseNoShowCount() {
+        if (this.noShowCount == null) {
+            this.noShowCount = 0;
+        }
+
+        this.noShowCount++;
+    }
+
+    // 매너온도 0점 이하 여부
+    public boolean isMannerTemperatureZeroOrLess() {
+        return this.mannerTemperature.compareTo(BigDecimal.ZERO) <= 0;
+>>>>>>> 7b5143a8e8df9e346a7da4a312c37acf108201da
     }
 
 

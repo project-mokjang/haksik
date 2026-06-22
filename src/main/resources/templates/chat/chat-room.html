@@ -185,6 +185,155 @@
       </div>
     </div>
 
+
+
+    <div id="chatFormTypeModal" class="chat-form-modal-backdrop hidden">
+      <div class="chat-form-select-modal">
+        <div class="chat-form-modal-header">
+          <h3>폼 만들기</h3>
+          <button type="button" onclick="closeChatFormTypeModal()">×</button>
+        </div>
+
+        <div class="chat-form-type-list">
+          <button type="button" class="chat-form-type-card" onclick="openVoteFormCreateModal()">
+            <span class="chat-form-type-icon">📋</span>
+            <span class="chat-form-type-title">일반 투표</span>
+            <span class="chat-form-type-desc">메뉴나 시간을 선택지로 투표합니다.</span>
+          </button>
+
+          <button type="button" class="chat-form-type-card" onclick="openPlaceFormCreateModal()">
+            <span class="chat-form-type-icon">🗺️</span>
+            <span class="chat-form-type-title">지도 장소 투표</span>
+            <span class="chat-form-type-desc">지도에서 가게와 장소를 찍고 투표합니다.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="voteFormCreateModal" class="chat-form-modal-backdrop hidden">
+      <div class="chat-form-create-modal">
+        <div class="chat-form-modal-header">
+          <h3>일반 투표 만들기</h3>
+          <button type="button" onclick="closeVoteFormCreateModal()">×</button>
+        </div>
+
+        <div class="chat-form-field">
+          <label for="voteFormTitleInput">투표 제목</label>
+          <input type="text" id="voteFormTitleInput" maxlength="100" placeholder="예: 뭐 먹을래?">
+        </div>
+
+        <div class="chat-form-field">
+          <div class="chat-form-field-row">
+            <label>선택지</label>
+            <button type="button" class="chat-form-small-button" onclick="addVoteOptionInput()">+ 추가</button>
+          </div>
+
+          <div id="voteOptionList" class="vote-option-input-list">
+            <!-- JS로 선택지 입력칸 추가 -->
+          </div>
+        </div>
+
+        <div class="chat-form-actions">
+          <button type="button" class="chat-form-cancel-button" onclick="closeVoteFormCreateModal()">취소</button>
+          <button type="button" class="chat-form-submit-button" onclick="submitVoteForm()">채팅방에 보내기</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="placeFormCreateModal" class="chat-form-modal-backdrop hidden">
+      <div class="chat-form-create-modal">
+        <div class="chat-form-modal-header">
+          <h3>지도 장소 투표 만들기</h3>
+          <button type="button" onclick="closePlaceFormCreateModal()">×</button>
+        </div>
+
+        <p class="chat-form-help-text">
+          채팅방에 장소 투표 카드를 보내면, 참여자들이 지도에서 가게나 직접 찍은 장소에 투표할 수 있습니다.
+        </p>
+
+        <div class="chat-form-field">
+          <label for="placeFormTitleInput">장소 투표 제목</label>
+          <input type="text" id="placeFormTitleInput" maxlength="100" placeholder="예: 어디서 만날래?">
+        </div>
+
+        <div class="chat-form-actions">
+          <button type="button" class="chat-form-cancel-button" onclick="closePlaceFormCreateModal()">취소</button>
+          <button type="button" class="chat-form-submit-button" onclick="submitPlaceForm()">지도 투표 보내기</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="voteFormDetailModal" class="chat-form-modal-backdrop hidden">
+      <div class="chat-form-detail-modal">
+        <div class="chat-form-modal-header">
+          <h3 id="voteDetailTitle">투표</h3>
+          <button type="button" onclick="closeVoteFormDetailModal()">×</button>
+        </div>
+
+        <div id="voteDetailOptionList" class="vote-detail-option-list">
+          <!-- JS로 선택지 표시 -->
+        </div>
+
+        <div class="form-result-section">
+          <div class="form-result-title">결과</div>
+          <div id="voteResultList" class="vote-result-list">
+            <!-- JS로 결과 표시 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="placeFormMapModal" class="place-map-modal-backdrop hidden">
+      <div class="place-map-modal">
+        <div class="place-map-header">
+          <div>
+            <h3 id="placeMapTitle">장소 투표</h3>
+            <p id="placeMapSummary">참여 0명</p>
+          </div>
+          <button type="button" onclick="closePlaceFormMapModal()">×</button>
+        </div>
+
+        <div class="place-map-body">
+          <div id="placeVoteMap" class="place-vote-map"></div>
+
+          <div id="placeMapGuide" class="place-map-guide hidden">
+            지도에서 추가할 장소 위치를 눌러 주세요.
+          </div>
+
+          <div id="customPlacePanel" class="custom-place-panel hidden">
+            <div class="custom-place-title">직접 장소 추가</div>
+            <div id="customPlaceCoordinateText" class="custom-place-coordinate">선택 좌표</div>
+
+            <input type="text" id="customPlaceNameInput" placeholder="장소명" maxlength="100">
+            <input type="text" id="customPlaceAddressInput" placeholder="주소 또는 설명" maxlength="200">
+
+            <div class="custom-place-actions">
+              <button type="button" onclick="cancelCustomPlaceAdd()">취소</button>
+              <button type="button" onclick="submitCustomPlaceOption()">후보 추가</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="place-map-bottom">
+          <div class="place-map-action-row">
+            <button type="button" class="place-add-button" onclick="startAddCustomPlaceMode()">장소 추가</button>
+            <button type="button" class="place-result-button" onclick="loadPlaceFormResult()">결과 보기</button>
+          </div>
+
+          <div class="form-empty-text">
+            투표는 지도 위 식당 마커 또는 장소 후보 마커를 눌러서 진행해 주세요.
+          </div>
+
+          <div id="placeResultPanel" class="place-result-panel hidden">
+            <div class="place-map-section-title">투표 결과</div>
+            <div id="placeResultList" class="place-result-list">
+              <div class="form-empty-text">결과 보기를 눌러 확인해 주세요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="messageMenu" class="message-menu hidden">
       <button type="button" id="editMessageMenuButton" onclick="prepareEditMessage()">수정</button>
       <button type="button" id="deleteMessageMenuButton" class="delete-message-button" onclick="deleteSelectedMessage()">삭제</button>
@@ -193,6 +342,9 @@
   </div>
 </div>
 
+<script th:src="'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script th:src="@{/js/chat/chat-message.js}"></script>
 <script th:src="@{/js/chat/chat-room.js}"></script>
 </body>

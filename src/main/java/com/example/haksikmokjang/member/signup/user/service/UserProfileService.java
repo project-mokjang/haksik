@@ -53,20 +53,20 @@ public class UserProfileService {
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             try {
-                // 1) 사진을 저장할 진짜 폴더 경로 만들기
+                // 사진을 저장할 진짜 폴더 경로 만들기
                 String saveDirPath = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
                 File dir = new File(saveDirPath);
                 if (!dir.exists()) dir.mkdirs();
 
-                // 2) 랜덤 이름으로 파일명 바꾸기 (중복 방지)
+                //  랜덤 이름으로 파일명 바꾸기 (중복 방지)
                 String originalName = profileImageFile.getOriginalFilename();
                 String extension = originalName.substring(originalName.lastIndexOf("."));
                 String savedName = UUID.randomUUID().toString() + extension;
 
-                // 3) 폴더에 사진 찰칵! 저장하기
+                //  폴더에 사진 찰칵! 저장하기
                 profileImageFile.transferTo(new File(saveDirPath + savedName));
 
-                // 4) DB에 넣을 파일 정보 예쁘게 포장하기
+                // DB에 넣을 파일 정보 예쁘게 포장하기
                 FileAttachment fileAttachment = FileAttachment.builder()
                         .uploader(member)
                         .targetType("USER_PROFILE")
