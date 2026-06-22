@@ -270,3 +270,52 @@ function closeTermsModal() {
 
     termsModal.style.display = 'none';
 }
+
+// 모달 열기
+function openFoodModal() {
+    document.getElementById('foodModal').style.display = 'flex';
+}
+
+// 모달 닫기
+function closeFoodModal() {
+    document.getElementById('foodModal').style.display = 'none';
+}
+
+// 백엔드로 음식 정보 전송
+function saveFoodPreference() {
+    const selectedFood = document.querySelector('input[name="foodCategory"]:checked');
+
+    if (!selectedFood) {
+        showToast("음식 종류를 하나 선택해주세요! 🥺", "error");
+        return;
+    }
+
+    const foodCategory = selectedFood.value;
+
+    fetch('/api/members/profile/food?foodCategory=' + encodeURIComponent(foodCategory), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+
+                // id="myFoodDisplay" 인 녀석을 찾아서 글자를 즉시 변경
+                const displayElement = document.getElementById('myFoodDisplay');
+                if (displayElement) {
+                    displayElement.innerText = '선호 설정 음식 : ' + foodCategory;
+                }
+
+                showToast(data.message || "선호 음식이 완벽하게 저장되었습니다! 😆", "success");
+                closeFoodModal();
+            } else {
+                showToast("저장에 실패했어요  다시 시도해주세요!", "error");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("서버 통신 오류!", "error");
+        });
+}

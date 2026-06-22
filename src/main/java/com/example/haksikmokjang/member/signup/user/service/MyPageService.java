@@ -29,6 +29,7 @@ public class MyPageService {
                 .department(profile.getDepartment())
                 .loginId(member.getLoginId())
                 .profileImageUrl(profile.getProfileImage() != null ? profile.getProfileImage().getStoredPath() : null)
+                .preferredFoodCategory(profile.getPreferredFoodCategory())
                 .build();
     }
 }
