@@ -36,8 +36,10 @@ import com.example.haksikmokjang.member.signup.user.repository.UserProfileReposi
 import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Store;
 import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
+import com.example.haksikmokjang.ownerpage.store.dto.ReservationRequest;
 import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
+import com.example.haksikmokjang.ownerpage.store.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,7 @@ import java.util.stream.Collectors;
 public class ChatFormService {
 
     private static final int CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS = 1;
-
+    private final ReservationService reservationService;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatFormRepository chatFormRepository;
@@ -222,6 +224,7 @@ public class ChatFormService {
 
         if (chatForm.isPlaceForm()) {
             confirmAppointmentByTimeVoteResult(chatForm);
+            createReservationByVoteResult(chatForm, loginMember);
         }
 
         return getForm(formId, loginMember);
@@ -497,6 +500,44 @@ public class ChatFormService {
         LocalDateTime autoCloseAt = appointmentAt.plusHours(CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS);
 
         chatForm.getChatRoom().confirmAppointment(appointmentAt, autoCloseAt);
+    }
+
+    private void createReservationByVoteResult(ChatForm chatForm, Member loginMember) {
+        ChatFormOption placeWinner = getWinningOption(chatForm, ChatFormOptionType.PLACE);
+        ChatFormOption timeWinner = getWinningOption(chatForm, ChatFormOptionType.TIME);
+
+        if (placeWinner == null || timeWinner == null) {
+            return;
+        }
+
+        if (timeWinner.getAppointmentAt() == null) {
+            return;
+        }
+
+        if (placeWinner.getPlaceSource() != ChatPlaceSource.STORE) {
+            return;
+        }
+
+        if (placeWinner.getStoreId() == null) {
+            return;
+        }
+
+        int peopleCount = chatRoomMemberRepository
+                .findAllByChatRoom(chatForm.getChatRoom())
+                .size();
+
+        ReservationRequest request = new ReservationRequest();
+        request.setStoreId(placeWinner.getStoreId());
+        request.setReservationAt(timeWinner.getAppointmentAt());
+        request.setPeopleCount(peopleCount);
+        request.setRequestMemo(
+                "[채팅 약속 투표 예약] 채팅방 ID: "
+                        + chatForm.getChatRoom().getChatRoomId()
+                        + ", 폼 ID: "
+                        + chatForm.getChatFormId()
+        );
+
+        reservationService.createReservation(loginMember.getLoginId(), request);
     }
 
     private ChatFormOption getWinningOption(ChatForm chatForm, ChatFormOptionType optionType) {
