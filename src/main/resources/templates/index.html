@@ -25,12 +25,11 @@
       background-image: url('/bgimages/bgimg.png');
       background-size: cover;
       background-position: center bottom;
-      /* 🚨 팩트: 밝기 115%, 채도 120%로 사진을 포토샵처럼 화사하게 강제 부스팅 */
+      /* 밝기(brightness), 채도(saturate)로 사진을 포토샵처럼 화사하게 강제 부스팅 */
       filter: brightness(1.05) saturate(1.2);
       z-index: 1;
     }
 
-    /* 🚨 팩트: 사진을 어둡게 만들던 splash-overlay CSS 완전 삭제 */
 
     .splash-top {
       position: relative;
@@ -42,25 +41,48 @@
       padding-top: 25%;
     }
 
-    /* 🚨 팩트: 배경이 밝아졌으므로, 글씨에 진녹색 테두리를 둘러 가독성 100% 방어 */
+    /* 8방향 텍스트 섀도우를 겹쳐서 깔끔한 아웃라인 생성 */
     .splash-logo {
-      font-size: 46px; /* 크기 약간 확대 */
+      font-size: 46px;
       font-weight: 900;
       color: white;
       margin-bottom: 8px;
       letter-spacing: -1px;
-      -webkit-text-stroke: 1.5px var(--forest);
-      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      /* 🎯 기존 text-stroke 삭제 */
+      /* -webkit-text-stroke: 1.5px var(--forest); */
+
+      /* 🎯 8방향 그림자 + 묵직한 하단 그림자로 로고 퀄리티 극대화 */
+      text-shadow:
+              -2px -2px 0 var(--forest),
+              2px -2px 0 var(--forest),
+              -2px  2px 0 var(--forest),
+              2px  2px 0 var(--forest),
+              0px -2px 0 var(--forest),
+              0px  2px 0 var(--forest),
+              -2px  0px 0 var(--forest),
+              2px  0px 0 var(--forest),
+              0px  6px 12px rgba(0,0,0,0.5); /* 기존 그림자 유지 */
     }
 
     .splash-desc {
       font-size: 16px;
       font-weight: 800;
-      color: white; /* 텍스트 흰색으로 변경 */
-      -webkit-text-stroke: 0.8px var(--forest);
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    }
+      color: white;
+      /* 🎯 기존 text-stroke 삭제 */
+      /* -webkit-text-stroke: 0.8px var(--forest); */
 
+      /* 🎯 서브 텍스트는 로고보다 얇은 1px 두께의 8방향 그림자 적용 */
+      text-shadow:
+              -1px -1px 0 var(--forest),
+              1px -1px 0 var(--forest),
+              -1px  1px 0 var(--forest),
+              1px  1px 0 var(--forest),
+              0px -1px 0 var(--forest),
+              0px  1px 0 var(--forest),
+              -1px  0px 0 var(--forest),
+              1px  0px 0 var(--forest),
+              0px  2px 8px rgba(0,0,0,0.5); /* 기존 그림자 유지 */
+    }
     .splash-bottom-wrap {
       position: relative;
       z-index: 10;
