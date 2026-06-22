@@ -3,6 +3,7 @@ package com.example.haksikmokjang.chat.chatform.service;
 import com.example.haksikmokjang.chat.chatform.domain.ChatForm;
 import com.example.haksikmokjang.chat.chatform.domain.ChatFormAnswer;
 import com.example.haksikmokjang.chat.chatform.domain.ChatFormOption;
+import com.example.haksikmokjang.chat.chatform.domain.ChatFormOptionType;
 import com.example.haksikmokjang.chat.chatform.domain.ChatFormType;
 import com.example.haksikmokjang.chat.chatform.domain.ChatPlaceSource;
 import com.example.haksikmokjang.chat.chatform.dto.ChatFormAnswerRequest;
@@ -13,35 +14,46 @@ import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionResultResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatFormResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatFormResultResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatNearbyStoreResponse;
+import com.example.haksikmokjang.chat.chatform.dto.ChatStoreDetailResponse;
+import com.example.haksikmokjang.chat.chatform.dto.ChatStoreMenuResponse;
+import com.example.haksikmokjang.chat.chatform.dto.ChatStoreReviewResponse;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormAnswerRepository;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormOptionRepository;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormRepository;
+import com.example.haksikmokjang.chat.chatform.repository.ChatStoreReviewRepository;
 import com.example.haksikmokjang.chat.chatmessage.dto.ChatMessageResponse;
 import com.example.haksikmokjang.chat.chatmessage.service.ChatMessageService;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoom;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomMemberRepository;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomRepository;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
+import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
+import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Store;
+import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
+import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatFormService {
+
+    private static final int CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS = 1;
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
@@ -51,6 +63,9 @@ public class ChatFormService {
     private final ChatMessageService chatMessageService;
     private final StoreRepository storeRepository;
     private final UserProfileRepository userProfileRepository;
+    private final MenuRepository menuRepository;
+    private final ChatStoreReviewRepository chatStoreReviewRepository;
+    private final FileAttachmentRepository fileAttachmentRepository;
 
     // 폼 생성 후 채팅방에 FORM 메시지까지 저장
     @Transactional
@@ -62,8 +77,8 @@ public class ChatFormService {
             throw new CustomException(ErrorCode.CHAT_ROOM_CLOSED);
         }
 
-        ChatFormType formType = request.getFormType() == null ? ChatFormType.VOTE : request.getFormType();
-        String title = getRequiredText(request.getTitle(), "폼 제목");
+        ChatFormType formType = normalizeFormType(request.getFormType());
+        String title = getRequiredText(request.getTitle());
 
         ChatForm chatForm = chatFormRepository.save(new ChatForm(
                 chatRoom,
@@ -102,14 +117,15 @@ public class ChatFormService {
         checkChatRoomMember(chatForm.getChatRoom(), loginMember);
 
         List<ChatFormOption> options = chatFormOptionRepository.findAllByChatFormOrderByOptionOrderAsc(chatForm);
-        Optional<ChatFormAnswer> myAnswer = chatFormAnswerRepository.findByChatFormAndMember(chatForm, loginMember);
-        Long mySelectedOptionId = myAnswer
-                .map(answer -> answer.getChatFormOption().getChatFormOptionId())
-                .orElse(null);
+        Map<ChatFormOptionType, Long> mySelectedOptionIds = getMySelectedOptionIds(chatForm, loginMember);
 
         List<ChatFormOptionResponse> optionResponses = options.stream()
-                .map(option -> createOptionResponse(option, mySelectedOptionId))
+                .map(option -> createOptionResponse(option, mySelectedOptionIds))
                 .toList();
+
+        Long mySelectedOptionId = mySelectedOptionIds.get(ChatFormOptionType.VOTE);
+        Long mySelectedPlaceOptionId = mySelectedOptionIds.get(ChatFormOptionType.PLACE);
+        Long mySelectedTimeOptionId = mySelectedOptionIds.get(ChatFormOptionType.TIME);
 
         return ChatFormResponse.builder()
                 .formId(chatForm.getChatFormId())
@@ -118,15 +134,20 @@ public class ChatFormService {
                 .formType(chatForm.getFormType().name())
                 .title(chatForm.getTitle())
                 .closedYn(chatForm.getClosedYn())
+                .canCloseByMe(canCloseForm(chatForm, loginMember))
                 .mySelectedOptionId(mySelectedOptionId)
+                .mySelectedPlaceOptionId(mySelectedPlaceOptionId)
+                .mySelectedTimeOptionId(mySelectedTimeOptionId)
                 .optionCount(options.size())
                 .answerCount(chatFormAnswerRepository.countByChatForm(chatForm))
+                .placeAnswerCount(chatFormAnswerRepository.countByChatFormAndAnswerType(chatForm, ChatFormOptionType.PLACE))
+                .timeAnswerCount(chatFormAnswerRepository.countByChatFormAndAnswerType(chatForm, ChatFormOptionType.TIME))
                 .options(optionResponses)
                 .createdAt(chatForm.getCreatedAt())
                 .build();
     }
 
-    // 장소 투표 폼에 후보 추가
+    // 지도 약속 폼에 장소 후보 또는 시간 후보 추가
     @Transactional
     public ChatFormOptionResponse addOption(Long formId, ChatFormOptionRequest request, Member loginMember) {
         ChatForm chatForm = getChatForm(formId);
@@ -140,7 +161,8 @@ public class ChatFormService {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        int optionOrder = chatFormOptionRepository.countByChatForm(chatForm) + 1;
+        ChatFormOptionType optionType = getRequestOptionType(request);
+        int optionOrder = chatFormOptionRepository.countByChatFormAndOptionType(chatForm, optionType) + 1;
 
         ChatFormOption option = createOptionEntity(
                 chatForm,
@@ -151,10 +173,10 @@ public class ChatFormService {
 
         ChatFormOption savedOption = chatFormOptionRepository.save(option);
 
-        return createOptionResponse(savedOption, null);
+        return createOptionResponse(savedOption, getMySelectedOptionIds(chatForm, loginMember));
     }
 
-    // 응답 제출 또는 수정
+    // 폼 응답 제출 또는 수정
     @Transactional
     public ChatFormResponse answerForm(Long formId, ChatFormAnswerRequest request, Member loginMember) {
         ChatForm chatForm = getChatForm(formId);
@@ -175,7 +197,9 @@ public class ChatFormService {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        chatFormAnswerRepository.findByChatFormAndMember(chatForm, loginMember)
+        ChatFormOptionType answerType = getOptionType(selectedOption, chatForm);
+
+        chatFormAnswerRepository.findByChatFormAndMemberAndAnswerType(chatForm, loginMember, answerType)
                 .ifPresentOrElse(
                         answer -> answer.changeOption(selectedOption),
                         () -> chatFormAnswerRepository.save(new ChatFormAnswer(chatForm, selectedOption, loginMember))
@@ -184,7 +208,26 @@ public class ChatFormService {
         return getForm(formId, loginMember);
     }
 
-    // 결과 조회
+    // 모든 폼 종료
+    @Transactional
+    public ChatFormResponse closeForm(Long formId, Member loginMember) {
+        ChatForm chatForm = getChatForm(formId);
+        checkChatRoomMember(chatForm.getChatRoom(), loginMember);
+
+        if (!canCloseForm(chatForm, loginMember)) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        chatForm.close();
+
+        if (chatForm.isPlaceForm()) {
+            confirmAppointmentByTimeVoteResult(chatForm);
+        }
+
+        return getForm(formId, loginMember);
+    }
+
+    // 폼 결과 조회
     public ChatFormResultResponse getResult(Long formId, Member loginMember) {
         ChatForm chatForm = getChatForm(formId);
         checkChatRoomMember(chatForm.getChatRoom(), loginMember);
@@ -197,23 +240,28 @@ public class ChatFormService {
                         Collectors.counting()
                 ));
 
-        Long mySelectedOptionId = chatFormAnswerRepository.findByChatFormAndMember(chatForm, loginMember)
-                .map(answer -> answer.getChatFormOption().getChatFormOptionId())
-                .orElse(null);
+        Map<ChatFormOptionType, Long> mySelectedOptionIds = getMySelectedOptionIds(chatForm, loginMember);
 
         List<ChatFormOptionResultResponse> results = options.stream()
-                .map(option -> ChatFormOptionResultResponse.builder()
-                        .optionId(option.getChatFormOptionId())
-                        .optionText(option.getOptionText())
-                        .placeSource(option.getPlaceSource() == null ? null : option.getPlaceSource().name())
-                        .storeId(option.getStoreId())
-                        .placeName(option.getPlaceName())
-                        .address(option.getAddress())
-                        .latitude(option.getLatitude())
-                        .longitude(option.getLongitude())
-                        .voteCount(voteCountMap.getOrDefault(option.getChatFormOptionId(), 0L).intValue())
-                        .selectedByMe(option.getChatFormOptionId().equals(mySelectedOptionId))
-                        .build())
+                .map(option -> {
+                    ChatFormOptionType optionType = getOptionType(option, chatForm);
+
+                    return ChatFormOptionResultResponse.builder()
+                            .optionId(option.getChatFormOptionId())
+                            .optionType(optionType.name())
+                            .optionText(option.getOptionText())
+                            .placeSource(option.getPlaceSource() == null ? null : option.getPlaceSource().name())
+                            .storeId(option.getStoreId())
+                            .placeName(option.getPlaceName())
+                            .address(option.getAddress())
+                            .latitude(option.getLatitude())
+                            .longitude(option.getLongitude())
+                            .appointmentAt(option.getAppointmentAt())
+                            .memo(option.getMemo())
+                            .voteCount(voteCountMap.getOrDefault(option.getChatFormOptionId(), 0L).intValue())
+                            .selectedByMe(option.getChatFormOptionId().equals(mySelectedOptionIds.get(optionType)))
+                            .build();
+                })
                 .toList();
 
         return ChatFormResultResponse.builder()
@@ -221,7 +269,11 @@ public class ChatFormService {
                 .formType(chatForm.getFormType().name())
                 .title(chatForm.getTitle())
                 .totalVoteCount(answers.size())
-                .mySelectedOptionId(mySelectedOptionId)
+                .placeVoteCount(chatFormAnswerRepository.countByChatFormAndAnswerType(chatForm, ChatFormOptionType.PLACE))
+                .timeVoteCount(chatFormAnswerRepository.countByChatFormAndAnswerType(chatForm, ChatFormOptionType.TIME))
+                .mySelectedOptionId(mySelectedOptionIds.get(ChatFormOptionType.VOTE))
+                .mySelectedPlaceOptionId(mySelectedOptionIds.get(ChatFormOptionType.PLACE))
+                .mySelectedTimeOptionId(mySelectedOptionIds.get(ChatFormOptionType.TIME))
                 .results(results)
                 .build();
     }
@@ -243,6 +295,54 @@ public class ChatFormService {
                 .toList();
     }
 
+    // 지도 식당 상세 조회
+    public ChatStoreDetailResponse getStoreDetail(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        List<ChatStoreMenuResponse> menus = menuRepository.findByStore_StoreId(storeId).stream()
+                .map(menu -> ChatStoreMenuResponse.builder()
+                        .menuId(menu.getMenuId())
+                        .name(menu.getName())
+                        .price(menu.getPrice())
+                        .salesStatus(menu.getSalesStatus() == null ? null : menu.getSalesStatus().name())
+                        .imageId(getFirstImageId("MENU", menu.getMenuId()))
+                        .build())
+                .toList();
+
+        List<StoreReview> activeReviews = chatStoreReviewRepository
+                .findByStore_StoreIdAndStatusOrderByCreatedAtDesc(storeId, ReviewStatus.ACTIVE);
+
+        List<ChatStoreReviewResponse> reviews = activeReviews.stream()
+                .map(review -> ChatStoreReviewResponse.builder()
+                        .reviewId(review.getReviewId())
+                        .rating(review.getRating())
+                        .content(review.getContent())
+                        .writerNickname(getNickname(review.getMember()))
+                        .createdAt(review.getCreatedAt())
+                        .ownerReply(review.getOwnerReply())
+                        .imageIds(getReviewImageIds(review.getReviewId()))
+                        .build())
+                .toList();
+
+        return ChatStoreDetailResponse.builder()
+                .storeId(store.getStoreId())
+                .name(store.getName())
+                .address(store.getAddress())
+                .category(store.getCategory())
+                .phone(store.getPhone())
+                .operatingHours(store.getOperatingHours())
+                .businessStatus(store.getBusinessStatus() == null ? null : store.getBusinessStatus().name())
+                .latitude(store.getLatitude())
+                .longitude(store.getLongitude())
+                .imageId(getFirstImageId("STORE", store.getStoreId()))
+                .averageRating(getAverageRating(activeReviews))
+                .reviewCount(activeReviews.size())
+                .menus(menus)
+                .reviews(reviews)
+                .build();
+    }
+
     private ChatFormOption createOptionEntity(
             ChatForm chatForm,
             Member loginMember,
@@ -253,6 +353,7 @@ public class ChatFormService {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
+        ChatFormOptionType optionType = getRequestOptionType(request);
         String optionText = request.getOptionText();
         ChatPlaceSource placeSource = request.getPlaceSource();
         Long storeId = request.getStoreId();
@@ -261,9 +362,27 @@ public class ChatFormService {
         Double latitude = request.getLatitude();
         Double longitude = request.getLongitude();
         String mapUrl = request.getMapUrl();
+        LocalDateTime appointmentAt = request.getAppointmentAt();
+        String memo = getBlankToNull(request.getMemo());
 
-        if (chatForm.getFormType() == ChatFormType.VOTE) {
-            optionText = getRequiredText(optionText, "선택지");
+        if (chatForm.isVoteForm()) {
+            optionType = ChatFormOptionType.VOTE;
+            optionText = getRequiredText(optionText);
+            placeSource = null;
+            storeId = null;
+            placeName = null;
+            address = null;
+            latitude = null;
+            longitude = null;
+            mapUrl = null;
+            appointmentAt = null;
+            memo = null;
+        } else if (optionType == ChatFormOptionType.TIME) {
+            if (appointmentAt == null) {
+                throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+            }
+
+            optionText = getBlankToDefault(optionText, formatAppointmentOptionText(appointmentAt));
             placeSource = null;
             storeId = null;
             placeName = null;
@@ -272,6 +391,10 @@ public class ChatFormService {
             longitude = null;
             mapUrl = null;
         } else {
+            optionType = ChatFormOptionType.PLACE;
+            appointmentAt = null;
+            memo = null;
+
             if (placeSource == null) {
                 placeSource = ChatPlaceSource.CUSTOM;
             }
@@ -287,7 +410,8 @@ public class ChatFormService {
                 optionText = store.getName();
             } else {
                 placeSource = ChatPlaceSource.CUSTOM;
-                placeName = getRequiredText(placeName, "장소명");
+                storeId = null;
+                placeName = getRequiredText(placeName);
                 optionText = getBlankToDefault(optionText, placeName);
             }
         }
@@ -295,6 +419,7 @@ public class ChatFormService {
         return new ChatFormOption(
                 chatForm,
                 loginMember,
+                optionType,
                 optionText,
                 optionOrder,
                 placeSource,
@@ -303,13 +428,21 @@ public class ChatFormService {
                 address,
                 latitude,
                 longitude,
-                mapUrl
+                mapUrl,
+                appointmentAt,
+                memo
         );
     }
 
-    private ChatFormOptionResponse createOptionResponse(ChatFormOption option, Long mySelectedOptionId) {
+    private ChatFormOptionResponse createOptionResponse(
+            ChatFormOption option,
+            Map<ChatFormOptionType, Long> mySelectedOptionIds
+    ) {
+        ChatFormOptionType optionType = getOptionType(option, option.getChatForm());
+
         return ChatFormOptionResponse.builder()
                 .optionId(option.getChatFormOptionId())
+                .optionType(optionType.name())
                 .optionText(option.getOptionText())
                 .optionOrder(option.getOptionOrder())
                 .placeSource(option.getPlaceSource() == null ? null : option.getPlaceSource().name())
@@ -319,15 +452,128 @@ public class ChatFormService {
                 .latitude(option.getLatitude())
                 .longitude(option.getLongitude())
                 .mapUrl(option.getMapUrl())
+                .appointmentAt(option.getAppointmentAt())
+                .memo(option.getMemo())
                 .createdByMemberId(option.getCreatedByMember().getMemberId())
                 .createdByNickname(getNickname(option.getCreatedByMember()))
-                .selectedByMe(option.getChatFormOptionId().equals(mySelectedOptionId))
+                .selectedByMe(option.getChatFormOptionId().equals(mySelectedOptionIds.get(optionType)))
                 .build();
+    }
+
+    private Map<ChatFormOptionType, Long> getMySelectedOptionIds(ChatForm chatForm, Member loginMember) {
+        Map<ChatFormOptionType, Long> selectedOptionIds = new HashMap<>();
+
+        List<ChatFormAnswer> answers = chatFormAnswerRepository.findAllByChatFormAndMember(chatForm, loginMember);
+
+        for (ChatFormAnswer answer : answers) {
+            ChatFormOptionType answerType = answer.getAnswerType();
+
+            if (answerType == null) {
+                answerType = getOptionType(answer.getChatFormOption(), chatForm);
+            }
+
+            selectedOptionIds.put(answerType, answer.getChatFormOption().getChatFormOptionId());
+        }
+
+        return selectedOptionIds;
+    }
+
+    private boolean canCloseForm(ChatForm chatForm, Member loginMember) {
+        if (chatForm == null || loginMember == null || chatForm.isClosed()) {
+            return false;
+        }
+
+        return chatForm.getCreator().getMemberId().equals(loginMember.getMemberId());
+    }
+
+    private void confirmAppointmentByTimeVoteResult(ChatForm chatForm) {
+        ChatFormOption winner = getWinningOption(chatForm, ChatFormOptionType.TIME);
+
+        if (winner == null || winner.getAppointmentAt() == null) {
+            return;
+        }
+
+        LocalDateTime appointmentAt = winner.getAppointmentAt();
+        LocalDateTime autoCloseAt = appointmentAt.plusHours(CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS);
+
+        chatForm.getChatRoom().confirmAppointment(appointmentAt, autoCloseAt);
+    }
+
+    private ChatFormOption getWinningOption(ChatForm chatForm, ChatFormOptionType optionType) {
+        List<ChatFormOption> options = chatFormOptionRepository.findAllByChatFormOrderByOptionOrderAsc(chatForm).stream()
+                .filter(option -> getOptionType(option, chatForm) == optionType)
+                .toList();
+
+        if (options.isEmpty()) {
+            return null;
+        }
+
+        ChatFormOption winner = null;
+        int winnerVoteCount = -1;
+
+        for (ChatFormOption option : options) {
+            int voteCount = chatFormAnswerRepository.countByChatFormOption(option);
+
+            if (winner == null || voteCount > winnerVoteCount) {
+                winner = option;
+                winnerVoteCount = voteCount;
+            }
+        }
+
+        if (winnerVoteCount <= 0) {
+            return null;
+        }
+
+        return winner;
+    }
+
+    private ChatFormType normalizeFormType(ChatFormType formType) {
+        if (formType == null) {
+            return ChatFormType.VOTE;
+        }
+
+        if (formType == ChatFormType.VOTE) {
+            return ChatFormType.VOTE;
+        }
+
+        return ChatFormType.PLACE;
+    }
+
+    private ChatFormOptionType getRequestOptionType(ChatFormOptionRequest request) {
+        if (request == null) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        if (request.getOptionType() != null) {
+            return request.getOptionType();
+        }
+
+        if (request.getAppointmentAt() != null) {
+            return ChatFormOptionType.TIME;
+        }
+
+        return ChatFormOptionType.PLACE;
+    }
+
+    private ChatFormOptionType getOptionType(ChatFormOption option, ChatForm chatForm) {
+        if (option.getOptionType() != null) {
+            return option.getOptionType();
+        }
+
+        if (chatForm != null && chatForm.isVoteForm()) {
+            return ChatFormOptionType.VOTE;
+        }
+
+        if (option.getAppointmentAt() != null) {
+            return ChatFormOptionType.TIME;
+        }
+
+        return ChatFormOptionType.PLACE;
     }
 
     private String getFormCardMessage(ChatForm chatForm) {
         if (chatForm.getFormType() == ChatFormType.PLACE) {
-            return "[장소 투표] " + chatForm.getTitle();
+            return "[약속 투표] " + chatForm.getTitle();
         }
 
         return "[투표] " + chatForm.getTitle();
@@ -350,12 +596,49 @@ public class ChatFormService {
     }
 
     private String getNickname(Member member) {
+        if (member == null) {
+            return "회원";
+        }
+
         return userProfileRepository.findByMember(member)
                 .map(UserProfile::getNickname)
                 .orElse(member.getLoginId());
     }
 
-    private String getRequiredText(String text, String fieldName) {
+    private Long getFirstImageId(String targetType, Long targetId) {
+        return fileAttachmentRepository.findByTargetTypeAndTargetId(targetType, targetId).stream()
+                .map(FileAttachment::getFileId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private List<Long> getReviewImageIds(Long reviewId) {
+        return fileAttachmentRepository.findByTargetTypeAndTargetId("REVIEW", reviewId).stream()
+                .map(FileAttachment::getFileId)
+                .toList();
+    }
+
+    private Double getAverageRating(List<StoreReview> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return 0.0;
+        }
+
+        double average = reviews.stream()
+                .filter(review -> review.getRating() != null)
+                .mapToInt(StoreReview::getRating)
+                .average()
+                .orElse(0.0);
+
+        return Math.round(average * 10.0) / 10.0;
+    }
+
+    private String formatAppointmentOptionText(LocalDateTime appointmentAt) {
+        return appointmentAt.getMonthValue() + "월 "
+                + appointmentAt.getDayOfMonth() + "일 "
+                + String.format("%02d:%02d", appointmentAt.getHour(), appointmentAt.getMinute());
+    }
+
+    private String getRequiredText(String text) {
         if (text == null || text.trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
@@ -366,6 +649,14 @@ public class ChatFormService {
     private String getBlankToDefault(String value, String defaultValue) {
         if (value == null || value.trim().isEmpty()) {
             return defaultValue;
+        }
+
+        return value.trim();
+    }
+
+    private String getBlankToNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
         }
 
         return value.trim();

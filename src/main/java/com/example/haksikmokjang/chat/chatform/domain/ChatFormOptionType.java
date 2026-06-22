@@ -1,8 +1,7 @@
 package com.example.haksikmokjang.chat.chatform.domain;
 
-public enum ChatFormType {
+public enum ChatFormOptionType {
     VOTE,
     PLACE,
-    TIME,
-    APPOINTMENT
+    TIME
 }
