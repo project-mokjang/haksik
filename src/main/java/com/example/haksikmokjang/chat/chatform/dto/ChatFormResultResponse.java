@@ -12,6 +12,10 @@ public class ChatFormResultResponse {
     private String formType;
     private String title;
     private int totalVoteCount;
+    private int placeVoteCount;
+    private int timeVoteCount;
     private Long mySelectedOptionId;
+    private Long mySelectedPlaceOptionId;
+    private Long mySelectedTimeOptionId;
     private List<ChatFormOptionResultResponse> results;
 }

@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ChatReviewRequest {
-
     private Long targetMemberId;
     private Integer mannerScore;
     private Boolean noShow;

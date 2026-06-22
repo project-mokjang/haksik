@@ -18,29 +18,31 @@ public class ChatFormAnswer extends BaseEntity {
     @Column(name = "chat_form_answer_id")
     private Long chatFormAnswerId;
 
-    // 응답한 폼
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_form_id", nullable = false)
     private ChatForm chatForm;
 
-    // 선택한 선택지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_form_option_id", nullable = false)
     private ChatFormOption chatFormOption;
 
-    // 응답한 회원
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "answer_type", length = 20)
+    private ChatFormOptionType answerType;
 
     public ChatFormAnswer(ChatForm chatForm, ChatFormOption chatFormOption, Member member) {
         this.chatForm = chatForm;
         this.chatFormOption = chatFormOption;
         this.member = member;
+        this.answerType = chatFormOption.getOptionType();
     }
 
-    // 다시 투표하면 기존 응답을 수정한다
     public void changeOption(ChatFormOption chatFormOption) {
         this.chatFormOption = chatFormOption;
+        this.answerType = chatFormOption.getOptionType();
     }
 }

@@ -531,6 +531,7 @@ function submitVoteForm() {
             title: title,
             options: options.map(function (optionText) {
                 return {
+                    optionType: "VOTE",
                     optionText: optionText
                 };
             })
@@ -556,7 +557,7 @@ function submitVoteForm() {
         });
 }
 
-// 장소 투표 폼 생성 모달 열기
+// 약속 장소/시간 투표 생성 모달 열기
 function openPlaceFormCreateModal() {
     closeChatFormTypeModal();
 
@@ -578,7 +579,7 @@ function openPlaceFormCreateModal() {
     }
 }
 
-// 장소 투표 폼 생성 모달 닫기
+// 약속 장소/시간 투표 생성 모달 닫기
 function closePlaceFormCreateModal() {
     const modal = document.getElementById("placeFormCreateModal");
 
@@ -587,7 +588,7 @@ function closePlaceFormCreateModal() {
     }
 }
 
-// 장소 투표 폼 생성
+// 약속 장소/시간 투표 생성
 function submitPlaceForm() {
     const chatRoomId = getChatRoomId();
     const titleInput = document.getElementById("placeFormTitleInput");
@@ -599,7 +600,7 @@ function submitPlaceForm() {
     const title = titleInput.value.trim();
 
     if (title === "") {
-        alert("장소 투표 제목을 입력해 주세요.");
+        alert("약속 투표 제목을 입력해 주세요.");
         titleInput.focus();
         return;
     }
@@ -637,7 +638,7 @@ function submitPlaceForm() {
             }
         })
         .catch(function () {
-            alert("장소 투표 폼 생성에 실패했습니다.");
+            alert("약속 투표 폼 생성에 실패했습니다.");
         });
 }
 
@@ -718,10 +719,36 @@ function closeVoteFormDetailModal() {
 // 일반 투표 상세 렌더링
 function renderVoteFormDetail(form) {
     const title = document.getElementById("voteDetailTitle");
+    const meta = document.getElementById("voteDetailMeta");
     const optionList = document.getElementById("voteDetailOptionList");
+    const closeButton = document.getElementById("voteCloseFormButton");
+    const closedText = document.getElementById("voteClosedText");
+    const closed = isFormClosed(form);
 
     if (title) {
         title.textContent = form.title || "투표";
+    }
+
+    if (meta) {
+        meta.textContent = closed ? "종료된 투표입니다. 결과만 확인할 수 있습니다." : "원하는 선택지를 골라 투표해 주세요.";
+    }
+
+    if (closedText) {
+        closedText.classList.toggle("hidden", !closed);
+    }
+
+    if (closeButton) {
+        if (canCloseChatForm(form)) {
+            closeButton.classList.remove("hidden");
+            closeButton.disabled = false;
+            closeButton.onclick = function () {
+                closeChatForm(form.formId, form.formType);
+            };
+        } else {
+            closeButton.classList.add("hidden");
+            closeButton.disabled = true;
+            closeButton.onclick = null;
+        }
     }
 
     if (!optionList) {
@@ -730,26 +757,32 @@ function renderVoteFormDetail(form) {
 
     optionList.innerHTML = "";
 
-    if (!form.options || form.options.length === 0) {
+    const voteOptions = getOptionsByType(form, "VOTE");
+
+    if (voteOptions.length === 0) {
         optionList.innerHTML = `<div class="form-empty-text">선택지가 없습니다.</div>`;
         return;
     }
 
-    form.options.forEach(function (option) {
+    voteOptions.forEach(function (option) {
         const selectedClass = option.selectedByMe ? "selected" : "";
         const optionButton = document.createElement("button");
         optionButton.type = "button";
         optionButton.className = "vote-option-button " + selectedClass;
+        optionButton.disabled = closed;
         optionButton.innerHTML = `
             <span>${escapeHtml(option.optionText || "선택지")}</span>
-            <strong>${option.selectedByMe ? "내 선택" : "선택"}</strong>
+            <strong>${getVoteOptionButtonText(option, closed)}</strong>
         `;
-        optionButton.addEventListener("click", function () {
-            submitFormAnswer(form.formId, option.optionId, function (updatedForm) {
-                renderVoteFormDetail(updatedForm);
-                loadVoteFormResult(form.formId);
+
+        if (!closed) {
+            optionButton.addEventListener("click", function () {
+                submitFormAnswer(form.formId, option.optionId, function (updatedForm) {
+                    renderVoteFormDetail(updatedForm);
+                    loadVoteFormResult(form.formId);
+                });
             });
-        });
+        }
 
         optionList.appendChild(optionButton);
     });
@@ -809,14 +842,20 @@ function loadVoteFormResult(formId) {
 
 // 일반 투표 결과 렌더링
 function renderVoteFormResult(result, resultBox) {
-    const totalVoteCount = Number(result.totalVoteCount || 0);
+    const voteResults = (result.results || []).filter(function (item) {
+        return getOptionTypeValue(item) === "VOTE";
+    });
 
-    if (!result.results || result.results.length === 0) {
+    const totalVoteCount = voteResults.reduce(function (sum, item) {
+        return sum + Number(item.voteCount || 0);
+    }, 0);
+
+    if (voteResults.length === 0) {
         resultBox.innerHTML = `<div class="form-empty-text">아직 결과가 없습니다.</div>`;
         return;
     }
 
-    resultBox.innerHTML = result.results.map(function (item) {
+    resultBox.innerHTML = voteResults.map(function (item) {
         const voteCount = Number(item.voteCount || 0);
         const percent = totalVoteCount === 0 ? 0 : Math.round((voteCount / totalVoteCount) * 100);
         const selectedClass = item.selectedByMe ? "selected" : "";
@@ -835,7 +874,67 @@ function renderVoteFormResult(result, resultBox) {
     }).join("");
 }
 
-// 장소 투표 지도 모달 열기
+// 투표 선택 버튼 문구
+function getVoteOptionButtonText(option, closed) {
+    if (closed) {
+        return option.selectedByMe ? "내 선택" : "종료됨";
+    }
+
+    return option.selectedByMe ? "내 선택" : "선택";
+}
+
+// 현재 로그인 사용자가 폼을 종료할 수 있는지 확인
+function canCloseChatForm(form) {
+    if (!form || isFormClosed(form)) {
+        return false;
+    }
+
+    if (form.canCloseByMe === true) {
+        return true;
+    }
+
+    return String(form.creatorId) === String(currentLoginMemberId);
+}
+
+// 폼 종료
+function closeChatForm(formId, formType) {
+    if (!formId) {
+        alert("종료할 폼 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    if (!confirm("투표를 종료할까요? 종료 후에는 결과만 확인할 수 있습니다.")) {
+        return;
+    }
+
+    fetch("/api/chat/forms/" + formId + "/close", {
+        method: "POST"
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (updatedForm) {
+            if (updatedForm.formType === "PLACE" || formType === "PLACE") {
+                currentPlaceFormDetail = updatedForm;
+                renderPlaceFormMapShell(updatedForm);
+                loadPlaceFormResult();
+            } else {
+                renderVoteFormDetail(updatedForm);
+                loadVoteFormResult(updatedForm.formId);
+            }
+
+            alert("투표가 종료되었습니다.");
+        })
+        .catch(function () {
+            alert("투표 종료에 실패했습니다.");
+        });
+}
+
+// 약속 장소/시간 투표 기본 모달 열기
 function openPlaceFormMapModal(formId, form) {
     currentPlaceFormId = formId;
 
@@ -846,13 +945,58 @@ function openPlaceFormMapModal(formId, form) {
     }
 
     modal.classList.remove("hidden");
-    hideCustomPlacePanel();
+    closeTimeOptionPanel();
 
     if (form) {
         currentPlaceFormDetail = form;
         renderPlaceFormMapShell(form);
+        return;
+    }
+
+    reloadPlaceFormDetail();
+}
+
+// 약속 장소/시간 투표 기본 모달 닫기
+function closePlaceFormMapModal() {
+    const modal = document.getElementById("placeFormMapModal");
+
+    closeAppointmentMapScreen();
+    closeTimeOptionPanel();
+
+    currentPlaceFormId = null;
+    currentPlaceFormDetail = null;
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 장소 지도 화면 열기
+function openAppointmentMapScreen() {
+    if (!currentPlaceFormId) {
+        alert("약속 투표 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표입니다. 결과만 확인할 수 있습니다.");
+        return;
+    }
+
+    const modal = document.getElementById("appointmentPlaceMapModal");
+
+    if (!modal) {
+        return;
+    }
+
+    closeTimeOptionPanel();
+    modal.classList.remove("hidden");
+    hideCustomPlacePanel();
+
+    if (currentPlaceFormDetail) {
+        renderPlaceOptionList(currentPlaceFormDetail);
         setTimeout(function () {
-            initPlaceVoteMap(form);
+            initPlaceVoteMap(currentPlaceFormDetail);
         }, 80);
         return;
     }
@@ -860,14 +1004,13 @@ function openPlaceFormMapModal(formId, form) {
     reloadPlaceFormDetail();
 }
 
-// 장소 투표 지도 모달 닫기
-function closePlaceFormMapModal() {
-    const modal = document.getElementById("placeFormMapModal");
+// 장소 지도 화면 닫기
+function closeAppointmentMapScreen() {
+    const modal = document.getElementById("appointmentPlaceMapModal");
 
-    currentPlaceFormId = null;
-    currentPlaceFormDetail = null;
     placeAddMode = false;
     pendingCustomPlace = null;
+    hideCustomPlacePanel();
     clearPlaceMarkers();
     clearStoreMarkers();
 
@@ -878,6 +1021,12 @@ function closePlaceFormMapModal() {
     if (modal) {
         modal.classList.add("hidden");
     }
+}
+
+// 장소 지도 화면 열림 여부
+function isAppointmentMapScreenOpen() {
+    const modal = document.getElementById("appointmentPlaceMapModal");
+    return modal !== null && !modal.classList.contains("hidden");
 }
 
 // 장소 폼 상세 다시 조회
@@ -897,57 +1046,177 @@ function reloadPlaceFormDetail() {
         .then(function (form) {
             currentPlaceFormDetail = form;
             renderPlaceFormMapShell(form);
-            setTimeout(function () {
-                initPlaceVoteMap(form);
-            }, 80);
+
+            if (isAppointmentMapScreenOpen() && !isFormClosed(form)) {
+                setTimeout(function () {
+                    initPlaceVoteMap(form);
+                }, 80);
+            }
         })
         .catch(function () {
-            alert("장소 투표 정보를 불러오지 못했습니다.");
+            alert("약속 투표 정보를 불러오지 못했습니다.");
         });
 }
 
-// 장소 투표 모달 기본 정보 렌더링
+// 약속 장소/시간 투표 기본 모달 렌더링
 function renderPlaceFormMapShell(form) {
     const title = document.getElementById("placeMapTitle");
     const summary = document.getElementById("placeMapSummary");
+    const mapSummary = document.getElementById("appointmentMapSummary");
+    const closeButton = document.getElementById("placeCloseFormButton");
+    const closedText = document.getElementById("placeClosedText");
+    const placeAddButton = document.getElementById("placeAddButton");
+    const timeAddButton = document.getElementById("timeAddButton");
+    const closed = isFormClosed(form);
 
     if (title) {
-        title.textContent = form.title || "장소 투표";
+        title.textContent = form.title || "약속 장소/시간 투표";
     }
+
+    const summaryText = "장소 " + Number(form.placeAnswerCount || 0) + "명 · 시간 " + Number(form.timeAnswerCount || 0) + "명" + (closed ? " · 종료됨" : "");
 
     if (summary) {
-        summary.textContent = "참여 " + Number(form.answerCount || 0) + "명";
+        summary.textContent = summaryText;
     }
 
+    if (mapSummary) {
+        mapSummary.textContent = summaryText;
+    }
+
+    if (closeButton) {
+        if (canCloseChatForm(form)) {
+            closeButton.classList.remove("hidden");
+            closeButton.disabled = false;
+            closeButton.onclick = function () {
+                closeChatForm(form.formId, form.formType);
+            };
+        } else {
+            closeButton.classList.add("hidden");
+            closeButton.disabled = true;
+            closeButton.onclick = null;
+        }
+    }
+
+    if (closedText) {
+        closedText.classList.toggle("hidden", !closed);
+    }
+
+    if (placeAddButton) {
+        placeAddButton.disabled = closed;
+    }
+
+    if (timeAddButton) {
+        timeAddButton.disabled = closed;
+    }
+
+    setPlaceModalClosedMode(closed);
     renderPlaceOptionList(form);
+    renderTimeOptionList(form);
+
+    if (closed) {
+        closeAppointmentMapScreen();
+        loadPlaceFormResult();
+        return;
+    }
+
+    if (isAppointmentMapScreenOpen()) {
+        setTimeout(function () {
+            initPlaceVoteMap(form);
+        }, 80);
+    }
+}
+
+// 종료 여부에 따라 기본 화면/결과 화면 전환
+function setPlaceModalClosedMode(closed) {
+    const openPanel = document.getElementById("placeOpenPanel");
+    const closedPanel = document.getElementById("placeClosedPanel");
+
+    if (openPanel) {
+        openPanel.classList.toggle("hidden", closed);
+    }
+
+    if (closedPanel) {
+        closedPanel.classList.toggle("hidden", !closed);
+    }
 }
 
 // 장소 후보 목록 렌더링
 function renderPlaceOptionList(form) {
-    const list = document.getElementById("placeOptionList");
+    const lists = [
+        document.getElementById("placeOptionList"),
+        document.getElementById("mapPlaceOptionList")
+    ].filter(function (list) {
+        return list !== null;
+    });
+
+    if (lists.length === 0) {
+        return;
+    }
+
+    const placeOptions = getOptionsByType(form, "PLACE");
+    const closed = isFormClosed(form);
+    let html = "";
+
+    if (placeOptions.length === 0) {
+        html = `<div class="form-empty-text">아직 장소 후보가 없습니다. 지도 버튼을 눌러 후보를 추가해 주세요.</div>`;
+    } else {
+        html = placeOptions.map(function (option) {
+            const selectedClass = option.selectedByMe ? "selected" : "";
+            const sourceText = option.placeSource === "STORE" ? "점주 등록 가게" : "직접 추가한 장소";
+            const addressText = option.address ? `<div class="place-option-address">${escapeHtml(option.address)}</div>` : "";
+            const nicknameText = option.createdByNickname ? ` · ${escapeHtml(option.createdByNickname)}님 추가` : "";
+
+            return `
+                <div class="place-option-card ${selectedClass}">
+                    <div class="place-option-title">${escapeHtml(option.placeName || option.optionText || "장소")}</div>
+                    <div class="place-option-meta">${sourceText}${nicknameText}</div>
+                    ${addressText}
+                    <button type="button" ${closed ? "disabled" : ""} onclick="submitPlaceVoteOption(${Number(option.optionId)})">
+                        ${closed ? (option.selectedByMe ? "내 선택" : "종료됨") : (option.selectedByMe ? "선택됨" : "이 장소에 투표")}
+                    </button>
+                </div>
+            `;
+        }).join("");
+    }
+
+    lists.forEach(function (list) {
+        list.innerHTML = html;
+    });
+}
+
+// 시간 후보 목록 렌더링
+function renderTimeOptionList(form) {
+    const list = document.getElementById("timeOptionList");
 
     if (!list) {
         return;
     }
 
-    if (!form.options || form.options.length === 0) {
-        list.innerHTML = `<div class="form-empty-text">아직 장소 후보가 없습니다. 장소 추가 버튼으로 후보를 추가해 주세요.</div>`;
+    const timeOptions = getOptionsByType(form, "TIME");
+    const closed = isFormClosed(form);
+
+    if (timeOptions.length === 0) {
+        list.innerHTML = `<div class="form-empty-text">아직 시간 후보가 없습니다.</div>`;
         return;
     }
 
-    list.innerHTML = form.options.map(function (option) {
+    list.innerHTML = timeOptions.map(function (option) {
         const selectedClass = option.selectedByMe ? "selected" : "";
-        const sourceText = option.placeSource === "STORE" ? "점주 등록 가게" : "직접 추가한 장소";
-        const addressText = option.address ? `<div class="place-option-address">${escapeHtml(option.address)}</div>` : "";
-        const nicknameText = option.createdByNickname ? ` · ${escapeHtml(option.createdByNickname)}님 추가` : "";
+        const nicknameText = option.createdByNickname ? `${escapeHtml(option.createdByNickname)}님 추가` : "시간 후보";
+        const memoText = option.memo ? `<div class="time-option-meta">${escapeHtml(option.memo)}</div>` : "";
 
         return `
-            <div class="place-option-card ${selectedClass}">
-                <div class="place-option-title">${escapeHtml(option.placeName || option.optionText || "장소")}</div>
-                <div class="place-option-meta">${sourceText}${nicknameText}</div>
-                ${addressText}
-                <button type="button" onclick="submitPlaceVoteOption(${Number(option.optionId)})">
-                    ${option.selectedByMe ? "선택됨" : "이 장소에 투표"}
+            <div class="time-option-card ${selectedClass}">
+                <div class="time-option-main">
+                    <div>
+                        <div class="time-option-title">${escapeHtml(formatAppointmentDisplay(option.appointmentAt) || option.optionText || "시간")}</div>
+                        <div class="time-option-meta">${nicknameText}</div>
+                        ${memoText}
+                    </div>
+                    <div class="time-option-badge">시간</div>
+                </div>
+                <button type="button" ${closed ? "disabled" : ""} onclick="submitTimeVoteOption(${Number(option.optionId)})">
+                    ${closed ? (option.selectedByMe ? "내 선택" : "종료됨") : (option.selectedByMe ? "선택됨" : "이 시간에 투표")}
                 </button>
             </div>
         `;
@@ -958,7 +1227,7 @@ function renderPlaceOptionList(form) {
 function initPlaceVoteMap(form) {
     const mapElement = document.getElementById("placeVoteMap");
 
-    if (!mapElement) {
+    if (!mapElement || isFormClosed(form)) {
         return;
     }
 
@@ -1037,16 +1306,16 @@ function movePlaceMapCenterAndLoadStores(lat, lng) {
 
 // 지도 초기 중심 좌표
 function getPlaceMapInitialCenter(form) {
-    if (form && form.options) {
-        for (let i = 0; i < form.options.length; i++) {
-            const option = form.options[i];
+    const placeOptions = getOptionsByType(form, "PLACE");
 
-            if (isValidCoordinate(option.latitude, option.longitude)) {
-                return {
-                    lat: Number(option.latitude),
-                    lng: Number(option.longitude)
-                };
-            }
+    for (let i = 0; i < placeOptions.length; i++) {
+        const option = placeOptions[i];
+
+        if (isValidCoordinate(option.latitude, option.longitude)) {
+            return {
+                lat: Number(option.latitude),
+                lng: Number(option.longitude)
+            };
         }
     }
 
@@ -1054,17 +1323,6 @@ function getPlaceMapInitialCenter(form) {
         lat: 37.5666103,
         lng: 126.9783882
     };
-}
-
-// 장소 후보 좌표 존재 여부
-function hasPlaceOptionLocation(form) {
-    if (!form || !form.options) {
-        return false;
-    }
-
-    return form.options.some(function (option) {
-        return isValidCoordinate(option.latitude, option.longitude);
-    });
 }
 
 // 좌표 유효 여부
@@ -1081,17 +1339,15 @@ function isValidCoordinate(lat, lng) {
 function renderPlaceMarkers(form) {
     clearPlaceMarkers();
 
-    if (!placeVoteMap || !form || !form.options) {
+    if (!placeVoteMap || !form) {
         return;
     }
 
-    form.options.forEach(function (option) {
+    getOptionsByType(form, "PLACE").forEach(function (option) {
         if (!isValidCoordinate(option.latitude, option.longitude)) {
             return;
         }
 
-        // 점주 등록 가게는 식당 마커(🍽️) 그대로 표시한다.
-        // 직접 추가한 장소만 후보 마커(📍)로 표시한다.
         if (option.placeSource === "STORE") {
             return;
         }
@@ -1132,7 +1388,8 @@ function loadNearbyStoresForPlaceMap(lat, lng) {
         .then(function (stores) {
             renderStoreMarkers(stores || []);
         })
-        .catch(function () {
+        .catch(function (error) {
+            console.error("주변 점주 가게 조회 실패:", error);
             clearStoreMarkers();
         });
 }
@@ -1172,24 +1429,13 @@ function renderStoreMarkers(stores) {
     });
 }
 
-// 이미 후보에 추가된 점주 가게인지 확인
-function hasCandidateStoreOption(storeId) {
-    if (!currentPlaceFormDetail || !currentPlaceFormDetail.options) {
-        return false;
-    }
-
-    return currentPlaceFormDetail.options.some(function (option) {
-        return option.placeSource === "STORE" && String(option.storeId) === String(storeId);
-    });
-}
-
 // 이미 후보에 추가된 점주 가게 옵션 조회
 function getExistingStoreOption(storeId) {
     if (!currentPlaceFormDetail || !currentPlaceFormDetail.options) {
         return null;
     }
 
-    return currentPlaceFormDetail.options.find(function (option) {
+    return getOptionsByType(currentPlaceFormDetail, "PLACE").find(function (option) {
         return option.placeSource === "STORE" && String(option.storeId) === String(storeId);
     }) || null;
 }
@@ -1202,14 +1448,15 @@ function openPlaceOptionInfo(marker, option) {
 
     const sourceText = option.placeSource === "STORE" ? "점주 등록 가게" : "직접 추가한 장소";
     const addressText = option.address ? `<div class="place-info-address">${escapeHtml(option.address)}</div>` : "";
+    const closed = currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail);
 
     placeVoteInfoWindow.setContent(`
         <div class="place-info-window">
             <div class="place-info-title">${escapeHtml(option.placeName || option.optionText || "장소")}</div>
             <div class="place-info-meta">${sourceText}</div>
             ${addressText}
-            <button type="button" onclick="submitPlaceVoteOption(${Number(option.optionId)})">
-                ${option.selectedByMe ? "선택됨" : "이 장소에 투표"}
+            <button type="button" ${closed ? "disabled" : ""} onclick="submitPlaceVoteOption(${Number(option.optionId)})">
+                ${closed ? (option.selectedByMe ? "내 선택" : "종료됨") : (option.selectedByMe ? "선택됨" : "이 장소에 투표")}
             </button>
         </div>
     `);
@@ -1226,15 +1473,22 @@ function openStoreInfo(marker, store) {
     const statusText = store.businessStatus ? ` · ${escapeHtml(store.businessStatus)}` : "";
     const categoryText = store.category ? `${escapeHtml(store.category)}${statusText}` : `점주 등록 가게${statusText}`;
     const addressText = store.address ? `<div class="place-info-address">${escapeHtml(store.address)}</div>` : "";
+    const closed = currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail);
+    const voteButtonHtml = closed
+        ? ""
+        : `<button type="button" onclick="addStoreOptionAndVoteById(${Number(store.storeId)})">이 식당에 투표</button>`;
 
     placeVoteInfoWindow.setContent(`
         <div class="place-info-window">
             <div class="place-info-title">${escapeHtml(store.name || "점주 가게")}</div>
             <div class="place-info-meta">${categoryText}</div>
             ${addressText}
-            <button type="button" onclick="addStoreOptionAndVoteById(${Number(store.storeId)})">
-                이 식당에 투표
-            </button>
+            <div class="place-info-actions">
+                <button type="button" class="place-info-detail-button" onclick="openStoreDetailModal(${Number(store.storeId)})">
+                    식당 보기
+                </button>
+                ${voteButtonHtml}
+            </div>
         </div>
     `);
 
@@ -1243,6 +1497,11 @@ function openStoreInfo(marker, store) {
 
 // 점주 가게 후보 추가 후 바로 투표
 function addStoreOptionAndVoteById(storeId) {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표입니다.");
+        return;
+    }
+
     const store = placeStoreCache[String(storeId)];
 
     if (!store || !currentPlaceFormId) {
@@ -1263,6 +1522,7 @@ function addStoreOptionAndVoteById(storeId) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
+            optionType: "PLACE",
             placeSource: "STORE",
             storeId: Number(store.storeId),
             placeName: store.name,
@@ -1286,7 +1546,6 @@ function addStoreOptionAndVoteById(storeId) {
                 return;
             }
 
-            // 혹시 응답에 optionId가 없으면 폼 다시 조회해서 storeId로 후보 찾고 투표
             voteStoreAfterReload(storeId);
         })
         .catch(function () {
@@ -1311,7 +1570,6 @@ function voteStoreAfterReload(storeId) {
         .then(function (form) {
             currentPlaceFormDetail = form;
             renderPlaceFormMapShell(form);
-            renderPlaceMarkers(form);
 
             const option = getExistingStoreOption(storeId);
 
@@ -1329,6 +1587,11 @@ function voteStoreAfterReload(storeId) {
 
 // 장소 투표 제출
 function submitPlaceVoteOption(optionId) {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표입니다.");
+        return;
+    }
+
     if (!currentPlaceFormId || !optionId) {
         alert("투표할 장소 정보를 찾을 수 없습니다.");
         return;
@@ -1337,18 +1600,41 @@ function submitPlaceVoteOption(optionId) {
     submitFormAnswer(currentPlaceFormId, optionId, function (updatedForm) {
         currentPlaceFormDetail = updatedForm;
         renderPlaceFormMapShell(updatedForm);
-        renderPlaceMarkers(updatedForm);
 
         if (placeVoteInfoWindow) {
             placeVoteInfoWindow.close();
         }
 
-        alert("투표가 저장되었습니다.");
+        alert("장소 투표가 저장되었습니다.");
+    });
+}
+
+// 시간 투표 제출
+function submitTimeVoteOption(optionId) {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표입니다.");
+        return;
+    }
+
+    if (!currentPlaceFormId || !optionId) {
+        alert("투표할 시간 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    submitFormAnswer(currentPlaceFormId, optionId, function (updatedForm) {
+        currentPlaceFormDetail = updatedForm;
+        renderPlaceFormMapShell(updatedForm);
+        alert("시간 투표가 저장되었습니다.");
     });
 }
 
 // 장소 추가 모드 시작
 function startAddCustomPlaceMode() {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표에는 후보를 추가할 수 없습니다.");
+        return;
+    }
+
     if (!placeVoteMap) {
         alert("지도를 먼저 불러와 주세요.");
         return;
@@ -1357,6 +1643,7 @@ function startAddCustomPlaceMode() {
     placeAddMode = true;
     pendingCustomPlace = null;
     hideCustomPlacePanel();
+    closeTimeOptionPanel();
 
     const guide = document.getElementById("placeMapGuide");
 
@@ -1443,6 +1730,11 @@ function cancelCustomPlaceAdd() {
 
 // 직접 장소 후보 추가
 function submitCustomPlaceOption() {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표에는 후보를 추가할 수 없습니다.");
+        return;
+    }
+
     const nameInput = document.getElementById("customPlaceNameInput");
     const addressInput = document.getElementById("customPlaceAddressInput");
 
@@ -1466,6 +1758,7 @@ function submitCustomPlaceOption() {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
+            optionType: "PLACE",
             placeSource: "CUSTOM",
             placeName: placeName,
             optionText: placeName,
@@ -1487,7 +1780,7 @@ function submitCustomPlaceOption() {
             pendingCustomPlace = null;
             hideCustomPlacePanel();
 
-            alert("장소 후보에 추가되었습니다. 지도 위 후보 마커를 눌러 투표해 주세요.");
+            alert("장소 후보에 추가되었습니다.");
             reloadPlaceFormDetail();
         })
         .catch(function () {
@@ -1495,20 +1788,143 @@ function submitCustomPlaceOption() {
         });
 }
 
-// 장소 투표 결과 조회
-function loadPlaceFormResult() {
-    const resultPanel = document.getElementById("placeResultPanel");
-    const resultList = document.getElementById("placeResultList");
-
-    if (resultPanel) {
-        resultPanel.classList.remove("hidden");
-    }
-
-    if (!currentPlaceFormId || !resultList) {
+// 시간 후보 패널 열기
+function openTimeOptionPanel() {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표에는 시간 후보를 추가할 수 없습니다.");
         return;
     }
 
-    resultList.innerHTML = `<div class="form-empty-text">결과를 불러오는 중입니다.</div>`;
+    const panel = document.getElementById("timeOptionPanel");
+    const dateInput = document.getElementById("timeOptionDateInput");
+    const timeInput = document.getElementById("timeOptionTimeInput");
+    const memoInput = document.getElementById("timeOptionMemoInput");
+
+    if (isAppointmentMapScreenOpen()) {
+        closeAppointmentMapScreen();
+    }
+
+    if (panel) {
+        panel.classList.remove("hidden");
+    }
+
+    if (dateInput) {
+        dateInput.value = getTodayDateInputValue();
+        dateInput.focus();
+    }
+
+    if (timeInput) {
+        timeInput.value = "12:00";
+    }
+
+    if (memoInput) {
+        memoInput.value = "";
+    }
+}
+
+// 시간 후보 패널 닫기
+function closeTimeOptionPanel() {
+    const panel = document.getElementById("timeOptionPanel");
+
+    if (panel) {
+        panel.classList.add("hidden");
+    }
+}
+
+// 오늘 날짜 input 값
+function getTodayDateInputValue() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+}
+
+// 시간 후보 추가
+function submitTimeOption() {
+    if (currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail)) {
+        alert("종료된 약속 투표에는 시간 후보를 추가할 수 없습니다.");
+        return;
+    }
+
+    const dateInput = document.getElementById("timeOptionDateInput");
+    const timeInput = document.getElementById("timeOptionTimeInput");
+    const memoInput = document.getElementById("timeOptionMemoInput");
+
+    if (!currentPlaceFormId || !dateInput || !timeInput) {
+        alert("시간 후보 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    const dateValue = dateInput.value;
+    const timeValue = timeInput.value;
+    const memo = memoInput ? memoInput.value.trim() : "";
+
+    if (!dateValue) {
+        alert("날짜를 입력해 주세요.");
+        dateInput.focus();
+        return;
+    }
+
+    if (!timeValue) {
+        alert("시간을 입력해 주세요.");
+        timeInput.focus();
+        return;
+    }
+
+    const appointmentAt = dateValue + "T" + timeValue + ":00";
+
+    fetch("/api/chat/forms/" + currentPlaceFormId + "/options", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            optionType: "TIME",
+            optionText: formatAppointmentDisplay(appointmentAt),
+            appointmentAt: appointmentAt,
+            memo: memo
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function () {
+            closeTimeOptionPanel();
+            alert("시간 후보에 추가되었습니다.");
+            reloadPlaceFormDetail();
+        })
+        .catch(function () {
+            alert("시간 후보 추가에 실패했습니다.");
+        });
+}
+
+// 약속 투표 결과 조회
+function loadPlaceFormResult() {
+    const resultPanel = document.getElementById("placeResultPanel");
+    const resultList = document.getElementById("placeResultList");
+    const closedResultList = document.getElementById("placeClosedResultList");
+
+    if (resultPanel && !(currentPlaceFormDetail && isFormClosed(currentPlaceFormDetail))) {
+        resultPanel.classList.remove("hidden");
+    }
+
+    if (!currentPlaceFormId) {
+        return;
+    }
+
+    if (resultList) {
+        resultList.innerHTML = `<div class="form-empty-text">결과를 불러오는 중입니다.</div>`;
+    }
+
+    if (closedResultList) {
+        closedResultList.innerHTML = `<div class="form-empty-text">결과를 불러오는 중입니다.</div>`;
+    }
 
     fetch("/api/chat/forms/" + currentPlaceFormId + "/results")
         .then(function (response) {
@@ -1519,44 +1935,129 @@ function loadPlaceFormResult() {
             return response.json();
         })
         .then(function (result) {
-            renderPlaceFormResult(result);
+            renderAppointmentFormResult(result);
         })
         .catch(function () {
-            resultList.innerHTML = `<div class="form-empty-text">결과를 불러오지 못했습니다.</div>`;
+            if (resultList) {
+                resultList.innerHTML = `<div class="form-empty-text">결과를 불러오지 못했습니다.</div>`;
+            }
+
+            if (closedResultList) {
+                closedResultList.innerHTML = `<div class="form-empty-text">결과를 불러오지 못했습니다.</div>`;
+            }
         });
 }
 
-// 장소 투표 결과 렌더링
-function renderPlaceFormResult(result) {
+// 약속 투표 결과 렌더링
+function renderAppointmentFormResult(result) {
     const resultList = document.getElementById("placeResultList");
+    const closedResultList = document.getElementById("placeClosedResultList");
+    const resultHtml = createAppointmentResultHtml(result, false);
+    const closedHtml = createAppointmentResultHtml(result, true);
 
-    if (!resultList) {
-        return;
+    if (resultList) {
+        resultList.innerHTML = resultHtml;
     }
 
-    const votedResults = (result.results || []).filter(function (item) {
-        return Number(item.voteCount || 0) > 0;
+    if (closedResultList) {
+        closedResultList.innerHTML = closedHtml;
+    }
+}
+
+// 약속 결과 HTML 생성
+function createAppointmentResultHtml(result, closedMode) {
+    const placeResults = (result.results || []).filter(function (item) {
+        return getOptionTypeValue(item) === "PLACE";
     });
 
-    const totalVoteCount = votedResults.reduce(function (sum, item) {
+    const timeResults = (result.results || []).filter(function (item) {
+        return getOptionTypeValue(item) === "TIME";
+    });
+
+    const placeTotal = placeResults.reduce(function (sum, item) {
         return sum + Number(item.voteCount || 0);
     }, 0);
 
-    if (votedResults.length === 0) {
-        resultList.innerHTML = `<div class="form-empty-text">아직 투표된 장소가 없습니다.</div>`;
-        return;
+    const timeTotal = timeResults.reduce(function (sum, item) {
+        return sum + Number(item.voteCount || 0);
+    }, 0);
+
+    if (closedMode) {
+        return `
+            ${createWinnerSection("장소 결과", getWinnerResult(placeResults), "PLACE")}
+            ${createWinnerSection("시간 결과", getWinnerResult(timeResults), "TIME")}
+            <div class="form-empty-text small-guide">확정된 시간 기준 1시간 뒤 채팅방이 자동 종료됩니다.</div>
+        `;
     }
 
-    resultList.innerHTML = votedResults.map(function (item) {
+    return `
+        <div class="appointment-result-section">
+            <div class="appointment-result-heading">장소 투표 결과</div>
+            ${createResultBarList(placeResults, placeTotal, "PLACE")}
+        </div>
+        <div class="appointment-result-section">
+            <div class="appointment-result-heading">시간 투표 결과</div>
+            ${createResultBarList(timeResults, timeTotal, "TIME")}
+        </div>
+    `;
+}
+
+// 우승 결과 섹션
+function createWinnerSection(title, winner, type) {
+    if (!winner) {
+        return `
+            <div class="appointment-result-section">
+                <div class="appointment-result-heading">${escapeHtml(title)}</div>
+                <div class="form-empty-text">투표된 ${type === "PLACE" ? "장소" : "시간"}가 없습니다.</div>
+            </div>
+        `;
+    }
+
+    const mainTitle = type === "TIME"
+        ? formatAppointmentDisplay(winner.appointmentAt)
+        : (winner.placeName || winner.optionText || "장소");
+    const meta = type === "TIME"
+        ? (winner.memo || "")
+        : (winner.address || "");
+
+    return `
+        <div class="appointment-result-section">
+            <div class="appointment-result-heading">${escapeHtml(title)}</div>
+            <div class="appointment-winner-card">
+                <div class="appointment-winner-label">최다 득표 · ${Number(winner.voteCount || 0)}표</div>
+                <div class="appointment-winner-title">${escapeHtml(mainTitle || "결과 없음")}</div>
+                ${meta ? `<div class="appointment-winner-meta">${escapeHtml(meta)}</div>` : ""}
+            </div>
+        </div>
+    `;
+}
+
+// 결과 막대 목록
+function createResultBarList(results, totalVoteCount, type) {
+    if (!results || results.length === 0) {
+        return `<div class="form-empty-text">아직 후보가 없습니다.</div>`;
+    }
+
+    const votedResults = results.filter(function (item) {
+        return Number(item.voteCount || 0) > 0;
+    });
+
+    if (votedResults.length === 0) {
+        return `<div class="form-empty-text">아직 투표가 없습니다.</div>`;
+    }
+
+    return votedResults.map(function (item) {
         const voteCount = Number(item.voteCount || 0);
         const percent = totalVoteCount === 0 ? 0 : Math.round((voteCount / totalVoteCount) * 100);
         const selectedClass = item.selectedByMe ? "selected" : "";
-        const placeName = item.placeName || item.optionText || "장소";
+        const title = type === "TIME"
+            ? formatAppointmentDisplay(item.appointmentAt)
+            : (item.placeName || item.optionText || "장소");
 
         return `
             <div class="place-result-item ${selectedClass}">
                 <div class="place-result-top">
-                    <span>${escapeHtml(placeName)}</span>
+                    <span>${escapeHtml(title || "후보")}</span>
                     <strong>${voteCount}표 · ${percent}%</strong>
                 </div>
                 <div class="vote-result-bar">
@@ -1565,6 +2066,31 @@ function renderPlaceFormResult(result) {
             </div>
         `;
     }).join("");
+}
+
+// 최다 득표 결과
+function getWinnerResult(results) {
+    if (!results || results.length === 0) {
+        return null;
+    }
+
+    let winner = null;
+    let winnerVoteCount = -1;
+
+    results.forEach(function (item) {
+        const voteCount = Number(item.voteCount || 0);
+
+        if (!winner || voteCount > winnerVoteCount) {
+            winner = item;
+            winnerVoteCount = voteCount;
+        }
+    });
+
+    if (winnerVoteCount <= 0) {
+        return null;
+    }
+
+    return winner;
 }
 
 // 장소 후보 마커 제거
@@ -1583,6 +2109,402 @@ function clearStoreMarkers() {
     });
 
     placeStoreMarkers = [];
+}
+
+// 폼 종료 여부
+function isFormClosed(form) {
+    return form && form.closedYn === "Y";
+}
+
+// 옵션 타입 가져오기
+function getOptionTypeValue(option) {
+    if (!option) {
+        return "VOTE";
+    }
+
+    if (option.optionType) {
+        return option.optionType;
+    }
+
+    if (option.appointmentAt) {
+        return "TIME";
+    }
+
+    if (option.placeName || option.placeSource || option.latitude || option.longitude) {
+        return "PLACE";
+    }
+
+    return "VOTE";
+}
+
+// 타입별 옵션 목록
+function getOptionsByType(form, optionType) {
+    if (!form || !form.options) {
+        return [];
+    }
+
+    return form.options.filter(function (option) {
+        return getOptionTypeValue(option) === optionType;
+    });
+}
+
+// 날짜 시간 표시
+function formatAppointmentDisplay(value) {
+    if (!value) {
+        return "";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    });
+}
+
+// 식당 상세 모달 열기
+function openStoreDetailModal(storeId) {
+    const modal = document.getElementById("storeDetailModal");
+    const body = document.getElementById("storeDetailBody");
+    const title = document.getElementById("storeDetailName");
+    const meta = document.getElementById("storeDetailMeta");
+
+    if (!modal || !body) {
+        return;
+    }
+
+    if (!storeId) {
+        alert("식당 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    if (title) {
+        title.textContent = "식당 정보";
+    }
+
+    if (meta) {
+        meta.textContent = "메뉴와 리뷰를 불러오는 중입니다.";
+    }
+
+    body.innerHTML = `<div class="form-empty-text">식당 정보를 불러오는 중입니다.</div>`;
+    modal.classList.remove("hidden");
+
+    fetch("/api/chat/forms/store-details/" + encodeURIComponent(storeId))
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (storeDetail) {
+            renderStoreDetailModal(storeDetail);
+        })
+        .catch(function (error) {
+            console.error("식당 정보를 불러오지 못했습니다:", error);
+            body.innerHTML = `<div class="form-empty-text">식당 정보를 불러오지 못했습니다.</div>`;
+        });
+}
+
+// 식당 상세 모달 닫기
+function closeStoreDetailModal() {
+    const modal = document.getElementById("storeDetailModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("hidden");
+}
+
+// 식당 상세 모달 렌더링
+function renderStoreDetailModal(storeDetail) {
+    const title = document.getElementById("storeDetailName");
+    const meta = document.getElementById("storeDetailMeta");
+    const body = document.getElementById("storeDetailBody");
+
+    if (!body) {
+        return;
+    }
+
+    const storeName = storeDetail.name || "식당";
+    const category = storeDetail.category || "분류 없음";
+    const status = getBusinessStatusText(storeDetail.businessStatus);
+    const reviewCount = Number(storeDetail.reviewCount || 0);
+    const averageRating = Number(storeDetail.averageRating || 0).toFixed(1);
+
+    if (title) {
+        title.textContent = "";
+    }
+
+    if (meta) {
+        meta.textContent = "";
+    }
+
+    const imageHtml = storeDetail.imageId
+        ? `
+            <img
+                class="store-detail-main-image"
+                src="/api/images/${Number(storeDetail.imageId)}"
+                alt="식당 사진"
+                onerror="this.outerHTML='<div class=&quot;store-detail-main-empty&quot;><div class=&quot;store-detail-main-emoji&quot;>🍽️</div><div class=&quot;store-detail-main-empty-text&quot;>가게 사진 준비중</div></div>'"
+            >
+        `
+        : `
+            <div class="store-detail-main-empty">
+                <div class="store-detail-main-emoji">🍽️</div>
+                <div class="store-detail-main-empty-text">가게 사진 준비중</div>
+            </div>
+        `;
+
+    const phoneHtml = storeDetail.phone
+        ? `<div class="store-detail-info-row"><strong>전화</strong><span>${escapeHtml(storeDetail.phone)}</span></div>`
+        : "";
+
+    const hoursHtml = storeDetail.operatingHours
+        ? `<div class="store-detail-info-row"><strong>영업시간</strong><span>${escapeHtml(storeDetail.operatingHours)}</span></div>`
+        : "";
+
+    const addressHtml = storeDetail.address
+        ? `<div class="store-detail-info-row"><strong>주소</strong><span>${escapeHtml(storeDetail.address)}</span></div>`
+        : "";
+
+    body.innerHTML = `
+        <div class="store-detail-photo-card">
+            ${imageHtml}
+
+            <div class="store-detail-photo-info">
+                <div>
+                    <div class="store-detail-photo-title">${escapeHtml(storeName)}</div>
+                    <div class="store-detail-photo-sub">
+                        ${escapeHtml(category)} · ${escapeHtml(status)} · 리뷰 ${reviewCount}개
+                    </div>
+                </div>
+
+                <div class="store-detail-rating-box">
+                    <span>★</span>
+                    <strong>${averageRating}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="store-detail-info-card">
+            ${addressHtml}
+            ${phoneHtml}
+            ${hoursHtml}
+        </div>
+
+        <div class="store-detail-tabs">
+            <button type="button" id="storeMenuTabButton" class="store-detail-tab-button active" onclick="changeStoreDetailTab('menu')">
+                메뉴
+            </button>
+            <button type="button" id="storeReviewTabButton" class="store-detail-tab-button" onclick="changeStoreDetailTab('review')">
+                리뷰
+            </button>
+        </div>
+
+        <div id="storeMenuPanel" class="store-detail-tab-panel active">
+            <div class="store-menu-list">
+                ${renderStoreMenuList(storeDetail.menus || [])}
+            </div>
+        </div>
+
+        <div id="storeReviewPanel" class="store-detail-tab-panel hidden">
+            <div class="store-review-list">
+                ${renderStoreReviewList(storeDetail.reviews || [])}
+            </div>
+        </div>
+    `;
+
+    body.scrollTop = 0;
+}
+
+// 식당 메뉴 목록 렌더링
+function renderStoreMenuList(menus) {
+    if (!menus || menus.length === 0) {
+        return `<div class="form-empty-text">등록된 메뉴가 없습니다.</div>`;
+    }
+
+    return menus.map(function (menu) {
+        const imageHtml = menu.imageId
+            ? `
+                <img
+                    class="store-menu-image"
+                    src="/api/images/${Number(menu.imageId)}"
+                    alt="메뉴 사진"
+                    onerror="this.outerHTML='<div class=&quot;store-menu-image empty&quot;>🍚</div>'"
+                >
+            `
+            : `<div class="store-menu-image empty">🍚</div>`;
+
+        const statusText = getMenuStatusText(menu.salesStatus);
+        const soldOutClass = menu.salesStatus === "SOLD_OUT" ? " sold-out" : "";
+
+        return `
+            <div class="store-menu-item${soldOutClass}">
+                ${imageHtml}
+
+                <div class="store-menu-info">
+                    <div class="store-menu-name">${escapeHtml(menu.name || "메뉴")}</div>
+                    <div class="store-menu-price">${formatStorePrice(menu.price)}</div>
+                </div>
+
+                <div class="store-menu-status">${escapeHtml(statusText)}</div>
+            </div>
+        `;
+    }).join("");
+}
+
+// 식당 상세 메뉴/리뷰 탭 변경
+function changeStoreDetailTab(tabType) {
+    const menuButton = document.getElementById("storeMenuTabButton");
+    const reviewButton = document.getElementById("storeReviewTabButton");
+    const menuPanel = document.getElementById("storeMenuPanel");
+    const reviewPanel = document.getElementById("storeReviewPanel");
+
+    if (!menuButton || !reviewButton || !menuPanel || !reviewPanel) {
+        return;
+    }
+
+    if (tabType === "review") {
+        menuButton.classList.remove("active");
+        reviewButton.classList.add("active");
+
+        menuPanel.classList.add("hidden");
+        menuPanel.classList.remove("active");
+
+        reviewPanel.classList.remove("hidden");
+        reviewPanel.classList.add("active");
+
+        return;
+    }
+
+    reviewButton.classList.remove("active");
+    menuButton.classList.add("active");
+
+    reviewPanel.classList.add("hidden");
+    reviewPanel.classList.remove("active");
+
+    menuPanel.classList.remove("hidden");
+    menuPanel.classList.add("active");
+}
+
+// 식당 리뷰 목록 렌더링
+function renderStoreReviewList(reviews) {
+    if (!reviews || reviews.length === 0) {
+        return `<div class="form-empty-text">아직 리뷰가 없습니다.</div>`;
+    }
+
+    return reviews.map(function (review) {
+        const rating = Number(review.rating || 0);
+        const imageHtml = renderStoreReviewImages(review.imageIds || []);
+        const replyHtml = review.ownerReply
+            ? `<div class="store-review-reply"><strong>사장님 답글</strong><p>${escapeHtml(review.ownerReply)}</p></div>`
+            : "";
+
+        return `
+            <div class="store-review-item">
+                <div class="store-review-top">
+                    <strong>${escapeHtml(review.writerNickname || "회원")}</strong>
+                    <span>${escapeHtml(formatStoreDate(review.createdAt))}</span>
+                </div>
+                <div class="store-review-rating">${escapeHtml(getStarText(rating))} ${rating}</div>
+                ${imageHtml}
+                <p class="store-review-content">${escapeHtml(review.content || "")}</p>
+                ${replyHtml}
+            </div>
+        `;
+    }).join("");
+}
+
+// 리뷰 이미지 렌더링
+function renderStoreReviewImages(imageIds) {
+    if (!imageIds || imageIds.length === 0) {
+        return "";
+    }
+
+    return `
+        <div class="store-review-image-list">
+            ${imageIds.map(function (imageId) {
+        return `<img src="/api/images/${Number(imageId)}" alt="리뷰 사진">`;
+    }).join("")}
+        </div>
+    `;
+}
+
+// 가격 표시
+function formatStorePrice(price) {
+    if (price === null || price === undefined || Number.isNaN(Number(price))) {
+        return "가격 정보 없음";
+    }
+
+    return Number(price).toLocaleString("ko-KR") + "원";
+}
+
+// 날짜 표시
+function formatStoreDate(value) {
+    if (!value) {
+        return "";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+}
+
+// 별점 표시
+function getStarText(rating) {
+    const safeRating = Math.max(0, Math.min(5, Number(rating || 0)));
+    const filledCount = Math.round(safeRating);
+    const emptyCount = 5 - filledCount;
+
+    return "★".repeat(filledCount) + "☆".repeat(emptyCount);
+}
+
+// 영업 상태 표시
+function getBusinessStatusText(status) {
+    if (status === "OPEN") {
+        return "영업중";
+    }
+
+    if (status === "BREAK_TIME") {
+        return "브레이크타임";
+    }
+
+    if (status === "CLOSED") {
+        return "영업종료";
+    }
+
+    return "상태 정보 없음";
+}
+
+// 메뉴 판매 상태 표시
+function getMenuStatusText(status) {
+    if (status === "ON_SALE") {
+        return "판매중";
+    }
+
+    if (status === "SOLD_OUT") {
+        return "품절";
+    }
+
+    return "상태 정보 없음";
 }
 
 // 채팅 이미지 전송

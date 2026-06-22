@@ -15,9 +15,14 @@ public class ChatFormResponse {
     private String formType;
     private String title;
     private String closedYn;
+    private boolean canCloseByMe;
     private Long mySelectedOptionId;
+    private Long mySelectedPlaceOptionId;
+    private Long mySelectedTimeOptionId;
     private int optionCount;
     private int answerCount;
+    private int placeAnswerCount;
+    private int timeAnswerCount;
     private List<ChatFormOptionResponse> options;
     private LocalDateTime createdAt;
 }
