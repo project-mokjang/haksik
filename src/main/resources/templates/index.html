@@ -1,29 +1,136 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>학식목장 - 메인</title>
-  <link rel="stylesheet" href="/css/mobileUi.css" th:href="@{/css/mobileUi.css}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>학식목장 - 시작하기</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+
+  <style>
+    .splash-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: var(--forest);
+    }
+
+    .splash-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('/bgimages/bgimg.png');
+      background-size: cover;
+      background-position: center bottom;
+      /* 🚨 팩트: 밝기 115%, 채도 120%로 사진을 포토샵처럼 화사하게 강제 부스팅 */
+      filter: brightness(1.05) saturate(1.2);
+      z-index: 1;
+    }
+
+    /* 🚨 팩트: 사진을 어둡게 만들던 splash-overlay CSS 완전 삭제 */
+
+    .splash-top {
+      position: relative;
+      z-index: 3;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 25%;
+    }
+
+    /* 🚨 팩트: 배경이 밝아졌으므로, 글씨에 진녹색 테두리를 둘러 가독성 100% 방어 */
+    .splash-logo {
+      font-size: 46px; /* 크기 약간 확대 */
+      font-weight: 900;
+      color: white;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      -webkit-text-stroke: 1.5px var(--forest);
+      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .splash-desc {
+      font-size: 16px;
+      font-weight: 800;
+      color: white; /* 텍스트 흰색으로 변경 */
+      -webkit-text-stroke: 0.8px var(--forest);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .splash-bottom-wrap {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .wave-svg {
+      display: block;
+      width: 100%;
+      height: 40px;
+      transform: translateY(2px);
+    }
+
+    .splash-buttons {
+      background-color: var(--paper);
+      padding: 20px 24px 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-splash {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s ease;
+    }
+    .btn-splash:active { transform: scale(0.98); }
+    .btn-primary {
+      background-color: var(--green); color: white;
+      box-shadow: 0 8px 24px rgba(18, 107, 79, 0.3);
+    }
+    .btn-secondary {
+      background-color: var(--ivory); color: var(--forest);
+      border: 2px solid var(--line);
+    }
+  </style>
 </head>
-<body class="auth-body">
-<div class="mobile-container">
-  <div class="status-bar">
-    <span>17:26</span>
-    <span>🌾 학식목장</span>
-  </div>
+<body class="app-body">
 
-  <div class="content content-between">
-    <div class="header-section main">
-      <div class="logo bounce">🐑</div>
-      <h1 class="title small">학식목장</h1>
-      <p class="subtitle">캠퍼스 라이프의 모든 맛과 만남<br>당신은 어떤 회원인가요?</p>
+<div class="app-page">
+  <div class="app-shell">
+
+    <div class="splash-container">
+      <div class="splash-bg"></div>
+
+      <div class="splash-top">
+        <div class="splash-logo">학식목장</div>
+        <div class="splash-desc">캠퍼스 밥약 매칭의 모든 것</div>
+      </div>
+
+      <div class="splash-bottom-wrap">
+        <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path fill="#fffdf8" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+        </svg>
+        <div class="splash-buttons">
+          <button class="btn-splash btn-primary" onclick="location.href='/api/view/login'">로그인</button>
+          <button class="btn-splash btn-secondary" onclick="location.href='/api/view/signup-choice'">새로 오셨나요? 회원가입!</button>
+        </div>
+      </div>
     </div>
 
-    <div class="bottom-section">
-      <a class="next-btn ready link-btn" href="/api/auth/login" th:href="@{/api/auth/login}">환영합니다.</a>
-    </div>
   </div>
 </div>
+
 </body>
 </html>
