@@ -8,7 +8,9 @@
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/common-ui.css}">
     <link rel="stylesheet" th:href="@{/css/community/board.css}">
-    <script type="text/javascript" th:src="@{'https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + ${naverMapClientId} + '&submodules=geocoder'}"></script>
+    <script type="text/javascript"
+            th:src="@{'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId} + '&submodules=geocoder'}">
+    </script>
 </head>
 
 <body class="app-body">

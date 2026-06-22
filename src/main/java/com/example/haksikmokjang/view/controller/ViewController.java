@@ -147,6 +147,11 @@ public class ViewController {
 
         return "members/user/user-mypage";
     }
+    //리뷰 목록
+    @GetMapping("/user/reviews")
+    public String userReviewsPage() {
+        return "members/user/user-review-list";
+    }
 
     // 알림 전체 보기 페이지
     @GetMapping("/user/notifications")
@@ -187,7 +192,7 @@ public class ViewController {
     }
 
     @GetMapping("/owner/store")
-    public String ownerStorePage(org.springframework.ui.Model model) {
+    public String ownerStorePage(Model model) {
         model.addAttribute("naverMapClientId", naverMapClientId);
         return "members/owner/owner-store";
     }
