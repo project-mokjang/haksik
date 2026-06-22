@@ -71,5 +71,10 @@ public class UserProfile extends BaseEntity {
         this.profileImage = profileImage;
     }
 
+    // 선호 음식 메서드
+    public void updatePreferredFood(String preferredFoodCategory) {
+        this.preferredFoodCategory = preferredFoodCategory;
+    }
+
 
 }

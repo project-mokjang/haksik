@@ -14,6 +14,8 @@ public class MyPageResponse {
     private String department;
     private String profileImageUrl;
 
+    private String preferredFoodCategory;
+
     // 계정 정보
     private String loginId;
 }

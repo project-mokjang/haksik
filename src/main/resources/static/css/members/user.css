@@ -66,25 +66,30 @@
 }
 
 .profile-action-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
+    display: flex !important;
+    width: 100% !important;
+    gap: 4px !important; /* 버튼 사이 간격 최소화 */
+    align-items: center !important;
+    flex-wrap: nowrap !important; /*  절대 줄바꿈 금지 */
 }
 
 /* 버튼 */
 .edit-profile-btn,
 .badge-edit-btn {
-    padding: 8px 13px;
+    flex: 1 !important; /* 3개가 33%씩 똑같이 나눠 가짐 */
+    padding: 7px 2px !important; /* 좌우 패딩을 최소한으로 줄이기 */
+    text-align: center !important;
     border: none;
     border-radius: 999px;
     background-color: var(--ivory2);
     color: var(--forest);
-    font-size: 12px;
+    font-size: 10px !important; /* 폰트 크기를 살짝 줄여서 짤림 완벽 방지 */
+    letter-spacing: -0.5px !important; /* 글자 사이 간격 좁히기 */
     font-weight: 800;
     text-decoration: none;
     cursor: pointer;
-    white-space: nowrap;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
 }
 
 .edit-profile-btn:hover,
@@ -271,6 +276,8 @@
     align-items: center;
     margin-bottom: 6px;
 }
+
+
 
 .badge-modal-header h2 {
     font-size: 20px;
@@ -797,4 +804,39 @@
     font-size: 14px;
     font-weight: 800;
     text-align: center;
+}
+
+/* 선호 음식 뱃지 디자인 */
+.food-badge {
+    display: inline-block;
+    vertical-align: middle; /* 매너온도 글씨랑 높이 딱 맞게 정렬! */
+    color: var(--muted);
+    padding: 0px 0px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-left: 5px; /* 매너온도랑 살짝 띄워주기 */
+
+}
+
+/* 선호 음식 모달 전용 스타일 */
+.food-modal-content {
+    width: 85% !important;        /* 모바일 화면에 쏙! */
+    max-width: 300px !important;  /* 너무 크지 않게 딱 조절 */
+    padding: 15px 20px !important; /* 위아래 여백을 줘서 답답하지 않게 */
+    border-radius: 20px !important;
+}
+
+/* 내부 버튼들도 전용으로 깔끔하게 정렬 */
+.food-modal-content .badge-modal-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px; /* 버튼과 위쪽 콘텐츠 사이 간격 */
+    padding-top: 10px;
+}
+
+/* 라디오 버튼(음식 선택) 간격 예쁘게 벌리기 */
+.food-modal-content .food-options {
+    flex-direction: column; /* 좁은 모달 안에선 가로보단 세로 나열이 보기 편해! */
+    gap: 10px;
+    align-items: flex-start;
 }

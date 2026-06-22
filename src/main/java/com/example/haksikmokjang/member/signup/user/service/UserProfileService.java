@@ -86,4 +86,13 @@ public class UserProfileService {
             }
     }
 }
+    @Transactional
+    public void updatePreferredFood(Member member, String foodCategory) {
+        // 내 프로필 찾기
+        UserProfile profile = userProfileRepository.findByMember(member)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        // 음식 카테고리만  업데이트
+        profile.updatePreferredFood(foodCategory);
+    }
     }

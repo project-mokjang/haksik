@@ -25,4 +25,14 @@ public class UserProfileController {
 
         return ApiResponse.success("프로필이 성공적으로 수정되었습니다.", null);
     }
+
+    @PostMapping("/profile/food")
+    public ApiResponse<Void> updateFoodPreference(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam String foodCategory) {
+
+        userProfileService.updatePreferredFood(userDetails.getMember(), foodCategory);
+
+        return ApiResponse.success("선호 음식이 성공적으로 설정되었습니다! ", null);
+    }
 }
