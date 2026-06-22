@@ -7,6 +7,8 @@
   <link rel="stylesheet" th:href="@{/css/base.css}">
   <link rel="stylesheet" th:href="@{/css/common-ui.css}">
   <link rel="stylesheet" th:href="@{/css/chat/chat-room.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-form.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-review.css}">
   <link rel="stylesheet" th:href="@{/css/chat/chat-message.css}">
 </head>
 <body class="app-body">
@@ -191,13 +193,13 @@
           <button type="button" class="chat-form-type-card" onclick="openVoteFormCreateModal()">
             <span class="chat-form-type-icon">📋</span>
             <span class="chat-form-type-title">일반 투표</span>
-            <span class="chat-form-type-desc">메뉴나 시간을 선택지로 투표합니다.</span>
+            <span class="chat-form-type-desc">메뉴나 기타 선택지를 투표합니다.</span>
           </button>
 
           <button type="button" class="chat-form-type-card" onclick="openPlaceFormCreateModal()">
             <span class="chat-form-type-icon">🗺️</span>
-            <span class="chat-form-type-title">지도 장소 투표</span>
-            <span class="chat-form-type-desc">지도에서 가게와 장소를 찍고 투표합니다.</span>
+            <span class="chat-form-type-title">약속 장소/시간 투표</span>
+            <span class="chat-form-type-desc">지도에서 장소 후보를 추가하고, 시간 후보도 따로 투표합니다.</span>
           </button>
         </div>
       </div>
@@ -236,22 +238,22 @@
     <div id="placeFormCreateModal" class="chat-form-modal-backdrop hidden">
       <div class="chat-form-create-modal">
         <div class="chat-form-modal-header">
-          <h3>지도 장소 투표 만들기</h3>
+          <h3>약속 장소/시간 투표 만들기</h3>
           <button type="button" onclick="closePlaceFormCreateModal()">×</button>
         </div>
 
         <p class="chat-form-help-text">
-          채팅방에 장소 투표 카드를 보내면, 참여자들이 지도에서 가게나 직접 찍은 장소에 투표할 수 있습니다.
+          채팅방에 약속 투표 카드를 보내면, 참여자들이 지도에서 장소 후보를 추가하고 시간 후보도 따로 추가해서 각각 투표할 수 있습니다.
         </p>
 
         <div class="chat-form-field">
-          <label for="placeFormTitleInput">장소 투표 제목</label>
-          <input type="text" id="placeFormTitleInput" maxlength="100" placeholder="예: 어디서 만날래?">
+          <label for="placeFormTitleInput">약속 투표 제목</label>
+          <input type="text" id="placeFormTitleInput" maxlength="100" placeholder="예: 어디서 언제 만날래?">
         </div>
 
         <div class="chat-form-actions">
           <button type="button" class="chat-form-cancel-button" onclick="closePlaceFormCreateModal()">취소</button>
-          <button type="button" class="chat-form-submit-button" onclick="submitPlaceForm()">지도 투표 보내기</button>
+          <button type="button" class="chat-form-submit-button" onclick="submitPlaceForm()">약속 투표 보내기</button>
         </div>
       </div>
     </div>
@@ -261,6 +263,18 @@
         <div class="chat-form-modal-header">
           <h3 id="voteDetailTitle">투표</h3>
           <button type="button" onclick="closeVoteFormDetailModal()">×</button>
+        </div>
+
+        <div class="vote-detail-control-box">
+          <p id="voteDetailMeta" class="vote-detail-meta"></p>
+
+          <div id="voteClosedText" class="form-closed-text hidden">
+            종료된 투표입니다.
+          </div>
+
+          <button type="button" id="voteCloseFormButton" class="form-close-button hidden">
+            투표 종료
+          </button>
         </div>
 
         <div id="voteDetailOptionList" class="vote-detail-option-list">
@@ -276,17 +290,114 @@
       </div>
     </div>
 
-    <div id="placeFormMapModal" class="place-map-modal-backdrop hidden">
-      <div class="place-map-modal">
-        <div class="place-map-header">
+    <div id="placeFormMapModal" class="chat-form-modal-backdrop hidden">
+      <div class="chat-form-detail-modal appointment-detail-modal">
+        <div class="chat-form-modal-header appointment-detail-header">
           <div>
-            <h3 id="placeMapTitle">장소 투표</h3>
-            <p id="placeMapSummary">참여 0명</p>
+            <h3 id="placeMapTitle">약속 장소/시간 투표</h3>
+            <p id="placeMapSummary">장소 0명 · 시간 0명</p>
           </div>
           <button type="button" onclick="closePlaceFormMapModal()">×</button>
         </div>
 
-        <div class="place-map-body">
+        <div id="placeOpenPanel" class="appointment-detail-body">
+
+          <div class="appointment-vote-section place-section">
+            <div class="appointment-section-head">
+              <div>
+                <div class="appointment-section-title">장소 투표하기</div>
+                <p>지도 화면에서 식당이나 직접 장소 후보를 추가하고 투표해 주세요.</p>
+              </div>
+              <button type="button" class="place-map-open-button" onclick="openAppointmentMapScreen()">
+                지도 열기
+              </button>
+            </div>
+
+            <div id="placeOptionList" class="place-option-list">
+              <!-- JS로 장소 후보 표시 -->
+            </div>
+          </div>
+
+          <div class="appointment-vote-section time-section">
+            <div class="appointment-section-head">
+              <div>
+                <div class="appointment-section-title">시간 투표하기</div>
+                <p>시간 후보를 추가하고 원하는 시간에 투표해 주세요.</p>
+              </div>
+              <button type="button" id="timeAddButton" class="time-add-button" onclick="openTimeOptionPanel()">
+                시간 추가
+              </button>
+            </div>
+
+            <div id="timeOptionPanel" class="time-option-panel hidden">
+              <div class="time-option-panel-title">시간 후보 추가</div>
+
+              <div class="time-option-input-grid">
+                <input type="date" id="timeOptionDateInput" class="time-option-date-input">
+                <input type="time" id="timeOptionTimeInput" class="time-option-time-input">
+              </div>
+
+              <input
+                      type="text"
+                      id="timeOptionMemoInput"
+                      class="time-option-memo-input"
+                      placeholder="메모 선택사항 예: 수업 끝나고"
+                      maxlength="100"
+              >
+
+              <div class="time-option-panel-actions">
+                <button type="button" onclick="closeTimeOptionPanel()">취소</button>
+                <button type="button" onclick="submitTimeOption()">시간 후보 추가</button>
+              </div>
+            </div>
+
+            <div id="timeOptionList" class="time-option-list">
+              <!-- JS로 시간 후보 표시 -->
+            </div>
+          </div>
+
+          <div id="placeClosedText" class="form-closed-text hidden">
+            종료된 약속 투표입니다. 이제 결과만 확인할 수 있습니다.
+          </div>
+
+          <div id="placeResultPanel" class="place-result-panel hidden">
+            <div class="place-map-section-title">투표 결과</div>
+            <div id="placeResultList" class="place-result-list">
+              <div class="form-empty-text">결과 보기를 눌러 확인해 주세요.</div>
+            </div>
+          </div>
+
+          <div class="appointment-bottom-action-row">
+            <button type="button" id="placeCloseFormButton" class="form-close-button hidden">
+              투표 종료
+            </button>
+            <button type="button" class="place-result-button" onclick="loadPlaceFormResult()">
+              결과 보기
+            </button>
+          </div>
+
+        </div>
+
+        <div id="placeClosedPanel" class="appointment-detail-body appointment-closed-panel hidden">
+          <div class="place-map-section-title">약속 투표 결과</div>
+          <div id="placeClosedResultList" class="place-result-list">
+            <div class="form-empty-text">결과를 불러오는 중입니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="appointmentPlaceMapModal" class="place-map-modal-backdrop hidden">
+      <div class="place-map-modal">
+        <div class="place-map-header">
+          <div>
+            <h3>장소 후보 정하기</h3>
+            <p id="appointmentMapSummary">지도에서 장소 후보를 추가하고 장소 투표를 합니다.</p>
+          </div>
+          <button type="button" onclick="closeAppointmentMapScreen()">×</button>
+        </div>
+
+        <div id="placeMapBody" class="place-map-body">
           <div id="placeVoteMap" class="place-vote-map"></div>
 
           <div id="placeMapGuide" class="place-map-guide hidden">
@@ -302,27 +413,50 @@
 
             <div class="custom-place-actions">
               <button type="button" onclick="cancelCustomPlaceAdd()">취소</button>
-              <button type="button" onclick="submitCustomPlaceOption()">후보 추가</button>
+              <button type="button" onclick="submitCustomPlaceOption()">장소 후보 추가</button>
             </div>
           </div>
         </div>
 
-        <div class="place-map-bottom">
-          <div class="place-map-action-row">
-            <button type="button" class="place-add-button" onclick="startAddCustomPlaceMode()">장소 추가</button>
-            <button type="button" class="place-result-button" onclick="loadPlaceFormResult()">결과 보기</button>
+        <div class="place-map-bottom appointment-map-bottom">
+          <div class="place-map-action-row map-only-action-row">
+            <button type="button" id="placeAddButton" class="place-add-button" onclick="startAddCustomPlaceMode()">장소 추가</button>
+            <button type="button" class="place-result-button" onclick="closeAppointmentMapScreen()">완료</button>
           </div>
 
-          <div class="form-empty-text">
-            투표는 지도 위 식당 마커 또는 장소 후보 마커를 눌러서 진행해 주세요.
+          <div class="form-empty-text small-guide">
+            식당 마커를 누르면 식당 보기와 투표를 할 수 있고, 장소 추가 버튼으로 직접 후보를 찍을 수 있습니다.
           </div>
 
-          <div id="placeResultPanel" class="place-result-panel hidden">
-            <div class="place-map-section-title">투표 결과</div>
-            <div id="placeResultList" class="place-result-list">
-              <div class="form-empty-text">결과 보기를 눌러 확인해 주세요.</div>
+          <div class="appointment-vote-section map-place-section">
+            <div class="appointment-section-title">장소 후보</div>
+            <div id="mapPlaceOptionList" class="place-option-list">
+              <!-- JS로 장소 후보 표시 -->
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="storeDetailModal" class="store-detail-modal-backdrop hidden">
+      <div class="store-detail-modal">
+        <div class="store-detail-topbar">
+          <button type="button" class="store-detail-back-button" onclick="closeStoreDetailModal()">
+            ←
+          </button>
+          <strong>식당 보기</strong>
+          <span></span>
+        </div>
+
+        <div class="store-detail-header">
+          <div>
+            <h3 id="storeDetailName">식당 정보</h3>
+            <p id="storeDetailMeta">메뉴와 리뷰를 확인할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div id="storeDetailBody" class="store-detail-body">
+          <!-- JS로 식당 메뉴/리뷰 표시 -->
         </div>
       </div>
     </div>
@@ -338,7 +472,10 @@
 <script th:src="'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-<script th:src="@{/js/chat/chat-message.js}"></script>
-<script th:src="@{/js/chat/chat-room.js}"></script>
+<script defer th:src="@{/js/chat/chat-message.js}"></script>
+<script defer th:src="@{/js/chat/chat-form.js}"></script>
+<script defer th:src="@{/js/chat/chat-report.js}"></script>
+<script defer th:src="@{/js/chat/chat-review.js}"></script>
+<script defer th:src="@{/js/chat/chat-room.js}"></script>
 </body>
 </html>

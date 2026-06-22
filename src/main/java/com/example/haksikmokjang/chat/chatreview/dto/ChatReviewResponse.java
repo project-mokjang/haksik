@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class ChatReviewResponse {
-
     private Long chatReviewId;
     private Long chatRoomId;
     private Long reviewerMemberId;

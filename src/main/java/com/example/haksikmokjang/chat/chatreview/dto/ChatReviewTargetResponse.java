@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ChatReviewTargetResponse {
-
     private Long memberId;
     private String nickname;
     private String profileImageUrl;

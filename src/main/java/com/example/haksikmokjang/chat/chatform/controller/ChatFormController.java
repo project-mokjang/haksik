@@ -7,6 +7,7 @@ import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatFormResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatFormResultResponse;
 import com.example.haksikmokjang.chat.chatform.dto.ChatNearbyStoreResponse;
+import com.example.haksikmokjang.chat.chatform.dto.ChatStoreDetailResponse;
 import com.example.haksikmokjang.chat.chatform.service.ChatFormService;
 import com.example.haksikmokjang.chat.chatmessage.dto.ChatMessageResponse;
 import com.example.haksikmokjang.chat.chatmessage.dto.ChatSocketEventType;
@@ -107,4 +108,23 @@ public class ChatFormController {
     ) {
         return chatFormService.getNearbyStores(lat, lng, radius);
     }
+
+    // 장소 투표 지도 식당 상세 조회
+    @GetMapping("/forms/store-details/{storeId}")
+    public ChatStoreDetailResponse getStoreDetail(
+            @PathVariable Long storeId
+    ) {
+        return chatFormService.getStoreDetail(storeId);
+    }
+    // 모든 폼 종료
+    @PostMapping("/forms/{formId}/close")
+    public ChatFormResponse closeForm(
+            @PathVariable Long formId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        Member loginMember = customUserDetails.getMember();
+
+        return chatFormService.closeForm(formId, loginMember);
+    }
+
 }

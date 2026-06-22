@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "CHAT_FORM_OPTION")
 @Getter
@@ -18,30 +20,28 @@ public class ChatFormOption extends BaseEntity {
     @Column(name = "chat_form_option_id")
     private Long chatFormOptionId;
 
-    // 선택지가 속한 폼
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_form_id", nullable = false)
     private ChatForm chatForm;
 
-    // 선택지를 추가한 회원
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_member_id", nullable = false)
     private Member createdByMember;
 
-    // 일반 투표는 선택지 문구, 장소 투표는 장소명 표시용
+    @Enumerated(EnumType.STRING)
+    @Column(name = "option_type", length = 20)
+    private ChatFormOptionType optionType;
+
     @Column(name = "option_text", nullable = false, length = 100)
     private String optionText;
 
-    // 화면 표시 순서
     @Column(name = "option_order", nullable = false)
     private int optionOrder;
 
-    // 장소 후보 출처: 점주 가게 / 직접 추가
     @Enumerated(EnumType.STRING)
     @Column(name = "place_source", length = 20)
     private ChatPlaceSource placeSource;
 
-    // 점주 가게 후보일 때 store_id 저장
     @Column(name = "store_id")
     private Long storeId;
 
@@ -60,9 +60,16 @@ public class ChatFormOption extends BaseEntity {
     @Column(name = "map_url", length = 500)
     private String mapUrl;
 
+    @Column(name = "appointment_at")
+    private LocalDateTime appointmentAt;
+
+    @Column(name = "memo", length = 100)
+    private String memo;
+
     public ChatFormOption(
             ChatForm chatForm,
             Member createdByMember,
+            ChatFormOptionType optionType,
             String optionText,
             int optionOrder,
             ChatPlaceSource placeSource,
@@ -71,10 +78,13 @@ public class ChatFormOption extends BaseEntity {
             String address,
             Double latitude,
             Double longitude,
-            String mapUrl
+            String mapUrl,
+            LocalDateTime appointmentAt,
+            String memo
     ) {
         this.chatForm = chatForm;
         this.createdByMember = createdByMember;
+        this.optionType = optionType;
         this.optionText = optionText;
         this.optionOrder = optionOrder;
         this.placeSource = placeSource;
@@ -84,5 +94,7 @@ public class ChatFormOption extends BaseEntity {
         this.latitude = latitude;
         this.longitude = longitude;
         this.mapUrl = mapUrl;
+        this.appointmentAt = appointmentAt;
+        this.memo = memo;
     }
 }

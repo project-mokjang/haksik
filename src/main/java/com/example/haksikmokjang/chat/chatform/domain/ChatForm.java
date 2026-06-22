@@ -19,26 +19,21 @@ public class ChatForm extends BaseEntity {
     @Column(name = "chat_form_id")
     private Long chatFormId;
 
-    // 폼이 생성된 채팅방
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    // 폼 생성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private Member creator;
 
-    // 폼 종류: 일반 투표 / 지도 장소 투표
     @Enumerated(EnumType.STRING)
     @Column(name = "form_type", nullable = false, length = 20)
     private ChatFormType formType;
 
-    // 폼 제목
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    // 폼 종료 여부
     @Column(name = "closed_yn", nullable = false, length = 1)
     private String closedYn;
 
@@ -56,6 +51,10 @@ public class ChatForm extends BaseEntity {
 
     public boolean isPlaceForm() {
         return this.formType == ChatFormType.PLACE;
+    }
+
+    public boolean isVoteForm() {
+        return this.formType == ChatFormType.VOTE;
     }
 
     public void close() {

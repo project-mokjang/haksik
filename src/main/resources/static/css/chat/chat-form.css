@@ -1,0 +1,1585 @@
+/* 채팅 폼 공통 모달 */
+.chat-form-modal-backdrop,
+.place-map-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 320;
+    background-color: rgba(23, 63, 53, 0.25);
+
+    display: flex;
+    align-items: flex-end;
+}
+
+.chat-form-select-modal,
+.chat-form-create-modal,
+.chat-form-detail-modal {
+    width: 100%;
+    max-height: 86vh;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.chat-form-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.chat-form-modal-header h3 {
+    margin: 0;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.chat-form-modal-header button,
+.place-map-header button {
+    border: none;
+    background: none;
+    color: var(--forest);
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-form-type-card {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+    color: var(--forest);
+    text-align: left;
+    cursor: pointer;
+
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 4px 10px;
+    align-items: center;
+}
+
+.chat-form-type-card:hover {
+    border-color: var(--green);
+    background-color: var(--paper);
+}
+
+.chat-form-type-icon {
+    grid-row: span 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    font-size: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-form-type-title {
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.chat-form-type-desc {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.chat-form-help-text {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.chat-form-field {
+    margin-top: 14px;
+}
+
+.chat-form-field label,
+.chat-form-field-row label {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.chat-form-field input {
+    width: 100%;
+    height: 44px;
+    margin-top: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.chat-form-field input:focus {
+    border-color: var(--green);
+    background-color: var(--paper);
+}
+
+.chat-form-field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.chat-form-small-button {
+    height: 30px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.vote-option-input-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-option-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.vote-option-input-row .vote-option-input {
+    flex: 1;
+    margin-top: 0;
+}
+
+.vote-option-remove-button {
+    width: 38px;
+    height: 44px;
+    border: none;
+    border-radius: 14px;
+    background-color: #fff1f1;
+    color: var(--red);
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.chat-form-actions button {
+    flex: 1;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-form-cancel-button {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.chat-form-submit-button {
+    background-color: var(--green);
+    color: white;
+}
+
+.vote-detail-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-option-button {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background-color: var(--card);
+    color: var(--forest);
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.vote-option-button span {
+    font-size: 14px;
+    font-weight: 900;
+    text-align: left;
+}
+
+.vote-option-button strong {
+    flex-shrink: 0;
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.vote-option-button.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.form-result-section {
+    margin-top: 18px;
+}
+
+.form-result-title,
+.place-map-section-title {
+    margin: 14px 0 8px;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.vote-result-list,
+.place-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vote-result-item,
+.place-result-item {
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+}
+
+.vote-result-item.selected,
+.place-result-item.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.vote-result-top,
+.place-result-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.vote-result-top strong,
+.place-result-top strong {
+    flex-shrink: 0;
+    color: var(--green);
+    font-size: 12px;
+}
+
+.vote-result-bar {
+    height: 8px;
+    border-radius: 999px;
+    background-color: var(--paper);
+    overflow: hidden;
+}
+
+.vote-result-fill {
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--green);
+}
+
+.form-empty-text {
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    background-color: var(--card);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+/* 장소 투표 지도 모달 */
+.place-map-modal-backdrop {
+    align-items: stretch;
+}
+
+.place-map-modal {
+    width: 100%;
+    height: 100%;
+    background-color: var(--paper);
+    display: flex;
+    flex-direction: column;
+}
+
+.place-map-header {
+    flex-shrink: 0;
+    min-height: 62px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.place-map-header h3 {
+    margin: 0;
+    color: var(--forest);
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.place-map-header p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.place-map-body {
+    position: relative;
+    flex: 1;
+    min-height: 260px;
+    background-color: var(--ivory2);
+}
+
+.place-vote-map {
+    width: 100%;
+    height: 100%;
+}
+
+.map-load-fail {
+    width: 100%;
+    height: 100%;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-map-guide {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    z-index: 5;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background-color: rgba(23, 63, 53, 0.88);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.custom-place-panel {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 5;
+    padding: 12px;
+    border-radius: 18px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.custom-place-title {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.custom-place-coordinate {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.custom-place-panel input {
+    width: 100%;
+    height: 38px;
+    margin-bottom: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background-color: var(--card);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.custom-place-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.custom-place-actions button {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.custom-place-actions button:first-child {
+    background-color: var(--card);
+    color: var(--forest);
+}
+
+.custom-place-actions button:last-child {
+    background-color: var(--green);
+    color: white;
+}
+
+.place-map-bottom {
+    flex-shrink: 0;
+    max-height: 42%;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    background-color: var(--paper);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.place-map-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.place-map-action-row button {
+    height: 42px;
+    border: none;
+    border-radius: 999px;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.place-add-button {
+    background-color: var(--green);
+}
+
+.place-result-button {
+    background-color: var(--soil);
+}
+
+.place-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.place-option-card {
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background-color: var(--card);
+}
+
+.place-option-card.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.place-option-title {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.place-option-meta,
+.place-option-address {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.place-option-card button {
+    width: 100%;
+    height: 34px;
+    margin-top: 9px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.place-map-marker {
+    width: 34px;
+    height: 34px;
+    border-radius: 50% 50% 50% 8px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    transform: rotate(-45deg);
+    font-size: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-map-marker.candidate {
+    background-color: var(--green);
+}
+
+.place-map-marker.store {
+    background-color: var(--soil);
+}
+
+.place-map-marker.candidate,
+.place-map-marker.store {
+    color: white;
+}
+
+.place-map-marker::first-letter {
+    transform: rotate(45deg);
+}
+
+.place-info-window {
+    width: 185px;
+    padding: 10px;
+    color: var(--forest);
+    box-sizing: border-box;
+}
+
+.place-info-title {
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 3px;
+}
+
+.place-info-meta,
+.place-info-address {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-bottom: 5px;
+}
+
+.place-info-window button {
+    width: 100%;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* 식당 상세 모달 */
+.store-detail-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 340;
+    background-color: var(--paper);
+
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.store-detail-modal {
+    width: 100%;
+    height: 100%;
+    background-color: var(--paper);
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.store-detail-topbar {
+    flex-shrink: 0;
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+}
+
+.store-detail-topbar strong {
+    color: var(--forest);
+    font-size: 17px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.store-detail-back-button {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 14px;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 23px;
+    font-weight: 900;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.store-detail-header {
+    flex-shrink: 0;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+}
+
+.store-detail-header h3 {
+    margin: 0;
+    color: var(--forest);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.store-detail-header p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.store-detail-body {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    background-color: var(--paper);
+}
+
+.store-detail-photo-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background-color: var(--card);
+}
+
+.store-detail-main-image,
+.store-detail-main-empty {
+    width: 100%;
+    height: 178px;
+    background-color: var(--ivory2);
+}
+
+.store-detail-main-image {
+    display: block;
+    object-fit: cover;
+}
+
+.store-detail-main-empty {
+    color: var(--soil);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.store-detail-main-emoji {
+    width: 66px;
+    height: 66px;
+    border-radius: 22px;
+    background-color: var(--paper);
+    font-size: 34px;
+    box-shadow: 0 8px 18px rgba(57, 44, 29, 0.08);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.store-detail-main-empty-text {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.store-detail-photo-info {
+    padding: 13px 14px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.store-detail-photo-title {
+    color: var(--forest);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.store-detail-photo-sub {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.store-detail-rating-box {
+    flex-shrink: 0;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.store-detail-rating-box span {
+    color: var(--soil);
+}
+
+.store-detail-info-card {
+    margin-top: 10px;
+    padding: 13px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.store-detail-info-card:empty {
+    display: none;
+}
+
+.store-detail-info-row {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    gap: 8px;
+    color: var(--forest);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.store-detail-info-row strong {
+    color: var(--muted);
+    font-weight: 900;
+}
+
+.store-detail-info-row span {
+    font-weight: 900;
+}
+
+.store-detail-section {
+    margin-top: 17px;
+}
+
+.store-detail-section-title {
+    margin-bottom: 9px;
+    color: var(--forest);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.store-menu-list,
+.store-review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.store-menu-item {
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
+
+    display: grid;
+    grid-template-columns: 54px 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.store-menu-item.sold-out {
+    opacity: 0.62;
+}
+
+.store-menu-image {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    object-fit: cover;
+    background-color: var(--ivory2);
+}
+
+.store-menu-image.empty {
+    color: var(--soil);
+    font-size: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.store-menu-name {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.store-menu-price {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.store-menu-status {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.store-review-item {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
+}
+
+.store-review-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.store-review-top strong {
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.store-review-top span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.store-review-rating {
+    margin-top: 5px;
+    color: var(--soil);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.store-review-content {
+    margin: 8px 0 0;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.store-review-image-list {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.store-review-image-list img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    object-fit: cover;
+    background-color: var(--ivory2);
+}
+
+.store-review-reply {
+    margin-top: 9px;
+    padding: 9px;
+    border-radius: 13px;
+    background-color: var(--ivory2);
+}
+
+.store-review-reply strong {
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.store-review-reply p {
+    margin: 4px 0 0;
+    color: var(--forest);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.45;
+    white-space: pre-wrap;
+}
+
+.place-info-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.place-info-window .place-info-detail-button {
+    background-color: var(--soil);
+}
+
+/* 식당 상세 메뉴/리뷰 탭 */
+.store-detail-tabs {
+    margin-top: 14px;
+    padding: 5px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--ivory2);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.store-detail-tab-button {
+    height: 42px;
+    border: none;
+    border-radius: 14px;
+    background-color: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.store-detail-tab-button.active {
+    background-color: var(--paper);
+    color: var(--forest);
+    box-shadow: 0 5px 14px rgba(40, 73, 60, 0.12);
+}
+
+.store-detail-tab-panel {
+    margin-top: 12px;
+}
+
+.store-detail-tab-panel.hidden {
+    display: none;
+}
+/* ===== 약속 장소/시간 투표 재구성 ===== */
+.vote-detail-control-box {
+    padding: 0 16px 12px;
+}
+
+.vote-detail-meta {
+    margin: -4px 0 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.form-closed-text {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.45;
+}
+
+.form-close-button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 14px;
+    background-color: var(--soil);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.form-close-button:disabled,
+.place-add-button:disabled,
+.time-add-button:disabled,
+.vote-option-button:disabled,
+.place-option-card button:disabled,
+.time-option-card button:disabled,
+.place-info-window button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.place-map-action-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.place-map-action-row .form-close-button {
+    width: 100%;
+}
+
+.time-add-button {
+    background-color: var(--green);
+}
+
+.time-option-panel {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+}
+
+.time-option-panel-title {
+    margin-bottom: 8px;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.time-option-date-input,
+.time-option-time-input,
+.time-option-memo-input {
+    width: 100%;
+    height: 42px;
+    margin-bottom: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background-color: var(--paper);
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 800;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.time-option-date-input:focus,
+.time-option-time-input:focus,
+.time-option-memo-input:focus {
+    border-color: var(--green);
+}
+
+.time-option-panel-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.time-option-panel-actions button {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.time-option-panel-actions button:first-child {
+    background-color: var(--paper);
+    color: var(--forest);
+}
+
+.time-option-panel-actions button:last-child {
+    background-color: var(--green);
+    color: white;
+}
+
+.appointment-vote-section {
+    margin-top: 14px;
+}
+
+.appointment-section-title {
+    margin-bottom: 8px;
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.small-guide {
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+.time-option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.time-option-card {
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background-color: var(--card);
+}
+
+.time-option-card.selected {
+    border-color: var(--green);
+    background-color: var(--ivory2);
+}
+
+.time-option-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.time-option-title {
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.time-option-meta {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.time-option-badge {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.time-option-card button {
+    width: 100%;
+    height: 34px;
+    margin-top: 9px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.appointment-result-section {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+}
+
+.appointment-result-section + .appointment-result-section {
+    margin-top: 10px;
+}
+
+.appointment-result-heading {
+    margin-bottom: 9px;
+    color: var(--forest);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.appointment-winner-card {
+    padding: 12px;
+    border-radius: 16px;
+    background-color: var(--ivory2);
+    color: var(--forest);
+}
+
+.appointment-winner-label {
+    margin-bottom: 5px;
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.appointment-winner-title {
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.appointment-winner-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.appointment-closed-panel {
+    max-height: none;
+    height: 100%;
+}
+
+
+/* 약속 투표 기본 화면 / 지도 화면 분리 */
+.appointment-detail-modal {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.appointment-detail-header {
+    flex-shrink: 0;
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0;
+}
+
+.appointment-detail-header > div {
+    min-width: 0;
+}
+
+.appointment-detail-header p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.appointment-detail-body {
+    flex: 1;
+    min-height: 0;
+    padding: 14px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.appointment-top-summary-card {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: linear-gradient(180deg, var(--card), var(--paper));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.appointment-top-summary-card strong {
+    display: block;
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.appointment-top-summary-card span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.place-map-open-button,
+.section-map-button {
+    flex-shrink: 0;
+    height: 40px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--soil);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    padding: 0 16px;
+}
+
+.appointment-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.appointment-action-row .form-close-button,
+.appointment-action-row .place-result-button {
+    width: 100%;
+    height: 40px;
+}
+
+.appointment-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.appointment-section-head p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.appointment-section-head .appointment-section-title {
+    margin-bottom: 0;
+}
+
+.time-section {
+    padding-top: 2px;
+}
+
+.time-add-button {
+    flex-shrink: 0;
+    height: 36px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    padding: 0 14px;
+}
+
+.time-option-input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.appointment-map-bottom {
+    max-height: 46%;
+}
+
+.map-only-action-row {
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 10px;
+}
+
+.map-place-section {
+    margin-top: 10px;
+}
+
+@media (max-width: 420px) {
+    .appointment-top-summary-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .place-map-open-button {
+        width: 100%;
+    }
+
+    .appointment-action-row {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment-section-head {
+        flex-direction: column;
+    }
+
+    .section-map-button,
+    .time-add-button {
+        width: 100%;
+    }
+}
+
+/* 약속 투표 화면 디자인 수정: 지도 버튼 1개, 하단 액션 고정 */
+.appointment-top-summary-card {
+    display: none;
+}
+
+.appointment-action-row {
+    display: none;
+}
+
+.appointment-vote-section {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background-color: var(--paper);
+}
+
+.appointment-vote-section:first-child {
+    margin-top: 0;
+}
+
+.appointment-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.appointment-section-head > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.appointment-section-title {
+    color: var(--forest);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.appointment-section-head p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+.place-map-open-button {
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.place-map-open-button:hover {
+    opacity: 0.9;
+}
+
+.section-map-button {
+    display: none !important;
+}
+
+.time-add-button {
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.appointment-bottom-action-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-top: 16px;
+    padding-top: 12px;
+    background-color: var(--paper);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.appointment-bottom-action-row .form-close-button,
+.appointment-bottom-action-row .place-result-button {
+    width: 100%;
+    height: 42px;
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.appointment-bottom-action-row .form-close-button {
+    background-color: var(--soil);
+}
+
+.appointment-bottom-action-row .place-result-button {
+    background-color: var(--green);
+}
+
+.appointment-bottom-action-row .hidden {
+    display: none !important;
+}
+
+@media (max-width: 420px) {
+    .appointment-section-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .place-map-open-button,
+    .time-add-button {
+        width: 100%;
+    }
+
+    .appointment-bottom-action-row {
+        grid-template-columns: 1fr;
+    }
+}
