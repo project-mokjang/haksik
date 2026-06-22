@@ -3,7 +3,8 @@
 <body>
 
 <!-- 공통 헤더 -->
-<header th:fragment="appHeader(title, leftType, rightType)" class="app-header">
+<header th:fragment="appHeader(title, leftType, rightType)" class="app-header"
+        th:classappend="${rightType == 'none'} ? ' right-none' : ''">
 
     <!-- 왼쪽 -->
     <button th:if="${leftType == 'back'}"

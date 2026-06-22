@@ -3,6 +3,7 @@ package com.example.haksikmokjang.matching.matchingwaiting.controller;
 import com.example.haksikmokjang.global.response.ApiResponse;
 import com.example.haksikmokjang.global.security.CustomUserDetails;
 import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingMode;
+import com.example.haksikmokjang.matching.matchingwaiting.domain.MatchingType;
 import com.example.haksikmokjang.matching.matchingwaiting.dto.LocationUpdateRequest;
 import com.example.haksikmokjang.matching.matchingwaiting.dto.MatchingWaitingEnterRequest;
 import com.example.haksikmokjang.matching.matchingwaiting.dto.MatchingWaitingMarkerResponse;
@@ -38,14 +39,27 @@ public class MatchingWaitingController {
     @GetMapping("/markers")
     public ApiResponse<List<MatchingWaitingMarkerResponse>> getMarkers(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam MatchingMode mode
+            @RequestParam MatchingMode mode,
+            @RequestParam(required = false) MatchingType matchingType,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) Integer ageMin,
+            @RequestParam(required = false) Integer ageMax,
+            @RequestParam(required = false) String foodCategory,
+            @RequestParam(required = false) Double radiusKm
     ) {
-        // 로그인 회원 ID
         Long memberId = userDetails.getMemberId();
 
-        // 마커 목록 조회
         List<MatchingWaitingMarkerResponse> markers =
-                matchingWaitingService.getMarkers(mode, memberId);
+                matchingWaitingService.getMarkers(
+                        mode,
+                        memberId,
+                        matchingType,
+                        gender,
+                        ageMin,
+                        ageMax,
+                        foodCategory,
+                        radiusKm
+                );
 
         return ApiResponse.success(markers);
     }

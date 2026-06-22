@@ -18,6 +18,16 @@ const map = new naver.maps.Map('matchingMap', {
 // 마커 배열
 const markerList = [];
 
+// 현재 적용된 마커 필터
+const markerFilter = {
+    matchingType: '',
+    gender: '',
+    ageMin: '',
+    ageMax: '',
+    foodCategory: '',
+    radiusKm: ''
+};
+
 // 현재 열린 정보창
 let openedInfoWindow = null;
 
@@ -29,6 +39,119 @@ let myWaitingMarker = null;
 function clearMarkers() {
     markerList.forEach(marker => marker.setMap(null));
     markerList.length = 0;
+}
+
+// 필터 모달 열기
+function openMatchingFilterModal() {
+    const modal = document.getElementById('matchingFilterModal');
+
+    if (!modal) return;
+
+    syncMatchingFilterInputs();
+
+    modal.style.display = 'flex';
+}
+
+// 필터 모달 닫기
+function closeMatchingFilterModal() {
+    const modal = document.getElementById('matchingFilterModal');
+
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 현재 필터값을 입력창에 반영
+function syncMatchingFilterInputs() {
+    const matchingTypeInput = document.getElementById('filterMatchingType');
+    const genderInput = document.getElementById('filterGender');
+    const ageMinInput = document.getElementById('filterAgeMin');
+    const ageMaxInput = document.getElementById('filterAgeMax');
+    const foodCategoryInput = document.getElementById('filterFoodCategory');
+    const radiusKmInput = document.getElementById('filterRadiusKm');
+
+    if (matchingTypeInput) matchingTypeInput.value = markerFilter.matchingType;
+    if (genderInput) genderInput.value = markerFilter.gender;
+    if (ageMinInput) ageMinInput.value = markerFilter.ageMin;
+    if (ageMaxInput) ageMaxInput.value = markerFilter.ageMax;
+    if (foodCategoryInput) foodCategoryInput.value = markerFilter.foodCategory;
+    if (radiusKmInput) radiusKmInput.value = markerFilter.radiusKm;
+}
+
+// 필터 적용
+function applyMatchingFilter() {
+    const matchingTypeInput = document.getElementById('filterMatchingType');
+    const genderInput = document.getElementById('filterGender');
+    const ageMinInput = document.getElementById('filterAgeMin');
+    const ageMaxInput = document.getElementById('filterAgeMax');
+    const foodCategoryInput = document.getElementById('filterFoodCategory');
+    const radiusKmInput = document.getElementById('filterRadiusKm');
+
+    markerFilter.matchingType = matchingTypeInput?.value || '';
+    markerFilter.gender = genderInput?.value || '';
+    markerFilter.ageMin = ageMinInput?.value || '';
+    markerFilter.ageMax = ageMaxInput?.value || '';
+    markerFilter.foodCategory = foodCategoryInput?.value?.trim() || '';
+    markerFilter.radiusKm = radiusKmInput?.value || '';
+
+    const ageMin = Number(markerFilter.ageMin);
+    const ageMax = Number(markerFilter.ageMax);
+
+    if (markerFilter.ageMin && markerFilter.ageMax && ageMin > ageMax) {
+        notify('최소 나이는 최대 나이보다 클 수 없습니다.', 'error');
+        return;
+    }
+
+    closeMatchingFilterModal();
+    loadMatchingMarkers();
+}
+
+// 필터 초기화
+function resetMatchingFilter() {
+    markerFilter.matchingType = '';
+    markerFilter.gender = '';
+    markerFilter.ageMin = '';
+    markerFilter.ageMax = '';
+    markerFilter.foodCategory = '';
+    markerFilter.radiusKm = '';
+
+    syncMatchingFilterInputs();
+    loadMatchingMarkers();
+
+    notify('필터가 초기화되었습니다.', 'success');
+}
+
+// 마커 조회 파라미터 생성
+function createMarkerSearchParams() {
+    const params = new URLSearchParams();
+
+    params.append('mode', matchingMode);
+
+    if (markerFilter.matchingType) {
+        params.append('matchingType', markerFilter.matchingType);
+    }
+
+    if (markerFilter.gender) {
+        params.append('gender', markerFilter.gender);
+    }
+
+    if (markerFilter.ageMin) {
+        params.append('ageMin', markerFilter.ageMin);
+    }
+
+    if (markerFilter.ageMax) {
+        params.append('ageMax', markerFilter.ageMax);
+    }
+
+    if (markerFilter.foodCategory) {
+        params.append('foodCategory', markerFilter.foodCategory);
+    }
+
+    if (markerFilter.radiusKm) {
+        params.append('radiusKm', markerFilter.radiusKm);
+    }
+
+    return params;
 }
 
 // 메인 페이지 이동
@@ -623,7 +746,9 @@ function createMarkerContent(markerData) {
 
 // 마커 조회
 function loadMatchingMarkers() {
-    fetch(`/api/matching/waiting/markers?mode=${matchingMode}`)
+    const params = createMarkerSearchParams();
+
+    fetch(`/api/matching/waiting/markers?${params.toString()}`)
         .then(response => response.json())
         .then(result => {
             if (!result.success) {
@@ -720,6 +845,17 @@ function bindMatchingActionEvents() {
 
     document.getElementById('requestBtn')
         ?.addEventListener('click', requestMatching);
+    document.getElementById('matchingFilterBtn')
+        ?.addEventListener('click', openMatchingFilterModal);
+
+    document.getElementById('closeMatchingFilterBtn')
+        ?.addEventListener('click', closeMatchingFilterModal);
+
+    document.getElementById('applyMatchingFilterBtn')
+        ?.addEventListener('click', applyMatchingFilter);
+
+    document.getElementById('resetMatchingFilterBtn')
+        ?.addEventListener('click', resetMatchingFilter);
 }
 
 // 초기 실행
