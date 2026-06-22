@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>내 리뷰 관리</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/community/board.css}">
+</head>
+<body class="app-body">
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('내 리뷰 관리', 'back', 'none')}"></header>
+
+        <main class="app-scroll board-write-scroll has-bottom-nav" style="padding-top: 16px;">
+            <ul id="reviewContainer" style="list-style: none; padding: 0; margin: 0 16px; display: flex; flex-direction: column; gap: 16px;"></ul>
+
+            <div id="observerTarget" style="height: 30px; margin-bottom: 20px;"></div>
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: bottomNav('mypage')}"></nav>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/user-review-js.js}"></script>
+</body>
+</html>

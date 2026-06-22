@@ -1,11 +1,17 @@
 package com.example.haksikmokjang.ownerpage.store.controller;
 
+import com.example.haksikmokjang.member.reivew.dto.ReviewUpdateRequest;
+import com.example.haksikmokjang.member.reivew.dto.ReviewUserResponse;
 import com.example.haksikmokjang.ownerpage.store.dto.ReviewCreateRequest;
 import com.example.haksikmokjang.ownerpage.store.dto.ReviewOwnerResponse;
 import com.example.haksikmokjang.ownerpage.store.dto.ReviewReportRequest;
 import com.example.haksikmokjang.ownerpage.store.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -62,4 +68,34 @@ public class ReviewController {
         return ResponseEntity.ok().build();
     }
 
+    // 유저용: 내 리뷰 목록 조회 API (무한 스크롤)
+    @GetMapping("/my")
+    public ResponseEntity<Slice<ReviewUserResponse>> getMyReviews(
+            Authentication authentication,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        String loginId = authentication.getName();
+        return ResponseEntity.ok(reviewService.getMyReviews(loginId, pageable));
+    }
+
+    // 유저용: 내 리뷰 수정 API (PATCH)
+    @PatchMapping("/{reviewId}")
+    public ResponseEntity<String> updateReview(
+            Authentication authentication,
+            @PathVariable Long reviewId,
+            @Valid @RequestBody ReviewUpdateRequest request) {
+
+        reviewService.updateReview(authentication.getName(), reviewId, request);
+        return ResponseEntity.ok("리뷰가 수정되었습니다.");
+    }
+
+    // 유저용: 내 리뷰 삭제 API (DELETE)
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<String> deleteReview(
+            Authentication authentication,
+            @PathVariable Long reviewId) {
+
+        reviewService.deleteReview(authentication.getName(), reviewId);
+        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
+    }
 }

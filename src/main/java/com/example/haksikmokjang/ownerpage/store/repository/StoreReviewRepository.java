@@ -1,6 +1,9 @@
 package com.example.haksikmokjang.ownerpage.store.repository;
 import com.example.haksikmokjang.ownerpage.store.domain.Reservation;
+import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,5 +21,7 @@ public interface StoreReviewRepository extends JpaRepository<StoreReview, Long> 
                 "AND sr.status = com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus.ACTIVE " +
                 "ORDER BY sr.createdAt DESC")
         List<StoreReview> findAllByStoreOwnerLoginId(@Param("ownerLoginId") String ownerLoginId);
+
+        Slice<StoreReview> findByMember_LoginIdAndStatus(String loginId, ReviewStatus status, Pageable pageable);
 }
 

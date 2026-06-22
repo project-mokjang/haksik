@@ -6,6 +6,8 @@ import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
+import com.example.haksikmokjang.member.reivew.dto.ReviewUpdateRequest;
+import com.example.haksikmokjang.member.reivew.dto.ReviewUserResponse;
 import com.example.haksikmokjang.ownerpage.store.domain.Reservation;
 import com.example.haksikmokjang.ownerpage.store.domain.ReservationStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
@@ -49,8 +51,8 @@ public class ReviewService {
         if (!reservation.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         if (reservation.getStatus() != ReservationStatus.COMPLETED) throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime allowedStartTime = reservation.getReservationAt().plusMinutes(30);
-        LocalDateTime allowedEndTime = reservation.getReservationAt().plusHours(4);
+        LocalDateTime allowedStartTime = reservation.getReservationAt();
+        LocalDateTime allowedEndTime = reservation.getReservationAt().plusDays(3);
         if (now.isBefore(allowedStartTime) || now.isAfter(allowedEndTime)) throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
         if (storeReviewRepository.existsByReservation(reservation)) throw new CustomException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
 
@@ -65,7 +67,7 @@ public class ReviewService {
 
         StoreReview savedReview = storeReviewRepository.save(newReview);
 
-        // 🚨 타점: 프론트가 리뷰 사진을 던졌다면 "REVIEW" 타겟으로 저장 격발
+        //프론트가 리뷰 사진을 던졌다면 "REVIEW" 타겟으로 저장 격발
         if (request.getReviewImage() != null && !request.getReviewImage().isEmpty()) {
             saveImage(member, savedReview.getReviewId(), "REVIEW", request.getReviewImage());
         }
@@ -74,7 +76,7 @@ public class ReviewService {
         return savedReview.getReviewId();
     }
 
-    // 🚨 핵심 타점: 점주의 내 가게 리뷰 전체 조회 로직 교정
+    //점주의 내 가게 리뷰 전체 조회 로직 교정
     @Transactional(readOnly = true)
     public List<ReviewOwnerResponse> getOwnerReviews(String ownerLoginId) {
 
@@ -82,13 +84,13 @@ public class ReviewService {
 
         return reviews.stream().map(review -> {
 
-            // 1. 해당 리뷰(targetId)에 결속된 "REVIEW"(targetType) 사진 리스트를 DB에서 긁어옵니다.
+            //해당 리뷰(targetId)에 결속된 "REVIEW"(targetType) 사진 리스트를 DB에서 긁어옵니다.
             List<Long> imageIds = fileAttachmentRepository.findByTargetTypeAndTargetId("REVIEW", review.getReviewId())
                     .stream()
                     .map(FileAttachment::getFileId) // 엔티티에서 PK(fileId) 숫자만 추출
                     .toList();
 
-            // 2. 리뷰 텍스트 데이터와 방금 뽑아낸 사진 번호 리스트를 합쳐서 DTO 바구니에 포장합니다.
+            //리뷰 텍스트 데이터와 방금 뽑아낸 사진 번호 리스트를 합쳐서 DTO 바구니에 포장합니다.
             return new ReviewOwnerResponse(review, imageIds);
 
         }).toList();
@@ -111,7 +113,7 @@ public class ReviewService {
         reportRepository.save(report);
     }
 
-    // 🚨 팩트: 하드디스크 저장 및 FileAttachment DB 결속 로직 (StoreService의 것과 100% 동일)
+    //하드디스크 저장 및 FileAttachment DB 결속 로직 (StoreService의 것과 100% 동일)
     private void saveImage(Member uploader, Long targetId, String targetType, org.springframework.web.multipart.MultipartFile file) {
         File folder = new File(uploadDir);
         if (!folder.exists()) folder.mkdirs();
@@ -146,4 +148,40 @@ public class ReviewService {
 
         review.writeOwnerReply(reply);
     }
+    // 내 리뷰 무한 스크롤 조회 (삭제된 리뷰 제외)
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Slice<ReviewUserResponse> getMyReviews(String loginId, org.springframework.data.domain.Pageable pageable) {
+        return storeReviewRepository.findByMember_LoginIdAndStatus(loginId, ReviewStatus.ACTIVE, pageable)
+                .map(review -> {
+                    // 리뷰에 결속된 사진 번호들 추출
+                    List<Long> imageIds = fileAttachmentRepository.findByTargetTypeAndTargetId("REVIEW", review.getReviewId())
+                            .stream().map(FileAttachment::getFileId).toList();
+                    return new ReviewUserResponse(review, imageIds);
+                });
+    }
+
+    // 내 리뷰 인라인 수정
+    @Transactional
+    public void updateReview(String loginId, Long reviewId, ReviewUpdateRequest request) {
+        StoreReview review = storeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+        // 내 리뷰가 맞는지 팩트 체크
+        if (!review.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        if (review.getStatus() == ReviewStatus.DELETED) throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+
+        review.updateReview(request.getRating(), request.getContent());
+    }
+
+    // 내 리뷰 삭제 (DB 완전 삭제가 아닌 상태값 변경(Soft Delete)으로 데이터 보존)
+    @Transactional
+    public void deleteReview(String loginId, Long reviewId) {
+        StoreReview review = storeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+        if (!review.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+
+        review.markAsDeleted();
+    }
+
 }
