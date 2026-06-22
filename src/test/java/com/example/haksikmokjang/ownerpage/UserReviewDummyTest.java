@@ -37,8 +37,8 @@ class UserReviewDummyTest {
                 .orElseThrow(() -> new RuntimeException("qwer 유저를 찾을 수 없습니다."));
 
         // 2. 타겟팅: 6번 식당
-        Store store = storeRepository.findById(6L)
-                .orElseThrow(() -> new RuntimeException("6번 식당을 찾을 수 없습니다."));
+        Store store = storeRepository.findById(7L)
+                .orElseThrow(() -> new RuntimeException("7번 식당을 찾을 수 없습니다."));
 
         // 3. 4개의 방문 완료 예약 & 리뷰 세트 생성
         for (int i = 1; i <= 4; i++) {
