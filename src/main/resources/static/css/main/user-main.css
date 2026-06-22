@@ -131,14 +131,14 @@
     position: absolute;
     bottom: 90px;
     right: 20px;
-    background-color: rgba(255, 241, 118, 0.4);
+    background-color: #6C9A8B;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 
 
 
-    color: #4e342e;
-    border: none;
+    color: white;
+    border: 3px solid gainsboro;
     border-radius: 50px;
     padding: 12px 20px;
     font-size: 15px;
@@ -147,6 +147,7 @@
     cursor: pointer;
     z-index: 1000;
     transition: transform 0.2s;
+
 }
 .chatbot-fab:hover {
     transform: scale(1.05);
