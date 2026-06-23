@@ -156,6 +156,9 @@ function openReportDetail(reportId) {
             return response.json();
         })
         .then(report => {
+            console.log("신고 상세 응답:", report);
+            console.log("첨부파일 목록:", report.attachments);
+
             renderReportDetail(report);
             document.getElementById("reportDetailModal").classList.add("active");
         })
@@ -243,6 +246,8 @@ function renderReportDetail(report) {
             <div class="detail-content-box">
                 ${report.targetContent || "-"}
             </div>
+            
+            ${renderAttachmentImages(report.attachments)}
         </div>
 
         <div class="detail-section">
@@ -380,4 +385,35 @@ function processReportWithReason(reportId, action, processedReason) {
             console.error(error);
             alert("신고 상태 변경 중 오류가 발생했습니다.");
         });
+}
+
+// 첨부 사진 섹션 출력
+function renderAttachmentImages(attachments) {
+    if (!attachments || attachments.length === 0) {
+        return "";
+    }
+
+    let html = `
+        <div class="detail-section">
+            <h4 class="detail-section-title">첨부 사진</h4>
+            <div class="attachment-grid">
+    `;
+
+    attachments.forEach(file => {
+        const imageUrl = file.imageUrl || `/api/images/${file.fileId}`;
+        const originalName = file.originalName || "첨부 이미지";
+
+        html += `
+            <div class="attachment-image-card">
+                <img src="${imageUrl}" alt="${originalName}">
+            </div>
+        `;
+    });
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    return html;
 }

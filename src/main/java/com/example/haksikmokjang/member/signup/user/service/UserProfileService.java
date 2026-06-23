@@ -1,5 +1,6 @@
 package com.example.haksikmokjang.member.signup.user.service;
 
+import com.example.haksikmokjang.fileattachment.service.FileAttachmentService;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
@@ -25,6 +26,7 @@ public class UserProfileService {
     private final SchoolRepository schoolRepository;
 
     private final FileAttachmentRepository fileAttachmentRepository;
+    private final FileAttachmentService fileAttachmentService;
 
     @Transactional
     public void updateProfile(Member member, ProfileUpdateRequest request) {
@@ -52,39 +54,18 @@ public class UserProfileService {
         MultipartFile profileImageFile = request.getProfileImage();
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            try {
-                // 사진을 저장할 진짜 폴더 경로 만들기
-                String saveDirPath = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
-                File dir = new File(saveDirPath);
-                if (!dir.exists()) dir.mkdirs();
+            Long fileId = fileAttachmentService.uploadFile(
+                    member.getLoginId(),
+                    profileImageFile,
+                    "USER_PROFILE",
+                    member.getMemberId()
+            );
 
-                //  랜덤 이름으로 파일명 바꾸기 (중복 방지)
-                String originalName = profileImageFile.getOriginalFilename();
-                String extension = originalName.substring(originalName.lastIndexOf("."));
-                String savedName = UUID.randomUUID().toString() + extension;
+            FileAttachment fileAttachment = fileAttachmentRepository.findById(fileId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
 
-                //  폴더에 사진 찰칵! 저장하기
-                profileImageFile.transferTo(new File(saveDirPath + savedName));
-
-                // DB에 넣을 파일 정보 예쁘게 포장하기
-                FileAttachment fileAttachment = FileAttachment.builder()
-                        .uploader(member)
-                        .targetType("USER_PROFILE")
-                        .originalName(originalName)
-                        .storedPath("/uploads/" + savedName)
-                        .extension(extension)
-                        .fileSize(profileImageFile.getSize())
-                        .build();
-
-                //  파일 창고에 정보 저장하고, 프로필이랑 연결하기!
-                fileAttachmentRepository.save(fileAttachment);
-                userProfileRepository.updateProfileImageByMember(member, fileAttachment);
-
-            } catch (Exception e) {
-                // 저장하다가 문제 생기면 서버 에러 띄우기
-                throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-            }
-    }
+            userProfileRepository.updateProfileImageByMember(member, fileAttachment);
+        }
 }
     @Transactional
     public void updatePreferredFood(Member member, String foodCategory) {

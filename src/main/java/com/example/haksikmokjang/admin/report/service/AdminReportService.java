@@ -3,6 +3,8 @@ package com.example.haksikmokjang.admin.report.service;
 import com.example.haksikmokjang.admin.report.dto.AdminReportDetailResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportListResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportProcessRequest;
+import com.example.haksikmokjang.fileattachment.dto.FileAttachmentResponse;
+import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
 import com.example.haksikmokjang.global.common.dto.PageResponse;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
@@ -22,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +38,7 @@ public class AdminReportService {
     private final AdminChatReportService adminChatReportService;
     private final AdminReviewReportService adminReviewReportService;
     private final TrustService trustService;
+    private final FileAttachmentRepository fileAttachmentRepository;
 
     // 신고 목록 검색 페이지 조회
     public PageResponse<AdminReportListResponse> findReports(
@@ -87,31 +92,38 @@ public class AdminReportService {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
 
+        AdminReportDetailResponse detail;
+
         if ("POST".equals(report.getTargetType())) {
-            return adminCommunityReportService.getPostReportDetail(report);
+            detail = adminCommunityReportService.getPostReportDetail(report);
+        } else if ("COMMENT".equals(report.getTargetType())) {
+            detail = adminCommunityReportService.getCommentReportDetail(report);
+        } else if ("CHAT_MESSAGE".equals(report.getTargetType())) {
+            detail = adminChatReportService.getChatMessageReportDetail(report);
+        } else if ("CHAT_MEMBER".equals(report.getTargetType())) {
+            detail = adminChatReportService.getChatMemberReportDetail(report);
+        } else if ("REVIEW".equals(report.getTargetType())) {
+            detail = adminReviewReportService.getReviewReportDetail(report);
+        } else {
+            detail = AdminReportDetailResponse.from(
+                    report,
+                    null,
+                    null,
+                    null,
+                    null
+            );
         }
 
-        if ("COMMENT".equals(report.getTargetType())) {
-            return adminCommunityReportService.getCommentReportDetail(report);
-        }
+        return detail.withAttachments(findTargetAttachments(report));
+    }
 
-        if ("CHAT_MESSAGE".equals(report.getTargetType())) {
-            return adminChatReportService.getChatMessageReportDetail(report);
-        }
-        if ("CHAT_MEMBER".equals(report.getTargetType())) {
-            return adminChatReportService.getChatMemberReportDetail(report);
-        }
-        if ("REVIEW".equals(report.getTargetType())) {
-            return adminReviewReportService.getReviewReportDetail(report);
-        }
-
-        return AdminReportDetailResponse.from(
-                report,
-                null,
-                null,
-                null,
-                null
-        );
+    // 신고 대상 첨부파일 조회
+    private List<FileAttachmentResponse> findTargetAttachments(Report report) {
+        return fileAttachmentRepository
+                .findByTargetTypeAndTargetId(report.getTargetType(), report.getTargetId())
+                .stream()
+                .map(FileAttachmentResponse::from)
+                .toList();
     }
 
 

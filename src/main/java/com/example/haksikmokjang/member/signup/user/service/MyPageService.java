@@ -1,5 +1,6 @@
 package com.example.haksikmokjang.member.signup.user.service;
 
+import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
@@ -28,8 +29,16 @@ public class MyPageService {
                 .schoolName(profile.getSchool().getSchoolName())
                 .department(profile.getDepartment())
                 .loginId(member.getLoginId())
-                .profileImageUrl(profile.getProfileImage() != null ? profile.getProfileImage().getStoredPath() : null)
+                .profileImageUrl(getProfileImageUrl(profile.getProfileImage()))
                 .preferredFoodCategory(profile.getPreferredFoodCategory())
                 .build();
+    }
+
+    private String getProfileImageUrl(FileAttachment profileImage) {
+        if (profileImage == null) {
+            return null;
+        }
+
+        return "/api/images/" + profileImage.getFileId();
     }
 }

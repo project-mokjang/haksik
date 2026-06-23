@@ -19,6 +19,7 @@ import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor //서비스 주입을 위해 추가
+@RequestMapping("/api/members")
 public class ProfileUpdateController {
 
     // 마이페이지 정보 가져오는 서비스 연결
@@ -27,7 +28,7 @@ public class ProfileUpdateController {
     private final UserProfileService userProfileService;
 
     // 프로필 수정 화면 띄워주기
-    @GetMapping("/members/profile-update")
+    @GetMapping("/profile-update")
     public String profileUpdateForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
 
         //마이페이지랑 똑같이 내 정보(myPageDto) 꺼내오기
@@ -38,7 +39,7 @@ public class ProfileUpdateController {
     }
 
     // 프론트에서 날아온 수정 데이터(택배 상자) 받아서 처리하기
-    @PostMapping("/api/members/profile-update")
+    @PostMapping("/profile-update")
     public ResponseEntity<?> updateProfile(
             @ModelAttribute ProfileUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
