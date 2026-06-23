@@ -1,5 +1,6 @@
 let reviewTargets = [];
 let currentReviewIndex = 0;
+let currentStoreReviewTarget = null;
 
 // 평가 대상 목록 조회
 function loadReviewTargets(openAfterLoad) {
@@ -34,6 +35,64 @@ function loadReviewTargets(openAfterLoad) {
         });
 }
 
+// 리뷰 안내 영역 생성
+function ensureReviewNoticeArea() {
+    let area = document.getElementById("reviewNoticeArea");
+
+    if (area) {
+        return area;
+    }
+
+    const messageForm = document.getElementById("messageForm");
+    const chatShell = document.querySelector(".chat-shell");
+
+    area = document.createElement("div");
+    area.id = "reviewNoticeArea";
+    area.className = "review-notice-area hidden";
+
+    if (messageForm && messageForm.parentNode) {
+        messageForm.parentNode.insertBefore(area, messageForm);
+        return area;
+    }
+
+    if (chatShell) {
+        chatShell.appendChild(area);
+    }
+
+    return area;
+}
+
+// 리뷰 안내 영역 보이기
+function showReviewNoticeArea() {
+    const area = ensureReviewNoticeArea();
+
+    if (area) {
+        area.classList.remove("hidden");
+    }
+}
+
+// 리뷰 안내 영역 숨김 상태 갱신
+function updateReviewNoticeAreaVisibility() {
+    const area = document.getElementById("reviewNoticeArea");
+
+    if (!area) {
+        return;
+    }
+
+    const reviewNotice = document.getElementById("reviewNotice");
+    const storeReviewNotice = document.getElementById("storeReviewNotice");
+
+    const hasReviewNotice = reviewNotice && !reviewNotice.classList.contains("hidden");
+    const hasStoreReviewNotice = storeReviewNotice && !storeReviewNotice.classList.contains("hidden");
+
+    if (hasReviewNotice || hasStoreReviewNotice) {
+        area.classList.remove("hidden");
+        return;
+    }
+
+    area.classList.add("hidden");
+}
+
 // 평가 안내 표시
 function updateReviewNotice() {
     const pendingTargets = getPendingReviewTargets();
@@ -51,6 +110,7 @@ function updateReviewNotice() {
     }
 
     notice.classList.remove("hidden");
+    showReviewNoticeArea();
 }
 
 // 평가 안내 생성
@@ -58,10 +118,14 @@ function ensureReviewNotice() {
     let notice = document.getElementById("reviewNotice");
 
     if (notice) {
+        const noticeArea = ensureReviewNoticeArea();
+
+        if (noticeArea && notice.parentNode !== noticeArea) {
+            noticeArea.appendChild(notice);
+        }
+
         return notice;
     }
-
-    const messageForm = document.getElementById("messageForm");
 
     notice = document.createElement("div");
     notice.id = "reviewNotice";
@@ -74,8 +138,10 @@ function ensureReviewNotice() {
         <button type="button" onclick="openChatReviewModal()">평가하기</button>
     `;
 
-    if (messageForm && messageForm.parentNode) {
-        messageForm.parentNode.insertBefore(notice, messageForm);
+    const noticeArea = ensureReviewNoticeArea();
+
+    if (noticeArea) {
+        noticeArea.appendChild(notice);
     }
 
     return notice;
@@ -88,6 +154,8 @@ function hideReviewNotice() {
     if (notice) {
         notice.classList.add("hidden");
     }
+
+    updateReviewNoticeAreaVisibility();
 }
 
 // 평가 모달 열기
@@ -335,3 +403,312 @@ function closeChatReviewModal() {
     }
 }
 
+// ==========================================
+// 채팅 약속 식당 리뷰
+// ==========================================
+
+// 식당 리뷰 대상 조회
+function loadStoreReviewTarget() {
+    const chatRoomId = getChatRoomId();
+
+    if (!chatRoomId) {
+        return Promise.resolve(null);
+    }
+
+    return fetch("/api/chat/rooms/" + chatRoomId + "/store-review-target")
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            return response.json();
+        })
+        .then(function (target) {
+            currentStoreReviewTarget = target;
+
+            updateStoreReviewNotice(target);
+
+            return target;
+        })
+        .catch(function () {
+            currentStoreReviewTarget = null;
+            hideStoreReviewNotice();
+            return null;
+        });
+}
+
+// 식당 리뷰 안내 표시
+function updateStoreReviewNotice(target) {
+    if (!target || target.exists !== true || target.alreadyReviewed === true || target.canReview !== true) {
+        hideStoreReviewNotice();
+        return;
+    }
+
+    const notice = ensureStoreReviewNotice();
+    const title = notice.querySelector(".store-review-notice-title");
+    const desc = notice.querySelector(".store-review-notice-desc");
+    const button = notice.querySelector(".store-review-notice-button");
+
+    if (title) {
+        title.textContent = target.storeName
+            ? target.storeName + " 식당 리뷰"
+            : "식당 리뷰";
+    }
+
+    if (desc) {
+        desc.textContent = target.guideMessage || "식당 리뷰를 작성할 수 있습니다.";
+    }
+
+    if (button) {
+        if (target.canReview === true) {
+            button.disabled = false;
+            button.textContent = "식당 리뷰 쓰기";
+        } else {
+            button.disabled = true;
+            button.textContent = "작성 불가";
+        }
+    }
+
+    notice.classList.remove("hidden");
+    showReviewNoticeArea();
+}
+
+// 식당 리뷰 안내 생성
+function ensureStoreReviewNotice() {
+    let notice = document.getElementById("storeReviewNotice");
+
+    if (notice) {
+        const noticeArea = ensureReviewNoticeArea();
+
+        if (noticeArea && notice.parentNode !== noticeArea) {
+            noticeArea.appendChild(notice);
+        }
+
+        return notice;
+    }
+
+    notice = document.createElement("div");
+    notice.id = "storeReviewNotice";
+    notice.className = "review-notice hidden";
+    notice.innerHTML = `
+        <div>
+            <div class="review-notice-title store-review-notice-title">식당 리뷰</div>
+            <div class="review-notice-count store-review-notice-desc">식당 리뷰를 확인하는 중입니다.</div>
+        </div>
+        <button type="button" class="store-review-notice-button" onclick="openStoreReviewModal()">식당 리뷰 쓰기</button>
+    `;
+
+    const noticeArea = ensureReviewNoticeArea();
+
+    if (noticeArea) {
+        noticeArea.appendChild(notice);
+    }
+
+    return notice;
+}
+
+// 식당 리뷰 안내 숨김
+function hideStoreReviewNotice() {
+    const notice = document.getElementById("storeReviewNotice");
+
+    if (notice) {
+        notice.classList.add("hidden");
+    }
+
+    updateReviewNoticeAreaVisibility();
+}
+
+// 식당 리뷰 모달 열기
+function openStoreReviewModal() {
+    if (!currentStoreReviewTarget || currentStoreReviewTarget.canReview !== true) {
+        alert(
+            currentStoreReviewTarget && currentStoreReviewTarget.guideMessage
+                ? currentStoreReviewTarget.guideMessage
+                : "식당 리뷰를 작성할 수 없습니다."
+        );
+        return;
+    }
+
+    const modal = ensureStoreReviewModal();
+
+    if (!modal) {
+        return;
+    }
+
+    resetStoreReviewForm();
+
+    const storeNameText = document.getElementById("storeReviewStoreName");
+
+    if (storeNameText) {
+        storeNameText.textContent = currentStoreReviewTarget.storeName || "식당";
+    }
+
+    modal.classList.remove("hidden");
+}
+
+// 식당 리뷰 모달 생성
+function ensureStoreReviewModal() {
+    const oldModal = document.getElementById("storeReviewModal");
+
+    if (oldModal) {
+        return oldModal;
+    }
+
+    const chatShell = document.querySelector(".chat-shell");
+
+    if (!chatShell) {
+        return null;
+    }
+
+    const modal = document.createElement("div");
+    modal.id = "storeReviewModal";
+    modal.className = "modal-backdrop hidden";
+    modal.innerHTML = `
+        <div class="review-modal">
+            <div class="review-modal-header">
+                <h3>식당 리뷰</h3>
+                <button type="button" onclick="closeStoreReviewModal()">×</button>
+            </div>
+
+            <div class="review-target-box">
+                <div class="review-target-main">
+                    <div class="review-profile-default">식</div>
+                    <div class="review-target-info">
+                        <div id="storeReviewStoreName" class="review-target-name">식당</div>
+                        <div class="review-target-desc">약속으로 방문한 식당 리뷰를 남겨 주세요.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-score-box">
+                <div class="review-field-title">별점</div>
+                <div class="review-score-list">
+                    <label><input type="radio" name="storeReviewRating" value="5" checked> 5점</label>
+                    <label><input type="radio" name="storeReviewRating" value="4"> 4점</label>
+                    <label><input type="radio" name="storeReviewRating" value="3"> 3점</label>
+                    <label><input type="radio" name="storeReviewRating" value="2"> 2점</label>
+                    <label><input type="radio" name="storeReviewRating" value="1"> 1점</label>
+                </div>
+            </div>
+
+            <textarea
+                    id="storeReviewContent"
+                    class="review-content"
+                    placeholder="식당 방문 후기를 입력해 주세요."
+                    maxlength="500"></textarea>
+
+            <div class="review-score-box">
+                <div class="review-field-title">리뷰 사진</div>
+                <input type="file" id="storeReviewImageInput" accept="image/*">
+            </div>
+
+            <div class="review-actions">
+                <button type="button" class="review-cancel-button" onclick="closeStoreReviewModal()">나중에</button>
+                <button type="button" class="review-submit-button" onclick="submitStoreReview()">리뷰 등록</button>
+            </div>
+        </div>
+    `;
+
+    chatShell.appendChild(modal);
+
+    return modal;
+}
+
+// 식당 리뷰 폼 초기화
+function resetStoreReviewForm() {
+    const ratingInput = document.querySelector("input[name='storeReviewRating'][value='5']");
+    const contentInput = document.getElementById("storeReviewContent");
+    const imageInput = document.getElementById("storeReviewImageInput");
+
+    if (ratingInput) {
+        ratingInput.checked = true;
+    }
+
+    if (contentInput) {
+        contentInput.value = "";
+    }
+
+    if (imageInput) {
+        imageInput.value = "";
+    }
+}
+
+// 식당 리뷰 모달 닫기
+function closeStoreReviewModal() {
+    const modal = document.getElementById("storeReviewModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// 식당 리뷰 등록
+function submitStoreReview() {
+    if (!currentStoreReviewTarget || !currentStoreReviewTarget.reservationId) {
+        alert("식당 리뷰 대상 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    if (currentStoreReviewTarget.canReview !== true) {
+        alert(
+            currentStoreReviewTarget.guideMessage
+                ? currentStoreReviewTarget.guideMessage
+                : "식당 리뷰를 작성할 수 없습니다."
+        );
+        return;
+    }
+
+    const checkedRating = document.querySelector("input[name='storeReviewRating']:checked");
+    const contentInput = document.getElementById("storeReviewContent");
+    const imageInput = document.getElementById("storeReviewImageInput");
+
+    if (!checkedRating) {
+        alert("별점을 선택해 주세요.");
+        return;
+    }
+
+    const content = contentInput ? contentInput.value.trim() : "";
+
+    if (content === "") {
+        alert("리뷰 내용을 입력해 주세요.");
+
+        if (contentInput) {
+            contentInput.focus();
+        }
+
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("reservationId", currentStoreReviewTarget.reservationId);
+    formData.append("rating", checkedRating.value);
+    formData.append("content", content);
+
+    if (imageInput && imageInput.files && imageInput.files[0]) {
+        formData.append("reviewImage", imageInput.files[0]);
+    }
+
+    fetch("/api/reviews", {
+        method: "POST",
+        body: formData
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                return response.text().then(function () {
+                    throw new Error();
+                });
+            }
+
+            return response.text();
+        })
+        .then(function () {
+            closeStoreReviewModal();
+            hideStoreReviewNotice();
+            currentStoreReviewTarget = null;
+            alert("식당 리뷰가 등록되었습니다.");
+            loadStoreReviewTarget();
+        })
+        .catch(function () {
+            alert("식당 리뷰 등록에 실패했습니다.");
+        });
+}

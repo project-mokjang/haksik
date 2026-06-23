@@ -53,7 +53,6 @@ async function fetchNotifications() {
 
         const data = await res.json();
 
-        // 읽지 않은 알림이 있으면 빨간 점만 표시
         updateBellBadge(Number(data.unreadCount || 0));
 
         if (!list) {
@@ -74,6 +73,41 @@ async function fetchNotifications() {
 
             const item = document.createElement('li');
             item.className = `noti-item ${unreadClass}`;
+
+            if (noti.targetType === 'CHAT_INVITE') {
+                item.innerHTML = `
+                    <div class="noti-main-row">
+                        <span class="noti-title">${escapeNotificationHtml(noti.title || '채팅방 초대')}</span>
+                    </div>
+                    <span class="noti-msg">${escapeNotificationHtml(noti.content || '')}</span>
+                    <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
+
+                    <div class="noti-invite-actions">
+                        <button type="button" class="noti-invite-accept-button">수락</button>
+                        <button type="button" class="noti-invite-reject-button">거절</button>
+                    </div>
+                `;
+
+                const acceptButton = item.querySelector('.noti-invite-accept-button');
+                const rejectButton = item.querySelector('.noti-invite-reject-button');
+
+                if (acceptButton) {
+                    acceptButton.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        acceptChatInvite(noti.notificationId);
+                    });
+                }
+
+                if (rejectButton) {
+                    rejectButton.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        rejectChatInvite(noti.notificationId);
+                    });
+                }
+
+                list.appendChild(item);
+                return;
+            }
 
             item.addEventListener('click', function () {
                 readAndMove(noti.notificationId, noti.targetUrl);
@@ -171,9 +205,88 @@ function connectSSE() {
 async function readAndMove(notiId, url) {
     try {
         await fetch(`/api/notifications/${notiId}/read`, { method: 'PUT' });
-        location.href = url;
+
+        if (url && url !== '#') {
+            location.href = url;
+        } else {
+            await fetchNotifications();
+        }
     } catch (e) {
-        location.href = url;
+        if (url && url !== '#') {
+            location.href = url;
+        }
+    }
+}
+
+// 채팅방 초대 수락
+async function acceptChatInvite(notificationId) {
+    if (!notificationId) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/chat/rooms/invites/${notificationId}/accept`, {
+            method: 'POST'
+        });
+
+        if (!res.ok) {
+            throw new Error('초대 수락 실패');
+        }
+
+        const data = await res.json();
+
+        if (typeof showToast === 'function') {
+            showToast('초대를 수락했습니다.', 'success');
+        }
+
+        await fetchNotifications();
+
+        if (data && data.chatRoomId) {
+            location.href = '/api/view/user/chat/rooms/' + data.chatRoomId;
+        }
+    } catch (e) {
+        console.error('초대 수락 실패:', e);
+
+        if (typeof showToast === 'function') {
+            showToast('초대 수락에 실패했습니다.', 'error');
+        } else {
+            alert('초대 수락에 실패했습니다.');
+        }
+
+        await fetchNotifications();
+    }
+}
+
+// 채팅방 초대 거절
+async function rejectChatInvite(notificationId) {
+    if (!notificationId) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/chat/rooms/invites/${notificationId}/reject`, {
+            method: 'POST'
+        });
+
+        if (!res.ok) {
+            throw new Error('초대 거절 실패');
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('초대를 거절했습니다.', 'success');
+        }
+
+        await fetchNotifications();
+    } catch (e) {
+        console.error('초대 거절 실패:', e);
+
+        if (typeof showToast === 'function') {
+            showToast('초대 거절에 실패했습니다.', 'error');
+        } else {
+            alert('초대 거절에 실패했습니다.');
+        }
+
+        await fetchNotifications();
     }
 }
 

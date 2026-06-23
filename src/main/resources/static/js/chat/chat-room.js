@@ -116,8 +116,10 @@ function applyChatRoomDetail(roomDetail) {
     if (roomDetail.roomStatus === "CLOSED") {
         closeMessageForm();
         loadReviewTargets(false);
+        loadStoreReviewTarget();
     } else {
         hideReviewNotice();
+        hideStoreReviewNotice();
     }
 }
 
@@ -164,7 +166,6 @@ async function endChatRoom() {
             closeChatMenu();
             closeChatPlusMenu();
             applyChatRoomDetail(roomDetail);
-            openChatReviewModal();
         })
         .catch(function () {
             alert("채팅방 종료에 실패했습니다.");
@@ -554,12 +555,13 @@ function submitInviteMember() {
             return response.json();
         })
         .then(function () {
-            alert("초대가 완료되었습니다.");
+            alert("초대 알림을 보냈습니다.");
             closeInviteMemberModal();
-            loadChatRoomMembers();
+
+            // 알림 수락 전에는 참여자가 아니므로 여기서 참여자 목록을 다시 불러오지 않음
         })
         .catch(function () {
-            alert("초대에 실패했습니다. 닉네임 또는 이미 참여 중인지 확인해 주세요.");
+            alert("초대 알림 전송에 실패했습니다. 닉네임, 이미 참여 중인지, 이미 초대된 상태인지 확인해 주세요.");
         });
 }
 

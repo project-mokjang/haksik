@@ -1,13 +1,6 @@
 package com.example.haksikmokjang.chat.chatform.controller;
 
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormAnswerRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormCreateRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormResultResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatNearbyStoreResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatStoreDetailResponse;
+import com.example.haksikmokjang.chat.chatform.dto.*;
 import com.example.haksikmokjang.chat.chatform.service.ChatFormService;
 import com.example.haksikmokjang.chat.chatmessage.dto.ChatMessageResponse;
 import com.example.haksikmokjang.chat.chatmessage.dto.ChatSocketEventType;
@@ -125,6 +118,17 @@ public class ChatFormController {
         Member loginMember = customUserDetails.getMember();
 
         return chatFormService.closeForm(formId, loginMember);
+    }
+
+    // 채팅방 종료 후 예약자 식당 리뷰 대상 조회
+    @GetMapping("/rooms/{chatRoomId}/store-review-target")
+    public ChatStoreReviewTargetResponse getStoreReviewTarget(
+            @PathVariable Long chatRoomId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        Member loginMember = customUserDetails.getMember();
+
+        return chatFormService.getStoreReviewTarget(chatRoomId, loginMember);
     }
 
 }
