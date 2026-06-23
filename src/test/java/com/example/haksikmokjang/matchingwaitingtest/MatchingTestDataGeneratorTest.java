@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,12 +71,13 @@ class MatchingTestDataGeneratorTest {
     @Transactional
     @Rollback(false)
     void createMatchingFilterTestUsers() {
-        deleteExistingTestUsers();
-
         School school = getOrCreateIndukSchool();
 
-        for (int i = 1; i <= 32; i++) {
-            createUserMatchingData(i, school);
+        // 기존 user1~user96의 WAITING만 취소 처리한다. Member/UserProfile은 삭제하지 않는다.
+        cancelExistingTestWaitings();
+
+        for (int i = 1; i <= 96; i++) {
+            createOrUpdateUserMatchingData(i, school);
         }
 
         entityManager.flush();
@@ -82,78 +85,128 @@ class MatchingTestDataGeneratorTest {
 
         List<MatchingWaiting> waitings = findTestWaitings();
 
-        assertThat(waitings).hasSize(32);
+        assertThat(waitings).hasSize(96);
 
-        assertThat(waitings.stream()
-                .filter(waiting -> waiting.getMatchingType() == MatchingType.ONE_TO_ONE)
-                .count()
-        ).isEqualTo(16);
+        assertThat(countByMode(waitings, MatchingMode.MEAL)).isEqualTo(32);
+        assertThat(countByMode(waitings, MatchingMode.BLIND_DATE)).isEqualTo(32);
+        assertThat(countByMode(waitings, MatchingMode.GROUP)).isEqualTo(32);
 
-        assertThat(waitings.stream()
-                .filter(waiting -> waiting.getMatchingType() == MatchingType.GROUP_MEAL)
-                .count()
-        ).isEqualTo(16);
+        assertThat(countByModeAndType(waitings, MatchingMode.MEAL, MatchingType.ONE_TO_ONE)).isEqualTo(16);
+        assertThat(countByModeAndType(waitings, MatchingMode.MEAL, MatchingType.GROUP_MEAL)).isEqualTo(16);
+        assertThat(countByModeAndType(waitings, MatchingMode.BLIND_DATE, MatchingType.ONE_TO_ONE)).isEqualTo(32);
+        assertThat(countByModeAndType(waitings, MatchingMode.GROUP, MatchingType.GROUP_DATE)).isEqualTo(32);
 
-        assertThat(countByFoodCategory(waitings, "한식")).isEqualTo(8);
-        assertThat(countByFoodCategory(waitings, "양식")).isEqualTo(8);
-        assertThat(countByFoodCategory(waitings, "중식")).isEqualTo(8);
-        assertThat(countByFoodCategory(waitings, "일식")).isEqualTo(8);
-
-        assertThat(countByGender(waitings, Gender.M)).isEqualTo(16);
-        assertThat(countByGender(waitings, Gender.F)).isEqualTo(16);
-
-        assertThat(countByAgeRange(waitings, 21, 23)).isEqualTo(8);
-        assertThat(countByAgeRange(waitings, 24, 27)).isEqualTo(8);
-        assertThat(countByAgeRange(waitings, 28, 31)).isEqualTo(8);
-        assertThat(countByAgeRange(waitings, 32, 35)).isEqualTo(8);
+        assertModeFilterCounts(waitings, MatchingMode.MEAL);
+        assertModeFilterCounts(waitings, MatchingMode.BLIND_DATE);
+        assertModeFilterCounts(waitings, MatchingMode.GROUP);
     }
 
-    private void createUserMatchingData(int index, School school) {
+    private void createOrUpdateUserMatchingData(int index, School school) {
+        Member member = getOrCreateMember(index);
+        UserProfile userProfile = getOrCreateUserProfile(index, member, school);
+        updateLocation(index, userProfile);
+        createWaiting(index, userProfile);
+    }
+
+    private Member getOrCreateMember(int index) {
         String loginId = "user" + index;
 
-        Member member = Member.builder()
-                .loginId(loginId)
-                .passwordHash(passwordEncoder.encode("1234"))
-                .email(loginId + "@" + SCHOOL_DOMAIN)
-                .phone("0101234" + String.format("%04d", index))
-                .role(MemberRole.USER)
-                .accountStatus(AccountStatus.ACTIVE)
-                .build();
+        Optional<Member> optionalMember = memberRepository.findByLoginId(loginId);
 
-        Member savedMember = memberRepository.save(member);
+        if (optionalMember.isEmpty()) {
+            Member member = Member.builder()
+                    .loginId(loginId)
+                    .passwordHash(passwordEncoder.encode("1234"))
+                    .email(loginId + "@" + SCHOOL_DOMAIN)
+                    .phone("0101234" + String.format("%04d", index))
+                    .role(MemberRole.USER)
+                    .accountStatus(AccountStatus.ACTIVE)
+                    .build();
 
-        UserProfile userProfile = UserProfile.builder()
-                .member(savedMember)
-                .school(school)
-                .name("테스트유저" + index)
-                .nickname("테스트유저" + index)
-                .department("컴퓨터소프트웨어학과")
-                .birthDate(createBirthDate(index))
-                .gender(createGender(index))
-                .preferredFoodCategory(createFoodCategory(index))
-                .mannerTemperature(BigDecimal.valueOf(36.5))
-                .noShowCount(0)
-                .build();
+            return memberRepository.save(member);
+        }
 
-        UserProfile savedProfile = userProfileRepository.save(userProfile);
+        Member member = optionalMember.get();
 
+        // 테스트 코드이므로 setter 없는 엔티티 값을 직접 보정한다.
+        ReflectionTestUtils.setField(member, "passwordHash", passwordEncoder.encode("1234"));
+        ReflectionTestUtils.setField(member, "email", loginId + "@" + SCHOOL_DOMAIN);
+        ReflectionTestUtils.setField(member, "phone", "0101234" + String.format("%04d", index));
+        ReflectionTestUtils.setField(member, "role", MemberRole.USER);
+        ReflectionTestUtils.setField(member, "accountStatus", AccountStatus.ACTIVE);
+
+        return memberRepository.save(member);
+    }
+
+    private UserProfile getOrCreateUserProfile(int index, Member member, School school) {
+        Optional<UserProfile> optionalProfile = findUserProfileByMember(member);
+
+        if (optionalProfile.isEmpty()) {
+            UserProfile userProfile = UserProfile.builder()
+                    .member(member)
+                    .school(school)
+                    .name("테스트유저" + index)
+                    .nickname("테스트유저" + index)
+                    .department("컴퓨터소프트웨어학과")
+                    .birthDate(createBirthDate(index))
+                    .gender(createGender(index))
+                    .preferredFoodCategory(createFoodCategory(index))
+                    .mannerTemperature(BigDecimal.valueOf(36.5))
+                    .noShowCount(0)
+                    .build();
+
+            return userProfileRepository.save(userProfile);
+        }
+
+        UserProfile userProfile = optionalProfile.get();
+
+        // 기존 계정이 있으면 재사용하되 필터 테스트 조건에 맞게 값만 보정한다.
+        ReflectionTestUtils.setField(userProfile, "school", school);
+        ReflectionTestUtils.setField(userProfile, "name", "테스트유저" + index);
+        ReflectionTestUtils.setField(userProfile, "nickname", "테스트유저" + index);
+        ReflectionTestUtils.setField(userProfile, "department", "컴퓨터소프트웨어학과");
+        ReflectionTestUtils.setField(userProfile, "birthDate", createBirthDate(index));
+        ReflectionTestUtils.setField(userProfile, "gender", createGender(index));
+        ReflectionTestUtils.setField(userProfile, "preferredFoodCategory", createFoodCategory(index));
+        ReflectionTestUtils.setField(userProfile, "mannerTemperature", BigDecimal.valueOf(36.5));
+        ReflectionTestUtils.setField(userProfile, "noShowCount", 0);
+
+        return userProfileRepository.save(userProfile);
+    }
+
+    private void updateLocation(int index, UserProfile userProfile) {
         double[] position = createPositionIn3Km(index);
 
-        MemberLocation location = MemberLocation.builder()
-                .userProfile(savedProfile)
-                .latitude(BigDecimal.valueOf(position[0]))
-                .longitude(BigDecimal.valueOf(position[1]))
-                .locationPublicYn("Y")
-                .accuracyRangeM(30)
-                .build();
+        Optional<MemberLocation> optionalLocation = memberLocationRepository.findByUserProfile(userProfile);
 
-        memberLocationRepository.save(location);
+        if (optionalLocation.isEmpty()) {
+            MemberLocation location = MemberLocation.builder()
+                    .userProfile(userProfile)
+                    .latitude(BigDecimal.valueOf(position[0]))
+                    .longitude(BigDecimal.valueOf(position[1]))
+                    .locationPublicYn("Y")
+                    .accuracyRangeM(30)
+                    .build();
 
+            memberLocationRepository.save(location);
+            return;
+        }
+
+        MemberLocation location = optionalLocation.get();
+        location.updateLocation(
+                BigDecimal.valueOf(position[0]),
+                BigDecimal.valueOf(position[1]),
+                30
+        );
+    }
+
+    private void createWaiting(int index, UserProfile userProfile) {
+        MatchingMode matchingMode = createMatchingMode(index);
         MatchingType matchingType = createMatchingType(index);
 
         MatchingWaiting waiting = MatchingWaiting.builder()
-                .userProfile(savedProfile)
-                .mode(MatchingMode.MEAL)
+                .userProfile(userProfile)
+                .mode(matchingMode)
                 .matchingType(matchingType)
                 .maxParticipants(matchingType == MatchingType.GROUP_MEAL ? 4 : 2)
                 .currentParticipants(1)
@@ -189,8 +242,31 @@ class MatchingTestDataGeneratorTest {
         return school;
     }
 
+    private Optional<UserProfile> findUserProfileByMember(Member member) {
+        return entityManager.createQuery(
+                        "select up from UserProfile up where up.member = :member",
+                        UserProfile.class
+                )
+                .setParameter("member", member)
+                .getResultStream()
+                .findFirst();
+    }
+
+    private MatchingMode createMatchingMode(int index) {
+        if (index <= 32) {
+            return MatchingMode.MEAL;
+        }
+
+        if (index <= 64) {
+            return MatchingMode.BLIND_DATE;
+        }
+
+        return MatchingMode.GROUP;
+    }
+
     private Gender createGender(int index) {
-        int pattern = (index - 1) % 4;
+        int localIndex = ((index - 1) % 32) + 1;
+        int pattern = (localIndex - 1) % 4;
 
         if (pattern < 2) {
             return Gender.M;
@@ -200,7 +276,18 @@ class MatchingTestDataGeneratorTest {
     }
 
     private MatchingType createMatchingType(int index) {
-        int pattern = (index - 1) % 4;
+        MatchingMode mode = createMatchingMode(index);
+
+        if (mode == MatchingMode.BLIND_DATE) {
+            return MatchingType.ONE_TO_ONE;
+        }
+
+        if (mode == MatchingMode.GROUP) {
+            return MatchingType.GROUP_DATE;
+        }
+
+        int localIndex = ((index - 1) % 32) + 1;
+        int pattern = (localIndex - 1) % 4;
 
         if (pattern == 0 || pattern == 2) {
             return MatchingType.ONE_TO_ONE;
@@ -210,26 +297,30 @@ class MatchingTestDataGeneratorTest {
     }
 
     private String createFoodCategory(int index) {
+        int localIndex = ((index - 1) % 32) + 1;
         String[] foodCategories = {"한식", "양식", "중식", "일식"};
-        return foodCategories[(index - 1) % foodCategories.length];
+
+        return foodCategories[(localIndex - 1) % foodCategories.length];
     }
 
     private LocalDate createBirthDate(int index) {
-        int group = (index - 1) / 8;
+        int localIndex = ((index - 1) % 32) + 1;
+        int group = (localIndex - 1) / 8;
 
         int age = switch (group) {
-            case 0 -> 21 + ((index - 1) % 3); // 21~23
-            case 1 -> 24 + ((index - 1) % 4); // 24~27
-            case 2 -> 28 + ((index - 1) % 4); // 28~31
-            default -> 32 + ((index - 1) % 4); // 32~35
+            case 0 -> 21 + ((localIndex - 1) % 3);
+            case 1 -> 24 + ((localIndex - 1) % 4);
+            case 2 -> 28 + ((localIndex - 1) % 4);
+            default -> 32 + ((localIndex - 1) % 4);
         };
 
         return LocalDate.now().minusYears(age);
     }
 
     private double[] createPositionIn3Km(int index) {
-        double angle = Math.toRadians(index * 137.5);
-        double radiusKm = 0.4 + ((index % 12) * 0.18);
+        int localIndex = ((index - 1) % 32) + 1;
+        double angle = Math.toRadians(localIndex * 137.5);
+        double radiusKm = 0.4 + ((localIndex % 12) * 0.18);
 
         double latOffset = (radiusKm / 111.0) * Math.sin(angle);
         double lngOffset = (radiusKm / (111.0 * Math.cos(Math.toRadians(BASE_LAT)))) * Math.cos(angle);
@@ -240,16 +331,98 @@ class MatchingTestDataGeneratorTest {
         return new double[]{lat, lng};
     }
 
-    private String createMessage(
-            int index,
-            MatchingType matchingType,
-            String foodCategory
-    ) {
+    private String createMessage(int index, MatchingType matchingType, String foodCategory) {
+        MatchingMode mode = createMatchingMode(index);
+
+        if (mode == MatchingMode.BLIND_DATE) {
+            return "소개팅 매칭 상대를 찾고 있어요. 테스트 " + index;
+        }
+
+        if (mode == MatchingMode.GROUP) {
+            return "과팅 대표 매칭 상대를 찾고 있어요. 테스트 " + index;
+        }
+
         if (matchingType == MatchingType.GROUP_MEAL) {
             return foodCategory + " 먹을 단체 학식 멤버 구해요. 테스트 " + index;
         }
 
         return foodCategory + " 같이 먹을 1:1 학식 친구 구해요. 테스트 " + index;
+    }
+
+    private void cancelExistingTestWaitings() {
+        List<String> loginIds = testLoginIds();
+
+        List<MatchingWaiting> waitings = entityManager.createQuery("""
+                select mw
+                from MatchingWaiting mw
+                join mw.userProfile up
+                join up.member m
+                where m.loginId in :loginIds
+                and mw.status = :status
+                """, MatchingWaiting.class)
+                .setParameter("loginIds", loginIds)
+                .setParameter("status", MatchingWaitingStatus.WAITING)
+                .getResultList();
+
+        waitings.forEach(MatchingWaiting::cancel);
+    }
+
+    private List<MatchingWaiting> findTestWaitings() {
+        return entityManager.createQuery("""
+                select mw
+                from MatchingWaiting mw
+                join fetch mw.userProfile up
+                join fetch up.member m
+                where m.loginId in :loginIds
+                and mw.status = :status
+                and mw.expiredAt > :now
+                """, MatchingWaiting.class)
+                .setParameter("loginIds", testLoginIds())
+                .setParameter("status", MatchingWaitingStatus.WAITING)
+                .setParameter("now", LocalDateTime.now())
+                .getResultList();
+    }
+
+    private List<String> testLoginIds() {
+        return IntStream.rangeClosed(1, 96)
+                .mapToObj(i -> "user" + i)
+                .toList();
+    }
+
+    private void assertModeFilterCounts(List<MatchingWaiting> waitings, MatchingMode mode) {
+        List<MatchingWaiting> modeWaitings = waitings.stream()
+                .filter(waiting -> waiting.getMode() == mode)
+                .toList();
+
+        assertThat(countByFoodCategory(modeWaitings, "한식")).isEqualTo(8);
+        assertThat(countByFoodCategory(modeWaitings, "양식")).isEqualTo(8);
+        assertThat(countByFoodCategory(modeWaitings, "중식")).isEqualTo(8);
+        assertThat(countByFoodCategory(modeWaitings, "일식")).isEqualTo(8);
+
+        assertThat(countByGender(modeWaitings, Gender.M)).isEqualTo(16);
+        assertThat(countByGender(modeWaitings, Gender.F)).isEqualTo(16);
+
+        assertThat(countByAgeRange(modeWaitings, 21, 23)).isEqualTo(8);
+        assertThat(countByAgeRange(modeWaitings, 24, 27)).isEqualTo(8);
+        assertThat(countByAgeRange(modeWaitings, 28, 31)).isEqualTo(8);
+        assertThat(countByAgeRange(modeWaitings, 32, 35)).isEqualTo(8);
+    }
+
+    private long countByMode(List<MatchingWaiting> waitings, MatchingMode mode) {
+        return waitings.stream()
+                .filter(waiting -> waiting.getMode() == mode)
+                .count();
+    }
+
+    private long countByModeAndType(
+            List<MatchingWaiting> waitings,
+            MatchingMode mode,
+            MatchingType matchingType
+    ) {
+        return waitings.stream()
+                .filter(waiting -> waiting.getMode() == mode)
+                .filter(waiting -> waiting.getMatchingType() == matchingType)
+                .count();
     }
 
     private long countByFoodCategory(List<MatchingWaiting> waitings, String foodCategory) {
@@ -264,11 +437,7 @@ class MatchingTestDataGeneratorTest {
                 .count();
     }
 
-    private long countByAgeRange(
-            List<MatchingWaiting> waitings,
-            int ageMin,
-            int ageMax
-    ) {
+    private long countByAgeRange(List<MatchingWaiting> waitings, int ageMin, int ageMax) {
         return waitings.stream()
                 .filter(waiting -> {
                     int age = Period.between(
@@ -279,86 +448,5 @@ class MatchingTestDataGeneratorTest {
                     return age >= ageMin && age <= ageMax;
                 })
                 .count();
-    }
-
-    private void deleteExistingTestUsers() {
-        List<String> loginIds = IntStream.rangeClosed(1, 32)
-                .mapToObj(i -> "user" + i)
-                .toList();
-
-        List<Member> members = entityManager.createQuery(
-                        "select m from Member m where m.loginId in :loginIds",
-                        Member.class
-                )
-                .setParameter("loginIds", loginIds)
-                .getResultList();
-
-        if (members.isEmpty()) {
-            return;
-        }
-
-        List<UserProfile> profiles = entityManager.createQuery(
-                        "select up from UserProfile up where up.member in :members",
-                        UserProfile.class
-                )
-                .setParameter("members", members)
-                .getResultList();
-
-        if (!profiles.isEmpty()) {
-            entityManager.createQuery(
-                            "delete from Matching m where m.requester in :profiles or m.target in :profiles"
-                    )
-                    .setParameter("profiles", profiles)
-                    .executeUpdate();
-
-            entityManager.createQuery(
-                            "delete from MatchingWaiting mw where mw.userProfile in :profiles"
-                    )
-                    .setParameter("profiles", profiles)
-                    .executeUpdate();
-
-            entityManager.createQuery(
-                            "delete from MemberLocation ml where ml.userProfile in :profiles"
-                    )
-                    .setParameter("profiles", profiles)
-                    .executeUpdate();
-
-            entityManager.createQuery(
-                            "delete from UserProfile up where up in :profiles"
-                    )
-                    .setParameter("profiles", profiles)
-                    .executeUpdate();
-        }
-
-        entityManager.createQuery(
-                        "delete from Member m where m in :members"
-                )
-                .setParameter("members", members)
-                .executeUpdate();
-
-        entityManager.flush();
-        entityManager.clear();
-    }
-
-    private List<MatchingWaiting> findTestWaitings() {
-        List<String> loginIds = IntStream.rangeClosed(1, 32)
-                .mapToObj(i -> "user" + i)
-                .toList();
-
-        return entityManager.createQuery("""
-            select mw
-            from MatchingWaiting mw
-            join fetch mw.userProfile up
-            join fetch up.member m
-            where m.loginId in :loginIds
-            and mw.mode = :mode
-            and mw.status = :status
-            and mw.expiredAt > :now
-            """, MatchingWaiting.class)
-                .setParameter("loginIds", loginIds)
-                .setParameter("mode", MatchingMode.MEAL)
-                .setParameter("status", MatchingWaitingStatus.WAITING)
-                .setParameter("now", LocalDateTime.now())
-                .getResultList();
     }
 }
