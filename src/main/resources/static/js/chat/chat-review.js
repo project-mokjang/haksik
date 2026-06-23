@@ -35,6 +35,64 @@ function loadReviewTargets(openAfterLoad) {
         });
 }
 
+// 리뷰 안내 영역 생성
+function ensureReviewNoticeArea() {
+    let area = document.getElementById("reviewNoticeArea");
+
+    if (area) {
+        return area;
+    }
+
+    const messageForm = document.getElementById("messageForm");
+    const chatShell = document.querySelector(".chat-shell");
+
+    area = document.createElement("div");
+    area.id = "reviewNoticeArea";
+    area.className = "review-notice-area hidden";
+
+    if (messageForm && messageForm.parentNode) {
+        messageForm.parentNode.insertBefore(area, messageForm);
+        return area;
+    }
+
+    if (chatShell) {
+        chatShell.appendChild(area);
+    }
+
+    return area;
+}
+
+// 리뷰 안내 영역 보이기
+function showReviewNoticeArea() {
+    const area = ensureReviewNoticeArea();
+
+    if (area) {
+        area.classList.remove("hidden");
+    }
+}
+
+// 리뷰 안내 영역 숨김 상태 갱신
+function updateReviewNoticeAreaVisibility() {
+    const area = document.getElementById("reviewNoticeArea");
+
+    if (!area) {
+        return;
+    }
+
+    const reviewNotice = document.getElementById("reviewNotice");
+    const storeReviewNotice = document.getElementById("storeReviewNotice");
+
+    const hasReviewNotice = reviewNotice && !reviewNotice.classList.contains("hidden");
+    const hasStoreReviewNotice = storeReviewNotice && !storeReviewNotice.classList.contains("hidden");
+
+    if (hasReviewNotice || hasStoreReviewNotice) {
+        area.classList.remove("hidden");
+        return;
+    }
+
+    area.classList.add("hidden");
+}
+
 // 평가 안내 표시
 function updateReviewNotice() {
     const pendingTargets = getPendingReviewTargets();
@@ -52,6 +110,7 @@ function updateReviewNotice() {
     }
 
     notice.classList.remove("hidden");
+    showReviewNoticeArea();
 }
 
 // 평가 안내 생성
@@ -59,10 +118,14 @@ function ensureReviewNotice() {
     let notice = document.getElementById("reviewNotice");
 
     if (notice) {
+        const noticeArea = ensureReviewNoticeArea();
+
+        if (noticeArea && notice.parentNode !== noticeArea) {
+            noticeArea.appendChild(notice);
+        }
+
         return notice;
     }
-
-    const messageForm = document.getElementById("messageForm");
 
     notice = document.createElement("div");
     notice.id = "reviewNotice";
@@ -75,8 +138,10 @@ function ensureReviewNotice() {
         <button type="button" onclick="openChatReviewModal()">평가하기</button>
     `;
 
-    if (messageForm && messageForm.parentNode) {
-        messageForm.parentNode.insertBefore(notice, messageForm);
+    const noticeArea = ensureReviewNoticeArea();
+
+    if (noticeArea) {
+        noticeArea.appendChild(notice);
     }
 
     return notice;
@@ -89,6 +154,8 @@ function hideReviewNotice() {
     if (notice) {
         notice.classList.add("hidden");
     }
+
+    updateReviewNoticeAreaVisibility();
 }
 
 // 평가 모달 열기
@@ -372,7 +439,7 @@ function loadStoreReviewTarget() {
 
 // 식당 리뷰 안내 표시
 function updateStoreReviewNotice(target) {
-    if (!target || target.exists !== true || target.alreadyReviewed === true) {
+    if (!target || target.exists !== true || target.alreadyReviewed === true || target.canReview !== true) {
         hideStoreReviewNotice();
         return;
     }
@@ -403,6 +470,7 @@ function updateStoreReviewNotice(target) {
     }
 
     notice.classList.remove("hidden");
+    showReviewNoticeArea();
 }
 
 // 식당 리뷰 안내 생성
@@ -410,10 +478,14 @@ function ensureStoreReviewNotice() {
     let notice = document.getElementById("storeReviewNotice");
 
     if (notice) {
+        const noticeArea = ensureReviewNoticeArea();
+
+        if (noticeArea && notice.parentNode !== noticeArea) {
+            noticeArea.appendChild(notice);
+        }
+
         return notice;
     }
-
-    const messageForm = document.getElementById("messageForm");
 
     notice = document.createElement("div");
     notice.id = "storeReviewNotice";
@@ -426,8 +498,10 @@ function ensureStoreReviewNotice() {
         <button type="button" class="store-review-notice-button" onclick="openStoreReviewModal()">식당 리뷰 쓰기</button>
     `;
 
-    if (messageForm && messageForm.parentNode) {
-        messageForm.parentNode.insertBefore(notice, messageForm);
+    const noticeArea = ensureReviewNoticeArea();
+
+    if (noticeArea) {
+        noticeArea.appendChild(notice);
     }
 
     return notice;
@@ -440,6 +514,8 @@ function hideStoreReviewNotice() {
     if (notice) {
         notice.classList.add("hidden");
     }
+
+    updateReviewNoticeAreaVisibility();
 }
 
 // 식당 리뷰 모달 열기
@@ -595,9 +671,11 @@ function submitStoreReview() {
 
     if (content === "") {
         alert("리뷰 내용을 입력해 주세요.");
+
         if (contentInput) {
             contentInput.focus();
         }
+
         return;
     }
 

@@ -453,6 +453,10 @@ public class ChatFormService {
                 throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
             }
 
+            if (!appointmentAt.isAfter(LocalDateTime.now())) {
+                throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+            }
+
             optionText = getBlankToDefault(optionText, formatAppointmentOptionText(appointmentAt));
             placeSource = null;
             storeId = null;
@@ -591,6 +595,10 @@ public class ChatFormService {
         }
 
         if (timeWinner.getAppointmentAt() == null) {
+            return;
+        }
+
+        if (!timeWinner.getAppointmentAt().isAfter(LocalDateTime.now())) {
             return;
         }
 

@@ -153,6 +153,12 @@ public class ViewController {
         return "members/user/user-review-list";
     }
 
+    // 리뷰 작성 페이지
+    @GetMapping("/user/review-write")
+    public String userReviewWritePage() {
+        return "members/user/user-review-write";
+    }
+
     // 알림 전체 보기 페이지
     @GetMapping("/user/notifications")
     public String userNotificationsPage() {

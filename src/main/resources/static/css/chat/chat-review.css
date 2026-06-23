@@ -1,11 +1,17 @@
 /* 채팅 평가 안내 */
-.review-notice {
+.review-notice-area {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 66px;
     z-index: 120;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 8px;
+}
 
+.review-notice {
     display: flex;
     justify-content: space-between;
     align-items: center;

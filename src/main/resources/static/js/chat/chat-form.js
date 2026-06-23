@@ -1505,6 +1505,20 @@ function submitTimeOption() {
     }
 
     const appointmentAt = dateValue + "T" + timeValue + ":00";
+    const selectedDate = new Date(appointmentAt);
+    const now = new Date();
+
+    if (Number.isNaN(selectedDate.getTime())) {
+        alert("올바른 약속 시간을 입력해 주세요.");
+        dateInput.focus();
+        return;
+    }
+
+    if (selectedDate.getTime() <= now.getTime()) {
+        alert("지난 시간은 약속 후보로 추가할 수 없습니다.");
+        dateInput.focus();
+        return;
+    }
 
     fetch("/api/chat/forms/" + currentPlaceFormId + "/options", {
         method: "POST",
