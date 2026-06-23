@@ -6,17 +6,7 @@ import com.example.haksikmokjang.chat.chatform.domain.ChatFormOption;
 import com.example.haksikmokjang.chat.chatform.domain.ChatFormOptionType;
 import com.example.haksikmokjang.chat.chatform.domain.ChatFormType;
 import com.example.haksikmokjang.chat.chatform.domain.ChatPlaceSource;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormAnswerRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormCreateRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionRequest;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormOptionResultResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatFormResultResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatNearbyStoreResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatStoreDetailResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatStoreMenuResponse;
-import com.example.haksikmokjang.chat.chatform.dto.ChatStoreReviewResponse;
+import com.example.haksikmokjang.chat.chatform.dto.*;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormAnswerRepository;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormOptionRepository;
 import com.example.haksikmokjang.chat.chatform.repository.ChatFormRepository;
@@ -33,12 +23,12 @@ import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
-import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
-import com.example.haksikmokjang.ownerpage.store.domain.Store;
-import com.example.haksikmokjang.ownerpage.store.domain.StoreReview;
+import com.example.haksikmokjang.ownerpage.store.domain.*;
 import com.example.haksikmokjang.ownerpage.store.dto.ReservationRequest;
 import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
+import com.example.haksikmokjang.ownerpage.store.repository.ReservationRepository;
 import com.example.haksikmokjang.ownerpage.store.repository.StoreRepository;
+import com.example.haksikmokjang.ownerpage.store.repository.StoreReviewRepository;
 import com.example.haksikmokjang.ownerpage.store.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,7 +44,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatFormService {
-
     private static final int CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS = 1;
     private final ReservationService reservationService;
     private final ChatRoomRepository chatRoomRepository;
@@ -68,6 +57,8 @@ public class ChatFormService {
     private final MenuRepository menuRepository;
     private final ChatStoreReviewRepository chatStoreReviewRepository;
     private final FileAttachmentRepository fileAttachmentRepository;
+    private final ReservationRepository reservationRepository;
+    private final StoreReviewRepository storeReviewRepository;
 
     // 폼 생성 후 채팅방에 FORM 메시지까지 저장
     @Transactional
@@ -346,6 +337,83 @@ public class ChatFormService {
                 .build();
     }
 
+    // 채팅방 종료 후 예약자 식당 리뷰 대상 조회
+    public ChatStoreReviewTargetResponse getStoreReviewTarget(Long chatRoomId, Member loginMember) {
+        ChatRoom chatRoom = getChatRoom(chatRoomId);
+        checkChatRoomMember(chatRoom, loginMember);
+
+        List<ChatForm> reservationForms =
+                chatFormRepository.findAllByChatRoomAndReservationIdIsNotNullOrderByUpdatedAtDesc(chatRoom);
+
+        for (ChatForm chatForm : reservationForms) {
+            Reservation reservation = reservationRepository.findById(chatForm.getReservationId())
+                    .orElse(null);
+
+            if (reservation == null) {
+                continue;
+            }
+
+            if (!reservation.getMember().getMemberId().equals(loginMember.getMemberId())) {
+                continue;
+            }
+
+            boolean alreadyReviewed = storeReviewRepository.existsByReservation(reservation);
+            boolean completed = reservation.getStatus() == ReservationStatus.COMPLETED;
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime allowedStartTime = reservation.getReservationAt();
+            LocalDateTime allowedEndTime = reservation.getReservationAt().plusDays(3);
+
+            boolean withinReviewPeriod =
+                    !now.isBefore(allowedStartTime)
+                            && !now.isAfter(allowedEndTime);
+
+            boolean canReview =
+                    completed
+                            && !alreadyReviewed
+                            && withinReviewPeriod;
+
+            return ChatStoreReviewTargetResponse.builder()
+                    .exists(true)
+                    .reservationId(reservation.getReservationId())
+                    .storeId(reservation.getStore().getStoreId())
+                    .storeName(reservation.getStore().getName())
+                    .reservationAt(reservation.getReservationAt())
+                    .reservationStatus(reservation.getStatus().name())
+                    .alreadyReviewed(alreadyReviewed)
+                    .canReview(canReview)
+                    .guideMessage(getStoreReviewGuideMessage(reservation, alreadyReviewed, withinReviewPeriod))
+                    .build();
+        }
+
+        return ChatStoreReviewTargetResponse.builder()
+                .exists(false)
+                .canReview(false)
+                .alreadyReviewed(false)
+                .guideMessage("작성할 식당 리뷰가 없습니다.")
+                .build();
+    }
+
+    private String getStoreReviewGuideMessage(
+            Reservation reservation,
+            boolean alreadyReviewed,
+            boolean withinReviewPeriod
+    ) {
+        if (alreadyReviewed) {
+            return "이미 식당 리뷰를 작성했습니다.";
+        }
+
+        if (reservation.getStatus() != ReservationStatus.COMPLETED) {
+            return "점주가 예약을 완료 처리한 뒤 식당 리뷰를 작성할 수 있습니다.";
+        }
+
+        if (!withinReviewPeriod) {
+            return "식당 리뷰는 예약 시간부터 3일 안에 작성할 수 있습니다.";
+        }
+
+        return "식당 리뷰를 작성할 수 있습니다.";
+    }
+
     private ChatFormOption createOptionEntity(
             ChatForm chatForm,
             Member loginMember,
@@ -482,7 +550,15 @@ public class ChatFormService {
     }
 
     private boolean canCloseForm(ChatForm chatForm, Member loginMember) {
-        if (chatForm == null || loginMember == null || chatForm.isClosed()) {
+        if (chatForm == null || loginMember == null) {
+            return false;
+        }
+
+        if (chatForm.isClosed()) {
+            return false;
+        }
+
+        if (chatForm.getCreator() == null || chatForm.getCreator().getMemberId() == null) {
             return false;
         }
 
@@ -490,13 +566,17 @@ public class ChatFormService {
     }
 
     private void confirmAppointmentByTimeVoteResult(ChatForm chatForm) {
-        ChatFormOption winner = getWinningOption(chatForm, ChatFormOptionType.TIME);
+        ChatFormOption timeWinner = getWinningOption(chatForm, ChatFormOptionType.TIME);
 
-        if (winner == null || winner.getAppointmentAt() == null) {
+        if (timeWinner == null) {
             return;
         }
 
-        LocalDateTime appointmentAt = winner.getAppointmentAt();
+        if (timeWinner.getAppointmentAt() == null) {
+            return;
+        }
+
+        LocalDateTime appointmentAt = timeWinner.getAppointmentAt();
         LocalDateTime autoCloseAt = appointmentAt.plusHours(CHAT_ROOM_AUTO_CLOSE_AFTER_APPOINTMENT_HOURS);
 
         chatForm.getChatRoom().confirmAppointment(appointmentAt, autoCloseAt);
@@ -537,7 +617,8 @@ public class ChatFormService {
                         + chatForm.getChatFormId()
         );
 
-        reservationService.createReservation(loginMember.getLoginId(), request);
+        Long reservationId = reservationService.createReservation(loginMember.getLoginId(), request);
+        chatForm.connectReservation(reservationId);
     }
 
     private ChatFormOption getWinningOption(ChatForm chatForm, ChatFormOptionType optionType) {

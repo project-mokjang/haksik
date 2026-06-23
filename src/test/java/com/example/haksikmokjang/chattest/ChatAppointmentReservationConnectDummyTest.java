@@ -70,20 +70,20 @@ public class ChatAppointmentReservationConnectDummyTest {
     @Transactional
     @DisplayName("약속 투표 종료 시 예약 생성")
     void createReservationWhenAppointmentVoteClosed() {
-        Member user7 = memberRepository.findById(7L)
+        Member user7 = memberRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("member_id 7 유저가 없습니다."));
         Member user8 = memberRepository.findById(8L)
                 .orElseThrow(() -> new RuntimeException("member_id 8 유저가 없습니다."));
-        OwnerProfile ownerProfile = ownerProfileRepository.findById(8L)
+        OwnerProfile ownerProfile = ownerProfileRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("owner_profile_id 8 점주 프로필이 없습니다."));
 
-        if (!ownerProfile.getMember().getMemberId().equals(32L)) {
+        if (!ownerProfile.getMember().getMemberId().equals(38L)) {
             throw new RuntimeException("owner_profile_id 8의 member_id가 32번이 아닙니다.");
         }
 
         Store store = storeRepository.findAll().stream()
                 .filter(findStore -> findStore.getMember() != null)
-                .filter(findStore -> findStore.getMember().getMemberId().equals(32L))
+                .filter(findStore -> findStore.getMember().getMemberId().equals(38L))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("member_id 32 오너의 식당 데이터가 없습니다."));
 

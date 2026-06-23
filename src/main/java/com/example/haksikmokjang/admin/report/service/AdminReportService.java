@@ -98,6 +98,9 @@ public class AdminReportService {
         if ("CHAT_MESSAGE".equals(report.getTargetType())) {
             return adminChatReportService.getChatMessageReportDetail(report);
         }
+        if ("CHAT_MEMBER".equals(report.getTargetType())) {
+            return adminChatReportService.getChatMemberReportDetail(report);
+        }
         if ("REVIEW".equals(report.getTargetType())) {
             return adminReviewReportService.getReviewReportDetail(report);
         }
@@ -267,6 +270,10 @@ public class AdminReportService {
 
         if ("CHAT_MESSAGE".equals(report.getTargetType())) {
             return adminChatReportService.findChatMessageWriter(report);
+        }
+
+        if ("CHAT_MEMBER".equals(report.getTargetType())) {
+            return adminChatReportService.findChatMemberWriter(report);
         }
 
         if ("REVIEW".equals(report.getTargetType())) {

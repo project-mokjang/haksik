@@ -37,6 +37,9 @@ public class ChatForm extends BaseEntity {
     @Column(name = "closed_yn", nullable = false, length = 1)
     private String closedYn;
 
+    @Column(name = "reservation_id")
+    private Long reservationId;
+
     public ChatForm(ChatRoom chatRoom, Member creator, ChatFormType formType, String title) {
         this.chatRoom = chatRoom;
         this.creator = creator;
@@ -59,5 +62,9 @@ public class ChatForm extends BaseEntity {
 
     public void close() {
         this.closedYn = "Y";
+    }
+
+    public void connectReservation(Long reservationId) {
+        this.reservationId = reservationId;
     }
 }

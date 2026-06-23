@@ -55,7 +55,7 @@ public class ChatRoomController {
         return chatRoomService.getChatRoomDetail(chatRoomId, loginMember);
     }
 
-    // 과팅 리더가 닉네임으로 멤버 초대
+    // 과팅 리더가 닉네임으로 멤버 초대 알림 전송
     @PostMapping("/rooms/{chatRoomId}/invite")
     public Map<String, String> inviteGroupDateMember(
             @PathVariable Long chatRoomId,
@@ -70,7 +70,36 @@ public class ChatRoomController {
                 request.getNickname()
         );
 
-        return Map.of("message", "초대 성공");
+        return Map.of("message", "초대 알림을 보냈습니다.");
+    }
+
+    // 채팅방 초대 수락
+    @PostMapping("/rooms/invites/{notificationId}/accept")
+    public Map<String, Object> acceptChatRoomInvite(
+            @PathVariable Long notificationId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        Member loginMember = customUserDetails.getMember();
+
+        Long chatRoomId = chatRoomInviteService.acceptInvite(notificationId, loginMember);
+
+        return Map.of(
+                "message", "초대를 수락했습니다.",
+                "chatRoomId", chatRoomId
+        );
+    }
+
+    // 채팅방 초대 거절
+    @PostMapping("/rooms/invites/{notificationId}/reject")
+    public Map<String, String> rejectChatRoomInvite(
+            @PathVariable Long notificationId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        Member loginMember = customUserDetails.getMember();
+
+        chatRoomInviteService.rejectInvite(notificationId, loginMember);
+
+        return Map.of("message", "초대를 거절했습니다.");
     }
 
     // 채팅방 종료
