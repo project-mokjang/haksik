@@ -1,11 +1,13 @@
 package com.example.haksikmokjang.admin.report.dto;
 
+import com.example.haksikmokjang.fileattachment.dto.FileAttachmentResponse;
 import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.report.domain.ReportStatus;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -31,6 +33,7 @@ public class AdminReportDetailResponse {
     private String targetContent;
     private String targetWriterLoginId;
     private String targetStatus;
+    private List<FileAttachmentResponse> attachments;
 
     // 신고 상세 응답 변환
     public static AdminReportDetailResponse from(
@@ -53,6 +56,7 @@ public class AdminReportDetailResponse {
                 .targetStatus(targetStatus)
                 .reason(report.getReason())
                 .status(report.getStatus())
+                .attachments(List.of())
                 .processedByLoginId(
                         report.getProcessedBy() != null
                                 ? report.getProcessedBy().getLoginId()
@@ -60,6 +64,27 @@ public class AdminReportDetailResponse {
                 )
                 .processedAt(report.getProcessedAt())
                 .processedReason(report.getProcessedReason())
+                .build();
+    }
+    // 첨부파일 목록만 붙여서 새 DTO로 다시 만듦
+    public AdminReportDetailResponse withAttachments(List<FileAttachmentResponse> attachments) {
+        return AdminReportDetailResponse.builder()
+                .reportId(this.reportId)
+                .reporterId(this.reporterId)
+                .reporterLoginId(this.reporterLoginId)
+                .reporterEmail(this.reporterEmail)
+                .targetType(this.targetType)
+                .targetId(this.targetId)
+                .reason(this.reason)
+                .status(this.status)
+                .processedByLoginId(this.processedByLoginId)
+                .processedAt(this.processedAt)
+                .processedReason(this.processedReason)
+                .targetTitle(this.targetTitle)
+                .targetContent(this.targetContent)
+                .targetWriterLoginId(this.targetWriterLoginId)
+                .targetStatus(this.targetStatus)
+                .attachments(attachments == null ? List.of() : attachments)
                 .build();
     }
 }
