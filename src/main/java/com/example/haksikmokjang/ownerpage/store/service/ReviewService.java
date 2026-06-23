@@ -1,7 +1,8 @@
 package com.example.haksikmokjang.ownerpage.store.service;
 
-import com.example.haksikmokjang.fileattachment.domain.FileAttachment; // 🚨 추가
-import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository; // 🚨 추가
+import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
+import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
+import com.example.haksikmokjang.fileattachment.service.FileAttachmentService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
@@ -20,11 +21,10 @@ import com.example.haksikmokjang.ownerpage.store.repository.StoreReviewRepositor
 import com.example.haksikmokjang.report.domain.Report;
 import com.example.haksikmokjang.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,23 +38,36 @@ public class ReviewService {
     private final MemberRepository memberRepository;
     private final ReportRepository reportRepository;
     private final FileAttachmentRepository fileAttachmentRepository;
-
-    // 🚨 팩트: 누락된 이 두 줄을 반드시 추가해야 에러가 소멸합니다.
-    @org.springframework.beans.factory.annotation.Value("${file.upload.dir}")
-    private String uploadDir;
+    private final FileAttachmentService fileAttachmentService;
 
     @Transactional
     public Long createReview(String loginId, ReviewCreateRequest request) {
         // ... (기존 createReview 방어벽 및 Insert 로직 100% 동일하게 유지. 수정 불필요) ...
-        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-        Reservation reservation = reservationRepository.findById(request.getReservationId()).orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
-        if (!reservation.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        if (reservation.getStatus() != ReservationStatus.COMPLETED) throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Reservation reservation = reservationRepository.findById(request.getReservationId())
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        if (reservation.getStatus() != ReservationStatus.COMPLETED) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
+        }
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime allowedStartTime = reservation.getReservationAt();
         LocalDateTime allowedEndTime = reservation.getReservationAt().plusDays(3);
-        if (now.isBefore(allowedStartTime) || now.isAfter(allowedEndTime)) throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
-        if (storeReviewRepository.existsByReservation(reservation)) throw new CustomException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
+
+        if (now.isBefore(allowedStartTime) || now.isAfter(allowedEndTime)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_REVIEW);
+        }
+
+        if (storeReviewRepository.existsByReservation(reservation)) {
+            throw new CustomException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
+        }
 
         StoreReview newReview = StoreReview.builder()
                 .store(reservation.getStore())
@@ -71,7 +84,6 @@ public class ReviewService {
         if (request.getReviewImage() != null && !request.getReviewImage().isEmpty()) {
             saveImage(member, savedReview.getReviewId(), "REVIEW", request.getReviewImage());
         }
-
 
         return savedReview.getReviewId();
     }
@@ -101,7 +113,9 @@ public class ReviewService {
         StoreReview review = storeReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
-        if (!review.getStore().getMember().getLoginId().equals(ownerLoginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        if (!review.getStore().getMember().getLoginId().equals(ownerLoginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
 
         Report report = Report.builder()
                 .reporter(review.getStore().getMember())
@@ -113,33 +127,16 @@ public class ReviewService {
         reportRepository.save(report);
     }
 
-    //하드디스크 저장 및 FileAttachment DB 결속 로직 (StoreService의 것과 100% 동일)
-    private void saveImage(Member uploader, Long targetId, String targetType, org.springframework.web.multipart.MultipartFile file) {
-        File folder = new File(uploadDir);
-        if (!folder.exists()) folder.mkdirs();
-
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
-        String storedFilename = java.util.UUID.randomUUID().toString() + extension;
-        String storedPath = uploadDir + "/" + storedFilename;
-
-        try {
-            file.transferTo(new java.io.File(storedPath));
-            FileAttachment attachment = FileAttachment.builder()
-                    .uploader(uploader)
-                    .targetType(targetType)
-                    .targetId(targetId)
-                    .originalName(originalFilename)
-                    .storedPath(storedPath)
-                    .extension(extension.replace(".", ""))
-                    .fileSize(file.getSize())
-                    .build();
-            fileAttachmentRepository.save(attachment);
-        } catch (java.io.IOException e) {
-            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
-        }
+    //하드디스크 저장 및 FileAttachment DB 결속 로직 (공통 FileAttachmentService로 통일)
+    private void saveImage(Member uploader, Long targetId, String targetType, MultipartFile file) {
+        fileAttachmentService.uploadFile(
+                uploader.getLoginId(),
+                file,
+                targetType,
+                targetId
+        );
     }
+
     @Transactional
     public void writeOwnerReply(Long reviewId, String reply) {
         // 🚨 팩트: 존재하지 않는 에러코드(NOT_FOUND) 대신 방금 만든 규격화된 에러 사용
@@ -148,14 +145,21 @@ public class ReviewService {
 
         review.writeOwnerReply(reply);
     }
+
     // 내 리뷰 무한 스크롤 조회 (삭제된 리뷰 제외)
     @Transactional(readOnly = true)
-    public org.springframework.data.domain.Slice<ReviewUserResponse> getMyReviews(String loginId, org.springframework.data.domain.Pageable pageable) {
+    public org.springframework.data.domain.Slice<ReviewUserResponse> getMyReviews(
+            String loginId,
+            org.springframework.data.domain.Pageable pageable
+    ) {
         return storeReviewRepository.findByMember_LoginIdAndStatus(loginId, ReviewStatus.ACTIVE, pageable)
                 .map(review -> {
                     // 리뷰에 결속된 사진 번호들 추출
                     List<Long> imageIds = fileAttachmentRepository.findByTargetTypeAndTargetId("REVIEW", review.getReviewId())
-                            .stream().map(FileAttachment::getFileId).toList();
+                            .stream()
+                            .map(FileAttachment::getFileId)
+                            .toList();
+
                     return new ReviewUserResponse(review, imageIds);
                 });
     }
@@ -167,8 +171,13 @@ public class ReviewService {
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
         // 내 리뷰가 맞는지 팩트 체크
-        if (!review.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-        if (review.getStatus() == ReviewStatus.DELETED) throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        if (!review.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        if (review.getStatus() == ReviewStatus.DELETED) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
 
         review.updateReview(request.getRating(), request.getContent());
     }
@@ -179,9 +188,10 @@ public class ReviewService {
         StoreReview review = storeReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
-        if (!review.getMember().getLoginId().equals(loginId)) throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        if (!review.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
 
         review.markAsDeleted();
     }
-
 }

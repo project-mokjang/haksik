@@ -14,13 +14,13 @@ import com.example.haksikmokjang.community.post.dto.PostListResponse;
 import com.example.haksikmokjang.community.post.repository.PostRepository;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
+import com.example.haksikmokjang.fileattachment.service.FileAttachmentService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import com.example.haksikmokjang.school.domain.School;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,9 +39,7 @@ public class PostService {
     private final UserProfileRepository userProfileRepository;
     private final FileAttachmentRepository fileAttachmentRepository;
     private final CommentRepository commentRepository;
-
-    @Value("${file.upload.dir}")
-    private String uploadDir;
+    private final FileAttachmentService fileAttachmentService;
 
     public List<PostListResponse> getPostList(
             String loginId,
@@ -96,44 +94,19 @@ public class PostService {
         return savedPost.getPostId();
     }
 
+    // 게시판 이미지 저장
     private void savePostImages(Post post, List<MultipartFile> images) {
-
-        File folder = new File(uploadDir);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-
         for (MultipartFile file : images) {
-            if (file.isEmpty()) continue;
-
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            if (file == null || file.isEmpty()) {
+                continue;
             }
 
-            String storedFilename = UUID.randomUUID().toString() + extension;
-            String storedPath = uploadDir + "/" + storedFilename;
-
-            try {
-                file.transferTo(new File(storedPath));
-
-                FileAttachment attachment = FileAttachment.builder()
-                        .uploader(post.getMember())
-                        .targetType("POST")
-                        .targetId(post.getPostId())
-                        .originalName(originalFilename)
-                        .storedPath(storedPath)
-                        .extension(extension.replace(".", ""))
-                        .fileSize(file.getSize())
-                        .build();
-
-                fileAttachmentRepository.save(attachment);
-
-            } catch (IOException e) {
-                // 🚨 Exception 교체 타점 3
-                throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
-            }
+            fileAttachmentService.uploadFile(
+                    post.getMember().getLoginId(),
+                    file,
+                    "POST",
+                    post.getPostId()
+            );
         }
     }
 
