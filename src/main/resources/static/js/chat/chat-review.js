@@ -169,7 +169,7 @@ function openChatReviewModal() {
 
         if (pendingTargets.length === 0) {
             closeChatReviewModal();
-            alert("이미 모든 평가를 완료했습니다.");
+            showToast("이미 모든 평가를 완료했습니다.", "success");
             return;
         }
 
@@ -323,7 +323,7 @@ function submitChatReview() {
     const reviewContent = document.getElementById("reviewContent");
 
     if (!chatRoomId || !reviewTargetBox || !reviewTargetBox.dataset.targetMemberId || !checkedScore) {
-        alert("평가 대상 정보를 찾을 수 없습니다.");
+        showReviewMessage("평가 대상 정보를 찾을 수 없습니다.", "error");
         return;
     }
 
@@ -356,15 +356,15 @@ function submitChatReview() {
 
             if (pendingTargets.length === 0) {
                 closeChatReviewModal();
-                alert("평가가 모두 완료되었습니다.");
+                checkAndMoveToChatListIfNoPendingReview("평가가 완료되었습니다.");
                 return;
             }
 
             renderReviewTarget(pendingTargets[0], pendingTargets.length);
-            alert("평가가 등록되었습니다. 다음 상대를 평가해 주세요.");
+            showReviewMessage("평가가 완료되었습니다.", "success");
         })
         .catch(function () {
-            alert("평가 등록에 실패했습니다.");
+            showReviewMessage("평가 등록에 실패했습니다.", "error");
         });
 }
 
@@ -401,6 +401,66 @@ function closeChatReviewModal() {
     if (reviewModal) {
         reviewModal.classList.add("hidden");
     }
+}
+
+// 평가/리뷰 완료 후 남은 항목 확인
+function checkAndMoveToChatListIfNoPendingReview(successMessage) {
+    Promise.all([
+        loadReviewTargets(false),
+        loadStoreReviewTarget()
+    ])
+        .then(function (results) {
+            const targets = results[0] || [];
+            const storeTarget = results[1] || null;
+
+            const hasPendingChatReview = targets.some(function (target) {
+                return !target.reviewed;
+            });
+
+            const hasPendingStoreReview = storeTarget
+                && storeTarget.exists === true
+                && storeTarget.canReview === true
+                && storeTarget.alreadyReviewed !== true;
+
+            if (!hasPendingChatReview && !hasPendingStoreReview) {
+                moveToChatListAfterReviewMessage(successMessage || "평가가 완료되었습니다.");
+                return;
+            }
+
+            showReviewMessage(successMessage || "평가가 완료되었습니다.", "success");
+        })
+        .catch(function () {
+            showReviewMessage(successMessage || "평가가 완료되었습니다.", "success");
+        });
+}
+
+// 완료 메시지를 채팅방 목록에서 출력하도록 저장 후 이동
+function moveToChatListAfterReviewMessage(message) {
+    saveChatToastForChatList(message || "평가가 완료되었습니다.", "success");
+    moveToChatList();
+}
+
+// 채팅방 목록에서 보여줄 알림 저장
+function saveChatToastForChatList(message, type) {
+    try {
+        sessionStorage.setItem("chatPendingToast", JSON.stringify({
+            message: message,
+            type: type || "success"
+        }));
+    } catch (error) {
+        // sessionStorage 사용이 불가능한 경우 알림 저장 없이 이동한다.
+    }
+}
+
+// 채팅방 목록 이동
+function moveToChatList() {
+    location.href = "/api/view/user/chat";
+}
+
+// 평가/리뷰 메시지 표시
+function showReviewMessage(message, type) {
+    showToast(message, type || "info");
+    return true;
 }
 
 // ==========================================
@@ -521,10 +581,11 @@ function hideStoreReviewNotice() {
 // 식당 리뷰 모달 열기
 function openStoreReviewModal() {
     if (!currentStoreReviewTarget || currentStoreReviewTarget.canReview !== true) {
-        alert(
+        showReviewMessage(
             currentStoreReviewTarget && currentStoreReviewTarget.guideMessage
                 ? currentStoreReviewTarget.guideMessage
-                : "식당 리뷰를 작성할 수 없습니다."
+                : "식당 리뷰를 작성할 수 없습니다.",
+            "error"
         );
         return;
     }
@@ -645,15 +706,16 @@ function closeStoreReviewModal() {
 // 식당 리뷰 등록
 function submitStoreReview() {
     if (!currentStoreReviewTarget || !currentStoreReviewTarget.reservationId) {
-        alert("식당 리뷰 대상 정보를 찾을 수 없습니다.");
+        showReviewMessage("식당 리뷰 대상 정보를 찾을 수 없습니다.", "error");
         return;
     }
 
     if (currentStoreReviewTarget.canReview !== true) {
-        alert(
+        showReviewMessage(
             currentStoreReviewTarget.guideMessage
                 ? currentStoreReviewTarget.guideMessage
-                : "식당 리뷰를 작성할 수 없습니다."
+                : "식당 리뷰를 작성할 수 없습니다.",
+            "error"
         );
         return;
     }
@@ -663,14 +725,14 @@ function submitStoreReview() {
     const imageInput = document.getElementById("storeReviewImageInput");
 
     if (!checkedRating) {
-        alert("별점을 선택해 주세요.");
+        showReviewMessage("별점을 선택해 주세요.", "error");
         return;
     }
 
     const content = contentInput ? contentInput.value.trim() : "";
 
     if (content === "") {
-        alert("리뷰 내용을 입력해 주세요.");
+        showReviewMessage("리뷰 내용을 입력해 주세요.", "error");
 
         if (contentInput) {
             contentInput.focus();
@@ -705,10 +767,9 @@ function submitStoreReview() {
             closeStoreReviewModal();
             hideStoreReviewNotice();
             currentStoreReviewTarget = null;
-            alert("식당 리뷰가 등록되었습니다.");
-            loadStoreReviewTarget();
+            checkAndMoveToChatListIfNoPendingReview("식당 리뷰가 등록되었습니다.");
         })
         .catch(function () {
-            alert("식당 리뷰 등록에 실패했습니다.");
+            showReviewMessage("식당 리뷰 등록에 실패했습니다.", "error");
         });
 }
