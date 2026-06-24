@@ -11,18 +11,18 @@ function openMessageReportModal() {
     const selectedMessage = messageCache[selectedMessageId];
 
     if (!selectedMessage) {
-        alert("신고할 메시지를 찾을 수 없습니다.");
+        showToast("신고할 메시지를 찾을 수 없습니다.", "error");
         return;
     }
 
     if (selectedMessage.mine) {
-        alert("내 메시지는 신고할 수 없습니다.");
+        showToast("내 메시지는 신고할 수 없습니다.", "error");
         closeMessageMenu();
         return;
     }
 
     if (selectedMessage.deleted) {
-        alert("삭제된 메시지는 신고할 수 없습니다.");
+        showToast("삭제된 메시지는 신고할 수 없습니다.", "error");
         closeMessageMenu();
         return;
     }
@@ -50,7 +50,7 @@ function openMemberReportModal(memberId) {
     }
 
     if (!memberId) {
-        alert("신고할 회원 정보를 찾을 수 없습니다.");
+        showToast("신고할 회원 정보를 찾을 수 없습니다.", "error");
         return;
     }
 
@@ -71,7 +71,7 @@ function openReviewTargetReportModal(memberId) {
     }
 
     if (!memberId) {
-        alert("신고할 회원 정보를 찾을 수 없습니다.");
+        showToast("신고할 회원 정보를 찾을 수 없습니다.", "error");
         return;
     }
 
@@ -169,12 +169,12 @@ function submitReport() {
     const reason = getSelectedReportReason();
 
     if (!reportTargetType || !reportTargetId || !reportTargetUrl) {
-        alert("신고 대상 정보를 찾을 수 없습니다.");
+        showToast("신고 대상 정보를 찾을 수 없습니다.", "error");
         return;
     }
 
     if (reason === "") {
-        alert("신고 사유를 선택하거나 입력해 주세요.");
+        showToast("신고 사유를 선택하거나 입력해 주세요.", "error");
         return;
     }
 
@@ -193,9 +193,9 @@ function submitReport() {
             if (!response.ok) {
                 return response.text().then(function (errorText) {
                     if (errorText.includes("ALREADY_REPORTED") || errorText.includes("이미")) {
-                        alert("이미 신고한 상태입니다.");
+                        showToast("이미 신고한 상태입니다.", "info");
                     } else {
-                        alert("신고 접수에 실패했습니다.");
+                        showToast("신고 접수에 실패했습니다.", "error");
                     }
 
                     throw new Error("report failed");
@@ -206,7 +206,7 @@ function submitReport() {
         })
         .then(function () {
             closeReportModal();
-            alert("신고가 접수되었습니다.");
+            showToast("신고가 접수되었습니다.", "success");
         })
         .catch(function () {
             // 실패 alert는 위에서 이미 처리

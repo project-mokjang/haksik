@@ -2,6 +2,7 @@ let selectedMessageId = null;
 let editingMessageId = null;
 let messageCache = {};
 let messageOrder = [];
+let formStatusCache = {};
 let longPressTimer = null;
 
 // 메시지 목록 화면 클릭 시 메시지 메뉴 닫기
@@ -48,7 +49,7 @@ function loadMessages(sendReadEvent) {
             return messages || [];
         })
         .catch(function () {
-            alert("메시지를 불러오지 못했습니다.");
+            showToast("메시지를 불러오지 못했습니다.", "error");
             return [];
         });
 }
@@ -94,6 +95,14 @@ function normalizeMessage(message) {
 
     if (typeof currentLoginMemberId !== "undefined" && currentLoginMemberId !== null) {
         normalizedMessage.mine = String(normalizedMessage.senderId) === String(currentLoginMemberId);
+    }
+
+    if (normalizedMessage.formId && normalizedMessage.formClosedYn) {
+        formStatusCache[Number(normalizedMessage.formId)] = normalizedMessage.formClosedYn;
+    }
+
+    if (normalizedMessage.formId && formStatusCache[Number(normalizedMessage.formId)]) {
+        normalizedMessage.formClosedYn = formStatusCache[Number(normalizedMessage.formId)];
     }
 
     return normalizedMessage;
@@ -220,6 +229,8 @@ function renderMessages() {
             `;
         }
     });
+
+    syncFormCardClosedStates(messages);
 }
 
 // 메시지 내용 HTML 생성
@@ -249,10 +260,17 @@ function getMessageContentHtml(message) {
 function getFormMessageCardHtml(message) {
     const formTitle = getFormCardTitle(message);
     const formTypeText = getFormTypeText(message);
-    const formButtonText = isPlaceFormCard(message) ? "지도에서 투표하기" : "투표하기";
+    const openButtonText = isPlaceFormCard(message) ? "지도에서 투표하기" : "투표하기";
+    const formButtonText = isFormClosedCard(message) ? "결과보기" : openButtonText;
 
     return `
-        <button type="button" class="chat-form-card" onclick="openChatFormFromMessage(${Number(message.formId)})">
+        <button
+            type="button"
+            class="chat-form-card"
+            data-form-id="${Number(message.formId)}"
+            data-open-label="${escapeAttribute(openButtonText)}"
+            onclick="openChatFormFromMessage(${Number(message.formId)})"
+        >
             <span class="chat-form-badge">${formTypeText}</span>
             <span class="chat-form-title">${escapeHtml(formTitle)}</span>
             <span class="chat-form-desc">참여자들이 함께 선택할 수 있어요.</span>
@@ -279,6 +297,107 @@ function getFormTypeText(message) {
 // 장소 폼 카드 여부
 function isPlaceFormCard(message) {
     return (message.message || "").startsWith("[장소 투표]");
+}
+
+
+// 폼 카드 종료 여부
+function isFormClosedCard(message) {
+    if (!message || !message.formId) {
+        return false;
+    }
+
+    if (message.formClosed === true) {
+        return true;
+    }
+
+    if (message.formClosedYn === "Y") {
+        return true;
+    }
+
+    return formStatusCache[Number(message.formId)] === "Y";
+}
+
+// 폼 카드 종료 상태 동기화
+function syncFormCardClosedStates(messages) {
+    const formIds = [];
+
+    messages.forEach(function (message) {
+        if (!isFormMessage(message) || !message.formId) {
+            return;
+        }
+
+        const formId = Number(message.formId);
+
+        if (formIds.includes(formId)) {
+            return;
+        }
+
+        formIds.push(formId);
+    });
+
+    formIds.forEach(function (formId) {
+        if (formStatusCache[formId]) {
+            applyFormCardClosedState(formId, formStatusCache[formId]);
+            return;
+        }
+
+        fetch("/api/chat/forms/" + formId)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error();
+                }
+
+                return response.json();
+            })
+            .then(function (form) {
+                refreshFormCardClosedState(form);
+            })
+            .catch(function () {
+                // 폼 카드 버튼 문구 동기화 실패는 채팅 화면 사용을 막지 않는다.
+            });
+    });
+}
+
+// 특정 폼 카드 종료 상태 갱신
+function refreshFormCardClosedState(form) {
+    if (!form || !form.formId) {
+        return;
+    }
+
+    const formId = Number(form.formId);
+    const closedYn = form.closedYn === "Y" ? "Y" : "N";
+
+    formStatusCache[formId] = closedYn;
+
+    Object.keys(messageCache).forEach(function (messageId) {
+        const message = messageCache[messageId];
+
+        if (message && Number(message.formId) === formId) {
+            message.formClosedYn = closedYn;
+        }
+    });
+
+    applyFormCardClosedState(formId, closedYn);
+}
+
+// 폼 카드 버튼 문구 적용
+function applyFormCardClosedState(formId, closedYn) {
+    const cards = document.querySelectorAll('.chat-form-card[data-form-id="' + Number(formId) + '"]');
+
+    cards.forEach(function (card) {
+        const action = card.querySelector(".chat-form-action");
+
+        if (!action) {
+            return;
+        }
+
+        if (closedYn === "Y") {
+            action.textContent = "결과보기";
+            return;
+        }
+
+        action.textContent = card.dataset.openLabel || "투표하기";
+    });
 }
 
 // 이미지 메시지 여부
@@ -441,7 +560,7 @@ function prepareEditMessage() {
     const selectedMessage = messageCache[selectedMessageId];
 
     if (!selectedMessage) {
-        alert("수정할 메시지를 찾을 수 없습니다.");
+        showToast("수정할 메시지를 찾을 수 없습니다.", "error");
         return;
     }
 
@@ -511,7 +630,7 @@ function updateSelectedMessage() {
     const message = messageInput.value.trim();
 
     if (message === "") {
-        alert("메시지를 입력해 주세요.");
+        showToast("메시지를 입력해 주세요.", "error");
         return;
     }
 
@@ -541,7 +660,7 @@ function updateSelectedMessage() {
             appendOrReplaceMessage(updatedMessage);
         })
         .catch(function () {
-            alert("메시지 수정에 실패했습니다.");
+            showToast("메시지 수정에 실패했습니다.", "error");
         });
 }
 
@@ -577,7 +696,7 @@ function deleteSelectedMessage() {
             appendOrReplaceMessage(deletedMessage);
         })
         .catch(function () {
-            alert("메시지 삭제에 실패했습니다.");
+            showToast("메시지 삭제에 실패했습니다.", "error");
         });
 }
 

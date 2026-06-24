@@ -17,10 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 class ChatRoomDummyTest {
-
     @Autowired
     private ChatRoomCreateService chatRoomCreateService;
-
     @Autowired
     private MemberRepository memberRepository;
 

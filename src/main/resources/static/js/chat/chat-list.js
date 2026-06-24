@@ -1,7 +1,31 @@
+// 채팅 화면 이동 후 알림 출력
+function showChatToastIfExists() {
+    const rawToast = sessionStorage.getItem("chatPendingToast");
+
+    if (!rawToast) {
+        return;
+    }
+
+    sessionStorage.removeItem("chatPendingToast");
+
+    try {
+        const toast = JSON.parse(rawToast);
+
+        if (!toast || !toast.message) {
+            return;
+        }
+
+        showToast(toast.message, toast.type || "success");
+    } catch (error) {
+        // 저장된 알림 데이터가 잘못된 경우 조용히 무시한다.
+    }
+}
+
 let allChatRooms = [];
 let currentChatMode = "MEAL";
 
 document.addEventListener("DOMContentLoaded", function () {
+    showChatToastIfExists();
     loadChatRooms();
 });
 
@@ -16,7 +40,7 @@ function loadChatRooms() {
             renderChatRooms();
         })
         .catch(function () {
-            alert("채팅방 목록을 불러오지 못했습니다.");
+            showToast("채팅방 목록을 불러오지 못했습니다.", "error");
         });
 }
 
@@ -68,15 +92,18 @@ function renderChatRooms() {
             ? `<span class="room-status closed">종료됨</span>`
             : "";
 
+        const roomName = escapeHtml(room.displayRoomName || room.roomName || "채팅방");
+        const lastMessage = escapeHtml(room.lastMessage || "아직 메시지가 없습니다.");
+
         chatRoomList.innerHTML += `
             <button type="button" class="chat-room-item" onclick="goChatRoom(${room.chatRoomId})">
-                <div>
+                <div class="chat-room-main">
                     <div class="chat-room-name">
-                        ${escapeHtml(room.displayRoomName || room.roomName || "채팅방")}
+                        <span class="chat-room-title-text">${roomName}</span>
                         ${closedText}
                     </div>
                     <div class="last-message">
-                        ${escapeHtml(room.lastMessage || "아직 메시지가 없습니다.")}
+                        ${lastMessage}
                     </div>
                 </div>
 
