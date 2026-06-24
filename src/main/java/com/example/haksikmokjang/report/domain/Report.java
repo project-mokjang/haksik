@@ -77,4 +77,13 @@ public class Report {
         this.processedBy = admin;
         this.processedAt = java.time.LocalDateTime.now();
     }
+
+    // 신고 처리 취소
+    public void cancelProcess() {
+        this.status = ReportStatus.PENDING;
+        this.processedBy = null;
+        this.processedAt = null;
+        this.processedReason = null;
+    }
+
 }

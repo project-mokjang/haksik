@@ -74,4 +74,9 @@ public class StoreReview {
         this.rating = rating;
         this.content = content;
     }
+
+    // 신고 처리 취소 시 리뷰 상태 복구
+    public void restoreStatus(String status) {
+        this.status = ReviewStatus.valueOf(status);
+    }
 }

@@ -1,6 +1,5 @@
 package com.example.haksikmokjang.member.trust.service;
 
-
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
@@ -48,8 +47,8 @@ public class TrustService {
 
     // 관리자 신고 처리로 인한 매너점수 차감
     @Transactional
-    public void applyReportPenalty(Member targetMember, Long reportId) {
-        applyPenalty(
+    public TrustPenaltyApplyResult applyReportPenalty(Member targetMember, Long reportId) {
+        return applyPenalty(
                 targetMember,
                 TrustPenaltySourceType.REPORT,
                 reportId,
@@ -64,10 +63,11 @@ public class TrustService {
         UserProfile userProfile = userProfileRepository.findByMember(targetMember)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
-        if (trustPenaltyHistoryRepository.existsByTargetMemberAndSourceTypeAndSourceId(
+        if (trustPenaltyHistoryRepository.existsByTargetMemberAndSourceTypeAndSourceIdAndCanceledYn(
                 targetMember,
                 TrustPenaltySourceType.NO_SHOW,
-                chatRoomId
+                chatRoomId,
+                "N"
         )) {
             return;
         }
@@ -89,7 +89,7 @@ public class TrustService {
     }
 
     // 공통 매너점수 차감
-    private void applyPenalty(
+    private TrustPenaltyApplyResult applyPenalty(
             Member targetMember,
             TrustPenaltySourceType sourceType,
             Long sourceId,
@@ -99,29 +99,69 @@ public class TrustService {
         UserProfile userProfile = userProfileRepository.findByMember(targetMember)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
 
-        if (trustPenaltyHistoryRepository.existsByTargetMemberAndSourceTypeAndSourceId(
-                targetMember,
-                sourceType,
-                sourceId
-        )) {
-            return;
+        BigDecimal beforeMannerTemperature = userProfile.getMannerTemperature();
+
+        TrustPenaltyHistory history = trustPenaltyHistoryRepository
+                .findByTargetMemberAndSourceTypeAndSourceId(targetMember, sourceType, sourceId)
+                .orElse(null);
+
+        // 이미 취소되지 않은 제재 이력이 있으면 중복 차감하지 않음
+        if (history != null && !history.isCanceled()) {
+            return new TrustPenaltyApplyResult(
+                    history,
+                    beforeMannerTemperature,
+                    beforeMannerTemperature,
+                    BigDecimal.ZERO
+            );
         }
 
         userProfile.decreaseMannerTemperature(penaltyPoint);
 
-        savePenaltyHistory(
-                targetMember,
-                sourceType,
-                sourceId,
-                penaltyPoint,
-                reason
-        );
+        if (history == null) {
+            history = savePenaltyHistory(
+                    targetMember,
+                    sourceType,
+                    sourceId,
+                    penaltyPoint,
+                    reason
+            );
+        } else {
+            history.reactivate();
+        }
+
+        BigDecimal afterMannerTemperature = userProfile.getMannerTemperature();
 
         lockIfTrustZero(userProfile, "매너점수 0점 이하로 인한 계정 잠금");
+
+        return new TrustPenaltyApplyResult(
+                history,
+                beforeMannerTemperature,
+                afterMannerTemperature,
+                penaltyPoint
+        );
+    }
+
+    // 신고 제재 취소로 인한 매너점수 복구
+    @Transactional
+    public void cancelReportPenalty(
+            TrustPenaltyHistory penaltyHistory,
+            Member admin,
+            BigDecimal beforeMannerTemperature,
+            String cancelReason
+    ) {
+        if (penaltyHistory == null || penaltyHistory.isCanceled()) {
+            return;
+        }
+
+        UserProfile userProfile = userProfileRepository.findByMember(penaltyHistory.getTargetMember())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_PROFILE_NOT_FOUND));
+
+        userProfile.restoreMannerTemperature(beforeMannerTemperature);
+        penaltyHistory.cancel(admin, cancelReason);
     }
 
     // 제재 이력 저장
-    private void savePenaltyHistory(
+    private TrustPenaltyHistory savePenaltyHistory(
             Member targetMember,
             TrustPenaltySourceType sourceType,
             Long sourceId,
@@ -136,7 +176,7 @@ public class TrustService {
                 .reason(reason)
                 .build();
 
-        trustPenaltyHistoryRepository.save(history);
+        return trustPenaltyHistoryRepository.save(history);
     }
 
     // 매너점수 0점 이하이면 계정 잠금
@@ -144,5 +184,14 @@ public class TrustService {
         if (userProfile.isMannerTemperatureZeroOrLess()) {
             userProfile.getMember().lockByTrust(reason);
         }
+    }
+
+    // 제재 적용 결과
+    public record TrustPenaltyApplyResult(
+            TrustPenaltyHistory penaltyHistory,
+            BigDecimal beforeMannerTemperature,
+            BigDecimal afterMannerTemperature,
+            BigDecimal penaltyPoint
+    ) {
     }
 }

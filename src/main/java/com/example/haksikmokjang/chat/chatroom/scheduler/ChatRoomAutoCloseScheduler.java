@@ -3,6 +3,7 @@ package com.example.haksikmokjang.chat.chatroom.scheduler;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoom;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomStatus;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomRepository;
+import com.example.haksikmokjang.chat.chatroom.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ChatRoomAutoCloseScheduler {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomService chatRoomService;
 
     @Scheduled(fixedDelay = 60000)
     @Transactional
@@ -30,7 +32,7 @@ public class ChatRoomAutoCloseScheduler {
                 continue;
             }
 
-            chatRoom.close();
+            chatRoomService.closeChatRoomBySystem(chatRoom.getChatRoomId());
         }
     }
 }

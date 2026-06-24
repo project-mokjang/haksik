@@ -13,10 +13,14 @@ import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomRepository;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.matching.matchingrequest.domain.Matching;
+import com.example.haksikmokjang.matching.matchingrequest.domain.MatchingStatus;
+import com.example.haksikmokjang.matching.matchingrequest.repository.MatchingRepository;
 import com.example.haksikmokjang.member.badge.service.BadgeAwardService;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
+import com.example.haksikmokjang.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,8 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserProfileRepository userProfileRepository;
     private final BadgeAwardService badgeAwardService;
+    private final MatchingRepository matchingRepository;
+    private final NotificationService notificationService;
 
     // 내가 참여 중인 채팅방 목록 조회
     public List<ChatRoomResponse> getMyChatRooms(Member loginMember) {
@@ -126,6 +132,16 @@ public class ChatRoomService {
         }
 
         chatRoom.close();
+
+        boolean matchingCompleted = completeAcceptedMatchingsByChatRoom(chatRoom);
+
+        if (matchingCompleted) {
+            sendMatchingEndedNotification(
+                    chatRoom,
+                    "채팅방이 종료되어 매칭이 종료되었습니다. 상대방 평가를 작성해주세요."
+            );
+        }
+
         badgeAwardService.awardChatRoomClosedBadges(chatRoom);
 
         return ChatRoomDetailResponse.builder()
@@ -139,6 +155,58 @@ public class ChatRoomService {
                 .leader(loginChatRoomMember.isLeader())
                 .canEndChat(false)
                 .build();
+    }
+    // 시스템에 의한 채팅방 자동 종료
+    @Transactional
+    public void closeChatRoomBySystem(Long chatRoomId) {
+        ChatRoom chatRoom = getChatRoom(chatRoomId);
+
+        if (!chatRoom.isActive()) {
+            return;
+        }
+
+        chatRoom.close();
+
+        boolean matchingCompleted = completeAcceptedMatchingsByChatRoom(chatRoom);
+
+        if (matchingCompleted) {
+            sendMatchingEndedNotification(
+                    chatRoom,
+                    "채팅방 종료"
+            );
+        }
+
+        badgeAwardService.awardChatRoomClosedBadges(chatRoom);
+    }
+
+    // 채팅방 종료 시 연결된 확정 매칭 완료 처리
+    private boolean completeAcceptedMatchingsByChatRoom(ChatRoom chatRoom) {
+        List<Matching> acceptedMatchings = matchingRepository.findByChatRoomIdAndStatus(
+                chatRoom.getChatRoomId(),
+                MatchingStatus.ACCEPTED
+        );
+
+        if (acceptedMatchings.isEmpty()) {
+            return false;
+        }
+
+        acceptedMatchings.forEach(Matching::complete);
+        return true;
+    }
+
+    // 매칭 종료 알림 전송
+    private void sendMatchingEndedNotification(ChatRoom chatRoom, String content) {
+        chatRoomMemberRepository.findAllByChatRoom(chatRoom)
+                .forEach(chatRoomMember ->
+                        notificationService.sendNotification(
+                                chatRoomMember.getMember(),
+                                "MATCHING",
+                                "매칭 종료",
+                                content,
+                                "CHAT_ROOM",
+                                chatRoom.getChatRoomId()
+                        )
+                );
     }
 
     // 읽지 않은 메시지 수 계산

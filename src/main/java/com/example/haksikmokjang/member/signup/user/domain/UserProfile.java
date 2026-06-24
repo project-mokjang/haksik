@@ -82,15 +82,21 @@ public class UserProfile extends BaseEntity {
         if (point == null || point.compareTo(BigDecimal.ZERO) <= 0) {
             return;
         }
-
         BigDecimal decreasedTemperature = this.mannerTemperature.subtract(point);
 
         if (decreasedTemperature.compareTo(BigDecimal.ZERO) < 0) {
             this.mannerTemperature = BigDecimal.ZERO;
             return;
         }
-
         this.mannerTemperature = decreasedTemperature;
+    }
+
+    // 신고 처리 취소 시 매너온도 복구
+    public void restoreMannerTemperature(BigDecimal beforeMannerTemperature) {
+        if (beforeMannerTemperature == null) {
+            return;
+        }
+        this.mannerTemperature = beforeMannerTemperature;
     }
 
     // 노쇼 횟수 증가
@@ -98,15 +104,11 @@ public class UserProfile extends BaseEntity {
         if (this.noShowCount == null) {
             this.noShowCount = 0;
         }
-
         this.noShowCount++;
     }
 
     // 매너온도 0점 이하 여부
     public boolean isMannerTemperatureZeroOrLess() {
         return this.mannerTemperature.compareTo(BigDecimal.ZERO) <= 0;
-
     }
-
-
 }

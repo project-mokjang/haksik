@@ -212,15 +212,56 @@
 .bell-badge { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; background-color: var(--red); border-radius: 50%; display: none; }
 .bell-badge.show { display: block; }
 
-.noti-dropdown { display: none; position: absolute; top: 40px; right: -10px; width: 300px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); z-index: 1000; overflow: hidden; }
+.noti-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: -10px;
+    width: 300px;
+    max-width: calc(100vw - 48px);
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    overflow: hidden;
+}
 .noti-dropdown.show { display: block; }
 .noti-header { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 900; color: var(--forest); background-color: var(--ivory); }
-.noti-list { max-height: 340px; overflow-y: auto; list-style: none; margin: 0; padding: 0; }
-.noti-item { padding: 14px 16px; border-bottom: 1px solid var(--line); cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: 0.2s; }
+.noti-list {
+    max-height: 340px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.noti-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: 0.2s;
+    min-width: 0;
+}
 .noti-item:last-child { border-bottom: none; }
 .noti-item:hover { background: var(--ivory2); }
 .noti-item.unread { background: rgba(18, 107, 79, 0.05); } /* 안 읽은 알림은 연녹색 배경 */
-.noti-msg { font-size: 13px; font-weight: 700; color: var(--forest); line-height: 1.4; word-break: break-all; }
+.noti-msg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--forest);
+    line-height: 1.45;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
 .noti-time { font-size: 11px; color: var(--muted); font-weight: 700; }
 .noti-empty { padding: 30px; text-align: center; font-size: 13px; color: var(--muted); font-weight: 700; }
 

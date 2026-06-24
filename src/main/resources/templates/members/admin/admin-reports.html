@@ -103,6 +103,31 @@
             </div>
         </div>
     </div>
+    <!-- 신고 처리 취소 사유 모달 -->
+    <div id="reportCancelModal" class="modal-overlay">
+        <div class="modal-content process-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 처리 취소</h3>
+                <button class="close-btn" onclick="closeReportCancelModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="cancelReportId">
+
+                <label class="modal-label" for="cancelReasonInput">취소 사유</label>
+                <textarea
+                        id="cancelReasonInput"
+                        class="modal-textarea"
+                        placeholder="예: 관리자 오처리로 인해 처리 취소"
+                ></textarea>
+
+                <div class="modal-footer clean-footer">
+                    <button class="btn-cancel" onclick="closeReportCancelModal()">닫기</button>
+                    <button class="btn-danger" onclick="submitReportCancel()">처리 취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script th:src="@{/js/admin/admin-report.js}"></script>
 
 </th:block>

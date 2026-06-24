@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -46,6 +47,19 @@ public class TrustPenaltyHistory extends CreatedTimeEntity {
     @Column(name = "reason", nullable = false, length = 500)
     private String reason;
 
+    @Column(name = "canceled_yn", nullable = false, length = 1)
+    private String canceledYn = "N";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "canceled_by")
+    private Member canceledBy;
+
+    @Column(name = "canceled_at")
+    private LocalDateTime canceledAt;
+
+    @Column(name = "cancel_reason", length = 500)
+    private String cancelReason;
+
     @Builder
     public TrustPenaltyHistory(
             Member targetMember,
@@ -59,5 +73,27 @@ public class TrustPenaltyHistory extends CreatedTimeEntity {
         this.sourceId = sourceId;
         this.penaltyPoint = penaltyPoint;
         this.reason = reason;
+        this.canceledYn = "N";
+    }
+
+    // 제재 이력 취소 처리
+    public void cancel(Member admin, String cancelReason) {
+        this.canceledYn = "Y";
+        this.canceledBy = admin;
+        this.canceledAt = LocalDateTime.now();
+        this.cancelReason = cancelReason;
+    }
+
+    // 취소된 제재 이력 재사용
+    public void reactivate() {
+        this.canceledYn = "N";
+        this.canceledBy = null;
+        this.canceledAt = null;
+        this.cancelReason = null;
+    }
+
+    // 제재 이력 취소 여부 확인
+    public boolean isCanceled() {
+        return "Y".equals(this.canceledYn);
     }
 }

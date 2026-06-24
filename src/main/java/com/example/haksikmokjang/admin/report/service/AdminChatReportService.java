@@ -90,4 +90,28 @@ public class AdminChatReportService {
                 .map(ChatRoomMember::getMember)
                 .orElse(null);
     }
+
+    // 신고 대상 채팅 메시지 삭제 여부 조회
+    public Boolean getChatMessageDeleted(Report report) {
+        if (!"CHAT_MESSAGE".equals(report.getTargetType())) {
+            return null;
+        }
+
+        return chatMessageRepository.findById(report.getTargetId())
+                .map(ChatMessage::isDeleted)
+                .orElse(null);
+    }
+
+    // 신고 처리 취소 시 채팅 메시지 삭제 여부 복구
+    @Transactional
+    public void restoreChatMessage(Report report, Boolean beforeChatDeleted) {
+        if (!"CHAT_MESSAGE".equals(report.getTargetType())) {
+            return;
+        }
+
+        ChatMessage chatMessage = chatMessageRepository.findById(report.getTargetId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
+
+        chatMessage.restoreDeleted(beforeChatDeleted);
+    }
 }

@@ -57,4 +57,28 @@ public class AdminReviewReportService {
                 .map(StoreReview::getMember)
                 .orElse(null);
     }
+
+    // 신고 대상 리뷰 상태 조회
+    public String getReviewStatus(Report report) {
+        if (!"REVIEW".equals(report.getTargetType())) {
+            return null;
+        }
+
+        return storeReviewRepository.findById(report.getTargetId())
+                .map(review -> review.getStatus().name())
+                .orElse("NOT_FOUND");
+    }
+
+    // 신고 처리 취소 시 리뷰 상태 복구
+    @Transactional
+    public void restoreReview(Report report, String beforeTargetStatus) {
+        if (beforeTargetStatus == null || "NOT_FOUND".equals(beforeTargetStatus)) {
+            return;
+        }
+
+        StoreReview review = storeReviewRepository.findById(report.getTargetId())
+                .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+        review.restoreStatus(beforeTargetStatus);
+    }
 }

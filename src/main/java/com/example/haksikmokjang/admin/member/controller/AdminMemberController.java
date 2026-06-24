@@ -75,4 +75,16 @@ public class AdminMemberController {
     public void unlockMember(@PathVariable Long memberId) {
         adminMemberService.unlockMember(memberId);
     }
+
+    // 점주 승인/반려 처리 취소
+    @PostMapping("/owners/{ownerProfileId}/cancel")
+    public void cancelOwnerApproval(
+            @PathVariable Long ownerProfileId,
+            Authentication authentication
+    ) {
+        adminMemberService.cancelOwnerApproval(
+                ownerProfileId,
+                authentication.getName()
+        );
+    }
 }

@@ -156,9 +156,6 @@ function openReportDetail(reportId) {
             return response.json();
         })
         .then(report => {
-            console.log("신고 상세 응답:", report);
-            console.log("첨부파일 목록:", report.attachments);
-
             renderReportDetail(report);
             document.getElementById("reportDetailModal").classList.add("active");
         })
@@ -262,6 +259,22 @@ function renderReportDetail(report) {
                 ${report.processedReason || "-"}
             </div>
         </div>
+
+        ${renderDetailCancelButton(report)}
+    `;
+}
+
+// 상세 모달 처리 취소 버튼 출력
+function renderDetailCancelButton(report) {
+    if (report.status === "PENDING") {
+        return "";
+    }
+
+    return `
+        <div class="detail-footer-actions">
+            <button class="btn-cancel" onclick="closeReportDetail()">닫기</button>
+            <button class="btn-danger" onclick="openReportCancelModal(${report.reportId})">처리 취소</button>
+        </div>
     `;
 }
 
@@ -293,15 +306,29 @@ function closeReportDetail() {
 
 // 신고 처리 버튼 출력
 function renderReportActionButtons(report) {
-    if (report.status === "RESOLVED" || report.status === "REJECTED") {
-        return "-";
+    if (report.status === "PENDING") {
+        return `
+            <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'processing')">처리중</button>
+            <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'resolve')">완료</button>
+            <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'reject')">반려</button>
+        `;
     }
 
-    return `
-        <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'processing')">처리중</button>
-        <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'resolve')">완료</button>
-        <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'reject')">반려</button>
-    `;
+    if (report.status === "PROCESSING") {
+        return `
+            <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'resolve')">완료</button>
+            <button class="action-btn" onclick="changeReportStatus(${report.reportId}, 'reject')">반려</button>
+            <button class="action-btn cancel" onclick="openReportCancelModal(${report.reportId})">취소</button>
+        `;
+    }
+
+    if (report.status === "RESOLVED" || report.status === "REJECTED") {
+        return `
+            <button class="action-btn cancel" onclick="openReportCancelModal(${report.reportId})">처리취소</button>
+        `;
+    }
+
+    return "-";
 }
 
 // 신고 상태 변경
@@ -384,6 +411,58 @@ function processReportWithReason(reportId, action, processedReason) {
         .catch(error => {
             console.error(error);
             alert("신고 상태 변경 중 오류가 발생했습니다.");
+        });
+}
+
+// 신고 처리 취소 모달 열기
+function openReportCancelModal(reportId) {
+    document.getElementById("cancelReportId").value = reportId;
+    document.getElementById("cancelReasonInput").value = "";
+
+    document.getElementById("reportCancelModal").classList.add("active");
+}
+
+// 신고 처리 취소 모달 닫기
+function closeReportCancelModal() {
+    document.getElementById("reportCancelModal").classList.remove("active");
+}
+
+// 신고 처리 취소 제출
+function submitReportCancel() {
+    const reportId = document.getElementById("cancelReportId").value;
+    const cancelReason = document.getElementById("cancelReasonInput").value;
+
+    if (!confirm("신고 처리를 취소하고 이전 상태로 복구하시겠습니까?")) {
+        return;
+    }
+
+    cancelReportProcess(reportId, cancelReason);
+}
+
+// 신고 처리 취소 요청
+function cancelReportProcess(reportId, cancelReason) {
+    fetch(`/api/admin/reports/${reportId}/cancel`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            cancelReason: cancelReason
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("신고 처리 취소 실패");
+            }
+
+            closeReportCancelModal();
+            closeReportDetail();
+            alert("신고 처리가 취소되었습니다.");
+            fetchReports(currentReportPage);
+        })
+        .catch(error => {
+            console.error(error);
+            alert("신고 처리 취소 중 오류가 발생했습니다.");
         });
 }
 

@@ -106,8 +106,43 @@ public class AdminCommunityReportService {
         return null;
     }
 
+    // 신고 대상 커뮤니티 상태 조회
+    public String getCommunityTargetStatus(Report report) {
+        if ("POST".equals(report.getTargetType())) {
+            return postRepository.findById(report.getTargetId())
+                    .map(post -> post.getStatus().name())
+                    .orElse("NOT_FOUND");
+        }
 
+        if ("COMMENT".equals(report.getTargetType())) {
+            return commentRepository.findById(report.getTargetId())
+                    .map(comment -> comment.getStatus().name())
+                    .orElse("NOT_FOUND");
+        }
 
+        return null;
+    }
 
+    // 신고 처리 취소 시 커뮤니티 대상 상태 복구
+    @Transactional
+    public void restoreCommunityTarget(Report report, String beforeTargetStatus) {
+        if (beforeTargetStatus == null || "NOT_FOUND".equals(beforeTargetStatus)) {
+            return;
+        }
 
+        if ("POST".equals(report.getTargetType())) {
+            Post post = postRepository.findById(report.getTargetId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+            post.restoreStatus(beforeTargetStatus);
+            return;
+        }
+
+        if ("COMMENT".equals(report.getTargetType())) {
+            Comment comment = commentRepository.findById(report.getTargetId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+            comment.restoreStatus(beforeTargetStatus);
+        }
+    }
 }

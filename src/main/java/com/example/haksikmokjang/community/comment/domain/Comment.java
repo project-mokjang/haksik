@@ -68,4 +68,9 @@ public class Comment extends CreatedTimeEntity {
     public void hide() {
         this.status = CommentStatus.HIDDEN;
     }
+
+    // 신고 처리 취소 시 댓글 상태 복구
+    public void restoreStatus(String status) {
+        this.status = CommentStatus.valueOf(status);
+    }
 }
