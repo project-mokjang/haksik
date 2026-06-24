@@ -48,7 +48,8 @@
                             <input type="text"
                                    id="nickname"
                                    th:value="${myPage.nickname}"
-                                   placeholder="새로운 닉네임 입력"
+                                   placeholder="새 닉네임 입력 (10자 이내)"
+                                   maxlength="10"
                                    required>
 
                             <button type="button" id="nicknameCheckBtn" class="profile-action-btn">

@@ -1,4 +1,4 @@
-package com.example.haksikmokjang.controller.member.user;
+package com.example.haksikmokjang.member.signup.user.controller;
 
 
 import com.example.haksikmokjang.global.security.CustomUserDetails;

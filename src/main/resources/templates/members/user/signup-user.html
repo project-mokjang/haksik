@@ -83,7 +83,8 @@
             <div class="auth-input-row">
               <input type="text"
                      id="nickname"
-                     placeholder="앱에서 사용할 닉네임"
+                     placeholder="사용할 닉네임 (10자 이내)"
+                     maxlength="10"
                      required>
 
               <button type="button"
@@ -151,6 +152,10 @@
                      th:id="'term' + ${term.termsId}"
                      name="termsIds"
                      th:value="${term.termsId}"
+                     class="term-checkbox"
+                     th:data-title="${term.title}"
+                     th:data-content="${term.content}"
+                     onclick="openTermsModal(event, this)"
                      required>
 
               <label th:for="'term' + ${term.termsId}">
@@ -172,40 +177,24 @@
     </form>
 
     <div class="auth-modal-backdrop" id="emailModal">
+    </div>
+
+    <div class="auth-modal-backdrop" id="termsModal">
       <div class="auth-modal-box">
-        <h2 class="auth-modal-title">학교 이메일 인증</h2>
+        <h2 class="auth-modal-title" id="termsModalTitle">약관 제목</h2>
 
-        <div class="auth-field">
-          <label for="modalEmail">학교 이메일</label>
-
-          <div class="auth-input-row">
-            <input type="email"
-                   id="modalEmail"
-                   placeholder="학교 이메일 입력">
-
-            <button type="button" class="auth-action-btn" id="emailSendBtn">
-              전송
-            </button>
-          </div>
+        <div class="auth-field app-scroll" style="max-height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; margin-bottom: 15px;">
+          <p id="termsModalContent" style="white-space: pre-wrap; font-size: 0.85rem; line-height: 1.5; color: #333;">
+            약관 내용
+          </p>
         </div>
 
-        <div class="auth-field">
-          <label for="modalCode">인증번호</label>
-
-          <div class="auth-input-row">
-            <input type="text"
-                   id="modalCode"
-                   placeholder="인증번호 6자리">
-
-            <button type="button" class="auth-action-btn" id="emailVerifyBtn">
-              확인
-            </button>
-          </div>
-        </div>
-
-        <div class="auth-modal-actions">
-          <button type="button" class="auth-cancel-btn" id="emailModalCloseBtn">
+        <div class="auth-modal-actions" style="display: flex; gap: 10px;">
+          <button type="button" class="auth-cancel-btn" onclick="closeTermsModal()" style="flex: 1;">
             닫기
+          </button>
+          <button type="button" class="auth-action-btn" id="termsAgreeBtn" style="flex: 1; border-radius: 8px;">
+            동의하고 닫기
           </button>
         </div>
       </div>
