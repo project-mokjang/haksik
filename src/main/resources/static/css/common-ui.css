@@ -347,3 +347,29 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* 채팅 알림 메시지 한 줄 표시 */
+.noti-chat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.noti-chat-title {
+    min-width: 0;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.4;
+    word-break: break-all;
+}
+
+.noti-chat-count {
+    flex-shrink: 0;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
+}

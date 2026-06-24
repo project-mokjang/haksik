@@ -9,6 +9,7 @@ import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.member.reivew.dto.ReviewUpdateRequest;
 import com.example.haksikmokjang.member.reivew.dto.ReviewUserResponse;
+import com.example.haksikmokjang.notification.service.NotificationService;
 import com.example.haksikmokjang.ownerpage.store.domain.Reservation;
 import com.example.haksikmokjang.ownerpage.store.domain.ReservationStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.ReviewStatus;
@@ -39,6 +40,7 @@ public class ReviewService {
     private final ReportRepository reportRepository;
     private final FileAttachmentRepository fileAttachmentRepository;
     private final FileAttachmentService fileAttachmentService;
+    private final NotificationService notificationService;
 
     @Transactional
     public Long createReview(String loginId, ReviewCreateRequest request) {
@@ -143,7 +145,20 @@ public class ReviewService {
         StoreReview review = storeReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
+        boolean firstReply = review.getOwnerReply() == null || review.getOwnerReply().isBlank();
+
         review.writeOwnerReply(reply);
+
+        if (firstReply) {
+            notificationService.sendNotification(
+                    review.getMember(),
+                    "REVIEW",
+                    "리뷰 답글",
+                    "사장님이 내 리뷰에 답글을 남겼습니다.",
+                    "REVIEW",
+                    review.getReviewId()
+            );
+        }
     }
 
     // 내 리뷰 무한 스크롤 조회 (삭제된 리뷰 제외)
