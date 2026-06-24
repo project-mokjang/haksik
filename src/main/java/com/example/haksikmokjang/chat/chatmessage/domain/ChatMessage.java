@@ -127,4 +127,13 @@ public class ChatMessage extends BaseEntity {
     public boolean isFormMessage() {
         return this.messageType == ChatMessageType.FORM;
     }
+
+    // 신고 처리 취소 시 채팅 메시지 삭제 여부 복구
+    public void restoreDeleted(Boolean deleted) {
+        if (deleted == null) {
+            return;
+        }
+
+        this.deleted = deleted;
+    }
 }

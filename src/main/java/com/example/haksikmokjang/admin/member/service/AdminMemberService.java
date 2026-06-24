@@ -178,4 +178,20 @@ public class AdminMemberService {
 
         member.unlock();
     }
+
+    // 점주 승인/반려 처리 취소
+    @Transactional
+    public void cancelOwnerApproval(Long ownerProfileId, String adminLoginId) {
+        OwnerProfile ownerProfile = ownerProfileRepository.findById(ownerProfileId)
+                .orElseThrow(() -> new CustomException(ErrorCode.OWNER_PROFILE_NOT_FOUND));
+
+        memberRepository.findByLoginId(adminLoginId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ADMIN_NOT_FOUND));
+
+        if (ownerProfile.getApprovalStatus() == ApprovalStatus.PENDING) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        ownerProfile.cancelApproval();
+    }
 }

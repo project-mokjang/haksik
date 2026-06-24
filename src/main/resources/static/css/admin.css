@@ -568,3 +568,48 @@ body { display: flex; height: 100vh; background-color: var(--ivory); color: var(
         max-height: 280px;
     }
 }
+
+/* 신고 처리 취소 버튼 */
+.action-btn.cancel {
+    background: #fff4f1;
+    color: #b7472a;
+}
+
+.action-btn.cancel:hover {
+    background: #b7472a;
+    color: white;
+}
+
+.btn-danger {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    background: #b7472a;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+.detail-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+}
+
+.action-btn.danger {
+    background: #fff5f5;
+    color: #d64545;
+    border: 1px solid #f0b4b4;
+}
+
+.action-btn.cancel {
+    background: #f7f7f7;
+    color: #555;
+    border: 1px solid #d6d6d6;
+}

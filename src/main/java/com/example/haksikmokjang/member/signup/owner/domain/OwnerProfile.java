@@ -63,4 +63,12 @@ public class OwnerProfile extends BaseEntity {
         this.processedAt = LocalDateTime.now();
         this.rejectedReason = rejectedReason;
     }
+
+    // 점주 승인/반려 처리 취소
+    public void cancelApproval() {
+        this.approvalStatus = ApprovalStatus.PENDING;
+        this.processedBy = null;
+        this.processedAt = null;
+        this.rejectedReason = null;
+    }
 }

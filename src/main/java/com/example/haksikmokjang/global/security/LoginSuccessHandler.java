@@ -5,14 +5,18 @@ import com.example.haksikmokjang.member.signup.owner.domain.ApprovalStatus;
 import com.example.haksikmokjang.member.signup.owner.domain.OwnerProfile;
 import com.example.haksikmokjang.member.signup.owner.repository.OwnerProfileRepository;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -51,7 +55,23 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             }
 
             if (ownerProfile.getApprovalStatus() == ApprovalStatus.REJECTED) {
-                response.sendRedirect("/api/view/owner/rejected");
+                SecurityContextHolder.clearContext();
+                request.getSession().invalidate();
+
+                Cookie sessionCookie = new Cookie("JSESSIONID", null);
+                sessionCookie.setPath("/");
+                sessionCookie.setMaxAge(0);
+                response.addCookie(sessionCookie);
+
+                String rejectedReason = ownerProfile.getRejectedReason();
+
+                if (rejectedReason == null || rejectedReason.isBlank()) {
+                    rejectedReason = "사업자 정보 확인이 어려워 점주 가입 신청이 반려되었습니다.";
+                }
+
+                String encodedReason = URLEncoder.encode(rejectedReason, StandardCharsets.UTF_8);
+
+                response.sendRedirect("/api/view/login?ownerRejected=true&reason=" + encodedReason);
                 return;
             }
         }

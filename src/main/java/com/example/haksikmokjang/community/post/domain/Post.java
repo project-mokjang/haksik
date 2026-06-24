@@ -79,4 +79,9 @@ public class Post extends BaseEntity {
     public void hide() {
         this.status = PostStatus.HIDDEN;
     }
+
+    // 신고 처리 취소 시 게시글 상태 복구
+    public void restoreStatus(String status) {
+        this.status = PostStatus.valueOf(status);
+    }
 }

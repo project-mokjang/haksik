@@ -84,14 +84,30 @@ function renderOwnerStatusBadge(status) {
 
 // 점주 처리 버튼 출력
 function renderOwnerButtons(owner) {
-    if (owner.approvalStatus !== "PENDING") {
-        return "-";
+    if (owner.approvalStatus === "PENDING") {
+        return `
+            <button class="action-btn" onclick="approveOwner(${owner.ownerProfileId})">승인</button>
+            <button class="action-btn danger" onclick="rejectOwner(${owner.ownerProfileId})">반려</button>
+        `;
     }
 
-    return `
-        <button class="action-btn" onclick="approveOwner(${owner.ownerProfileId})">승인</button>
-        <button class="action-btn" onclick="rejectOwner(${owner.ownerProfileId})">반려</button>
-    `;
+    if (owner.approvalStatus === "APPROVED") {
+        return `
+            <button class="action-btn cancel" onclick="cancelOwnerApproval(${owner.ownerProfileId}, '승인')">
+                승인 취소
+            </button>
+        `;
+    }
+
+    if (owner.approvalStatus === "REJECTED") {
+        return `
+            <button class="action-btn cancel" onclick="cancelOwnerApproval(${owner.ownerProfileId}, '반려')">
+                반려 취소
+            </button>
+        `;
+    }
+
+    return "-";
 }
 
 // 점주 신청 승인
@@ -146,6 +162,29 @@ function rejectOwner(ownerProfileId) {
         .catch(error => {
             console.error(error);
             alert("점주 반려 중 오류가 발생했습니다.");
+        });
+}
+
+// 점주 승인/반려 처리 취소
+function cancelOwnerApproval(ownerProfileId, statusText) {
+    if (!confirm(`${statusText} 처리를 취소하고 승인 대기 상태로 되돌리시겠습니까?`)) {
+        return;
+    }
+
+    fetch(`/api/admin/members/owners/${ownerProfileId}/cancel`, {
+        method: "POST"
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("점주 처리 취소 실패");
+            }
+
+            alert(`${statusText} 처리가 취소되었습니다.`);
+            fetchOwners(currentOwnerPage);
+        })
+        .catch(error => {
+            console.error(error);
+            alert("점주 처리 취소 중 오류가 발생했습니다.");
         });
 }
 

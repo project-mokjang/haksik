@@ -1,5 +1,6 @@
 package com.example.haksikmokjang.admin.report.controller;
 
+import com.example.haksikmokjang.admin.report.dto.AdminReportCancelRequest;
 import com.example.haksikmokjang.admin.report.dto.AdminReportDetailResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportListResponse;
 import com.example.haksikmokjang.admin.report.dto.AdminReportProcessRequest;
@@ -62,5 +63,15 @@ public class AdminReportController {
             Authentication authentication
     ) {
         adminReportService.rejectReport(reportId, authentication.getName(), request);
+    }
+
+    // 신고 처리 취소
+    @PostMapping("/{reportId}/cancel")
+    public void cancelReport(
+            @PathVariable Long reportId,
+            @RequestBody(required = false) AdminReportCancelRequest request,
+            Authentication authentication
+    ) {
+        adminReportService.cancelReport(reportId, authentication.getName(), request);
     }
 }
