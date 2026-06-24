@@ -201,7 +201,7 @@ function toggleBadgeSelection(badgeId) {
     }
 
     if (selectedBadgeIds.length >= 3) {
-        alert('대표 뱃지는 최대 3개까지 선택할 수 있습니다.');
+        showToast('대표 뱃지는 최대 3개까지 선택할 수 있습니다.','error');
         return;
     }
 
@@ -214,7 +214,7 @@ async function saveRepresentativeBadges() {
     const memberId = getMemberId();
 
     if (!memberId) {
-        alert('회원 ID를 찾을 수 없습니다.');
+        showToast('회원 ID를 찾을 수 없습니다.','error');
         return;
     }
 
@@ -237,7 +237,7 @@ async function saveRepresentativeBadges() {
     const result = await safeJson(response);
 
     if (!response.ok || !result || result.success === false) {
-        alert(getErrorMessage(result, '대표 뱃지 변경에 실패했습니다.'));
+        showToast(getErrorMessage(result, '대표 뱃지 변경에 실패했습니다.','error'));
         return;
     }
 
@@ -246,7 +246,7 @@ async function saveRepresentativeBadges() {
     renderRepresentativeBadges();
     closeBadgeModal();
 
-    alert('대표 뱃지가 변경되었습니다.');
+    showToast('대표 뱃지가 변경되었습니다.','error');
 }
 
 // 약관 모달 열기

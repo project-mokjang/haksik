@@ -248,6 +248,11 @@ async function checkDuplicate(type) {
         return;
     }
 
+    if (type === 'nickname' && value.length > 10) {
+        showToast('닉네임은 10자 이내로 설정해야 합니다.', 'warning');
+        return;
+    }
+
     const url = type === 'loginId'
         ? '/api/members/check-login-id?loginId=' + encodeURIComponent(value)
         : '/api/members/check-nickname?nickname=' + encodeURIComponent(value);
@@ -387,3 +392,46 @@ async function signupUser(event) {
         location.href = '/api/view/login';
     }, 900);
 }
+
+let currentTermCheckbox = null; // 현재 클릭한 체크박스를 기억할 변수
+
+// 약관 모달 열기 (체크박스 클릭 시)
+function openTermsModal(event, checkbox) {
+    // 1. 이미 체크된 상태에서 또 누르면 그냥 체크 해제되도록 놔둠
+    if (!checkbox.checked) {
+        return;
+    }
+
+    // 2. 체크를 시도하는 거라면, 일단 체크를 막고(모달에서 동의해야 체크됨) 모달을 띄움
+    event.preventDefault();
+    checkbox.checked = false;
+    currentTermCheckbox = checkbox; // 어떤 체크박스를 눌렀는지 기억
+
+    // 3. 모달에 제목과 내용 세팅
+    document.getElementById('termsModalTitle').innerText = checkbox.getAttribute('data-title');
+    document.getElementById('termsModalContent').innerText = checkbox.getAttribute('data-content');
+
+    // 4. 모달 열기
+    document.getElementById('termsModal').classList.add('active');
+}
+
+// 약관 모달 닫기 (그냥 닫기 버튼)
+function closeTermsModal() {
+    document.getElementById('termsModal').classList.remove('active');
+    currentTermCheckbox = null; // 초기화
+}
+
+// 약관 동의하고 닫기 버튼 클릭 이벤트 연결
+document.addEventListener('DOMContentLoaded', function () {
+    // ... 기존 DOMContentLoaded 로직 ...
+
+    const termsAgreeBtn = document.getElementById('termsAgreeBtn');
+    if (termsAgreeBtn) {
+        termsAgreeBtn.addEventListener('click', function() {
+            if (currentTermCheckbox) {
+                currentTermCheckbox.checked = true; // 체크박스 체크 처리
+            }
+            closeTermsModal(); // 모달 닫기
+        });
+    }
+});

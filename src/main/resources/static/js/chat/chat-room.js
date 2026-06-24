@@ -32,7 +32,7 @@ function getChatRoomId() {
     const chatShell = document.querySelector(".chat-shell");
 
     if (!chatShell) {
-        alert("채팅방 정보를 찾을 수 없습니다.");
+        showToast("채팅방 정보를 찾을 수 없습니다.", "error");
         return null;
     }
 
@@ -62,7 +62,7 @@ function loadChatRoomDetail() {
             return roomDetail;
         })
         .catch(function () {
-            alert("채팅방 정보를 불러오지 못했습니다.");
+            showToast("채팅방 정보를 불러오지 못했습니다.", "error");
             return null;
         });
 }
@@ -168,7 +168,7 @@ async function endChatRoom() {
             applyChatRoomDetail(roomDetail);
         })
         .catch(function () {
-            alert("채팅방 종료에 실패했습니다.");
+            showToast("채팅방 종료에 실패했습니다.", "error");
         });
 }
 
@@ -246,7 +246,7 @@ function sendMessage() {
     }
 
     if (currentChatRoomDetail && currentChatRoomDetail.roomStatus === "CLOSED") {
-        alert("종료된 채팅방에는 메시지를 보낼 수 없습니다.");
+        showToast("종료된 채팅방에는 메시지를 보낼 수 없습니다.", "error");
         return;
     }
 
@@ -284,7 +284,7 @@ function sendMessage() {
             sendReadForLatestMessage();
         })
         .catch(function () {
-            alert("메시지를 전송하지 못했습니다.");
+            showToast("메시지를 전송하지 못했습니다.", "error");
         });
 }
 
@@ -376,7 +376,7 @@ function sendChatImage() {
     }
 
     if (currentChatRoomDetail && currentChatRoomDetail.roomStatus === "CLOSED") {
-        alert("종료된 채팅방에는 이미지를 보낼 수 없습니다.");
+        showToast("종료된 채팅방에는 이미지를 보낼 수 없습니다.", "error");
         return;
     }
 
@@ -393,7 +393,7 @@ function sendChatImage() {
     }
 
     if (!imageFile.type.startsWith("image/")) {
-        alert("이미지 파일만 선택할 수 있습니다.");
+        showToast("이미지 파일만 선택할 수 있습니다.", "error");
         chatImageInput.value = "";
         return;
     }
@@ -407,7 +407,7 @@ function sendChatImage() {
     })
         .then(function (response) {
             if (!response.ok) {
-                alert("이미지 전송 실패 상태코드: " + response.status);
+                showToast("이미지 전송 실패 상태코드: " + response.status, "error");
                 throw new Error();
             }
 
@@ -423,7 +423,7 @@ function sendChatImage() {
         })
         .catch(function () {
             chatImageInput.value = "";
-            alert("이미지 전송에 실패했습니다.");
+            showToast("이미지 전송에 실패했습니다.", "error");
         });
 }
 
@@ -480,7 +480,7 @@ function openInviteMemberModal() {
     closeChatPlusMenu();
 
     if (!canInviteGroupDateMember(currentChatRoomDetail)) {
-        alert("과팅 대표자만 초대할 수 있습니다.");
+        showToast("과팅 대표자만 초대할 수 있습니다.", "error");
         return;
     }
 
@@ -526,14 +526,14 @@ function submitInviteMember() {
     }
 
     if (!canInviteGroupDateMember(currentChatRoomDetail)) {
-        alert("과팅 대표자만 초대할 수 있습니다.");
+        showToast("과팅 대표자만 초대할 수 있습니다.", "error");
         return;
     }
 
     const nickname = nicknameInput.value.trim();
 
     if (nickname === "") {
-        alert("초대할 닉네임을 입력해 주세요.");
+        showToast("초대할 닉네임을 입력해 주세요.", "error");
         nicknameInput.focus();
         return;
     }
@@ -555,13 +555,13 @@ function submitInviteMember() {
             return response.json();
         })
         .then(function () {
-            alert("초대 알림을 보냈습니다.");
+            showToast("초대 알림을 보냈습니다.", "success");
             closeInviteMemberModal();
 
             // 알림 수락 전에는 참여자가 아니므로 여기서 참여자 목록을 다시 불러오지 않음
         })
         .catch(function () {
-            alert("초대 알림 전송에 실패했습니다. 닉네임, 이미 참여 중인지, 이미 초대된 상태인지 확인해 주세요.");
+            showToast("초대 알림 전송에 실패했습니다. 닉네임, 이미 참여 중인지, 이미 초대된 상태인지 확인해 주세요.", "error");
         });
 }
 
@@ -581,7 +581,7 @@ function loadChatRoomMembers() {
             renderChatRoomMembers(members);
         })
         .catch(function () {
-            alert("참여자 목록을 불러오지 못했습니다.");
+            showToast("참여자 목록을 불러오지 못했습니다.", "error");
         });
 }
 
