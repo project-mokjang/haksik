@@ -50,12 +50,12 @@ async function checkNickname() {
     const nickname = document.getElementById('nickname').value.trim();
 
     if (!nickname) {
-        alert('닉네임을 입력해주세요.');
+        showToast('닉네임을 입력해주세요.','error');
         return;
     }
 
     if (nickname === originalNickname) {
-        alert('현재 사용 중인 닉네임입니다.');
+        showToast('현재 사용 중인 닉네임입니다.','error');
         isNicknameChecked = true;
         return;
     }
@@ -65,15 +65,15 @@ async function checkNickname() {
         const result = await response.json();
 
         if (result.success && result.data.available) {
-            alert('사용 가능한 닉네임입니다.');
+            showToast('사용 가능한 닉네임입니다.','success');
             isNicknameChecked = true;
         } else {
-            alert('이미 사용 중인 닉네임입니다.');
+            showToast('이미 사용 중인 닉네임입니다.','error');
             isNicknameChecked = false;
         }
     } catch (error) {
         console.error(error);
-        alert('중복 확인 중 오류가 발생했습니다.');
+        showToast('중복 확인 중 오류가 발생했습니다.','error');
     }
 }
 
@@ -82,7 +82,7 @@ async function updateProfile(event) {
     event.preventDefault();
 
     if (!isNicknameChecked) {
-        alert('닉네임 중복 확인을 진행해주세요.');
+        showToast('닉네임 중복 확인을 진행해주세요.','error');
         return;
     }
 
@@ -107,13 +107,13 @@ async function updateProfile(event) {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            alert('프로필이 성공적으로 수정되었습니다!');
+            showToast('프로필이 성공적으로 수정되었습니다!','success');
             location.href = '/api/view/user/my-page';
         } else {
-            alert(result.message || '프로필 수정에 실패했습니다.');
+            showToast(result.message || '프로필 수정에 실패했습니다.','error');
         }
     } catch (error) {
         console.error(error);
-        alert('서버와의 통신에 실패했습니다.');
+        showToast('서버와의 통신에 실패했습니다.','error');
     }
 }

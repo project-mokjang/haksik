@@ -19,12 +19,12 @@ function updatePassword(event) {
     const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
 
     if (!currentPassword || !newPassword || !newPasswordConfirm) {
-        alert('모든 항목을 입력해주세요!');
+        showToast('모든 항목을 입력해주세요!','error');
         return;
     }
 
     if (newPassword !== newPasswordConfirm) {
-        alert('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+        showToast('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.','error');
         return;
     }
 
@@ -51,6 +51,6 @@ function updatePassword(event) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('서버와 통신 중 문제가 발생했습니다.');
+            showToast('서버와 통신 중 문제가 발생했습니다.','error');
         });
 }
