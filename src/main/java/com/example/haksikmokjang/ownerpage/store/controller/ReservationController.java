@@ -32,7 +32,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationId);
     }
 
-    // 🚨 2세트 (점주): 예약 상태 변경 API (수락/거절/노쇼/방문완료)
+    // 🚨 2세트 (점주): 예약 상태 변경 API (수락/거절/방문완료)
     @PatchMapping("/{reservationId}/status")
     public ResponseEntity<String> updateStatus(
             Authentication authentication,

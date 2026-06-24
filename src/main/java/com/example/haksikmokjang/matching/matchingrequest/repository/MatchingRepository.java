@@ -85,4 +85,7 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
             MatchingWaiting targetWaiting,
             List<MatchingStatus> statuses
     );
+
+    // 채팅방에 연결된 확정 매칭 조회
+    List<Matching> findByChatRoomIdAndStatus(Long chatRoomId, MatchingStatus status);
 }

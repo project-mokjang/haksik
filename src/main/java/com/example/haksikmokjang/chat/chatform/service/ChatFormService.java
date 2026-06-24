@@ -20,9 +20,11 @@ import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
 import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.matching.matchingrequest.repository.MatchingRepository;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
+import com.example.haksikmokjang.notification.service.NotificationService;
 import com.example.haksikmokjang.ownerpage.store.domain.*;
 import com.example.haksikmokjang.ownerpage.store.dto.ReservationRequest;
 import com.example.haksikmokjang.ownerpage.store.repository.MenuRepository;
@@ -59,6 +61,8 @@ public class ChatFormService {
     private final FileAttachmentRepository fileAttachmentRepository;
     private final ReservationRepository reservationRepository;
     private final StoreReviewRepository storeReviewRepository;
+    private final MatchingRepository matchingRepository;
+    private final NotificationService notificationService;
 
     // 폼 생성 후 채팅방에 FORM 메시지까지 저장
     @Transactional
