@@ -113,9 +113,11 @@ async function fetchNotifications() {
                 readAndMove(noti.notificationId, noti.targetUrl);
             });
 
+            const notiType = noti.notificationType || noti.type || '';
+
             const isChatNotification =
-                noti.targetUrl &&
-                noti.targetUrl.startsWith('/api/view/user/chat/rooms/');
+                notiType === 'CHAT'
+                || (noti.title && noti.title.includes('새 메시지'));
 
             if (isChatNotification) {
                 item.innerHTML = `
