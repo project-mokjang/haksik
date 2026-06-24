@@ -198,22 +198,46 @@
                 <div id="matchingMap"></div>
             </div>
 
-            <article id="selectedProfile" class="match-profile-card selected-profile">
-                <div class="selected-type" id="selectedType">매칭</div>
+            <section class="selected-profile" id="selectedProfile">
+                <div class="match-profile-card">
 
-                <div class="match-profile-title" id="selectedNickname">상대 정보</div>
+                    <div class="match-profile-top">
+                        <div>
+                            <span class="selected-type" id="selectedType">매칭</span>
+                            <div class="match-profile-title" id="selectedNickname">닉네임</div>
+                            <div class="match-profile-online">● 온라인</div>
+                        </div>
 
-                <p class="match-profile-desc" id="selectedMessage">
-                    마커를 선택하면 상대 정보가 표시됩니다.
-                </p>
+                        <div class="match-profile-image-wrap">
+                            <img id="selectedProfileImage"
+                                 class="match-profile-image"
+                                 src="/images/default-profile.png"
+                                 alt="프로필">
+                        </div>
+                    </div>
 
-                <div class="match-action-row">
-                    <button class="match-btn sub" type="button">프로필</button>
-                    <button class="match-btn" type="button" id="requestBtn">
-                        매칭 신청
-                    </button>
+                    <p class="match-profile-desc" id="selectedMessage">
+                        매칭 대기 중입니다.
+                    </p>
+
+                    <div class="match-profile-meta">
+                        <span id="selectedAge">나이 미입력</span>
+                        <span id="selectedDepartment">학과 미입력</span>
+                        <span id="selectedFood">선호 음식 없음</span>
+                        <span id="selectedManner">매너온도 -</span>
+                    </div>
+
+                    <div class="match-action-row">
+                        <button type="button" class="match-btn sub" id="profileBtn">
+                            프로필 보기
+                        </button>
+
+                        <button type="button" class="match-btn" id="requestBtn">
+                            매칭 신청
+                        </button>
+                    </div>
                 </div>
-            </article>
+            </section>
 
         </main>
 

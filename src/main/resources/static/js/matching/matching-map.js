@@ -6,6 +6,10 @@ let matchingMode = document.getElementById('matchingPage')?.dataset.mode || 'MEA
 // 메인 페이지 URL
 const mainPageUrl = '/api/view/user/main';
 
+// 기본 프로필 이미지 경로
+// 실제 경로 찾으면 여기만 바꾸면 됨
+const DEFAULT_PROFILE_IMAGE_URL = '/images/default-profile.png';
+
 // 기본 지도 중심 좌표
 const defaultPosition = new naver.maps.LatLng(37.6299, 127.0548);
 
@@ -13,6 +17,11 @@ const defaultPosition = new naver.maps.LatLng(37.6299, 127.0548);
 const map = new naver.maps.Map('matchingMap', {
     center: defaultPosition,
     zoom: 16
+});
+
+// 지도 빈 곳 클릭 시 정보창 닫기
+naver.maps.Event.addListener(map, 'click', function () {
+    closeOpenedInfoWindow();
 });
 
 // 마커 배열
@@ -34,11 +43,62 @@ let openedInfoWindow = null;
 // 내 현재 대기 마커
 let myWaitingMarker = null;
 
+// 열린 정보창/프로필 팝업 닫기
+function closeOpenedInfoWindow() {
+    if (openedInfoWindow) {
+        openedInfoWindow.close();
+        openedInfoWindow = null;
+    }
+
+    closeProfilePopup();
+}
+
+// HTML 이스케이프
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
 
 // 마커 제거
 function clearMarkers() {
     markerList.forEach(marker => marker.setMap(null));
     markerList.length = 0;
+}
+
+// 현재 위치 새로고침 버튼 생성
+function createLocationRefreshButton() {
+    const mapBox = document.querySelector('.map-box');
+
+    if (!mapBox) {
+        return;
+    }
+
+    if (document.getElementById('mapRefreshLocationBtn')) {
+        return;
+    }
+
+    mapBox.classList.add('map-box-with-refresh');
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = 'mapRefreshLocationBtn';
+    button.className = 'map-refresh-location-btn';
+    button.innerHTML = '⌖';
+    button.title = '현재 위치 새로고침';
+
+    button.addEventListener('click', function () {
+        refreshMyLocation(true);
+    });
+
+    mapBox.appendChild(button);
 }
 
 // 필터 모달 열기
@@ -248,39 +308,69 @@ function updateWaitingModeSelectState() {
     currentWaitingTitle.textContent = getMatchingTypeText(myWaitingMarker);
 }
 
-// 선택 프로필 표시
-function showSelectedProfile(markerData) {
-    const profile = document.getElementById('selectedProfile');
-    const type = document.getElementById('selectedType');
-    const nickname = document.getElementById('selectedNickname');
-    const message = document.getElementById('selectedMessage');
-    const requestBtn = document.getElementById('requestBtn');
-
-    if (!profile || !type || !nickname || !message || !requestBtn) return;
-
-    profile.classList.add('active');
-
-    type.textContent = getMatchingTypeText(markerData);
-
-    nickname.textContent = markerData.mine
-        ? `${markerData.nickname} · 내 위치`
-        : markerData.nickname;
-
-    message.textContent = markerData.message || '매칭 대기 중입니다.';
-
-    requestBtn.disabled = false;
-
-    if (markerData.mine) {
-        requestBtn.textContent = '현재 매칭 취소';
-    } else if (markerData.mode === 'MEAL' && markerData.matchingType === 'GROUP_MEAL') {
-        requestBtn.textContent = '참가 신청';
-    } else {
-        requestBtn.textContent = '매칭 신청';
+// 프로필 팝업 열기
+function openProfilePopup(markerData) {
+    const oldPopup = document.getElementById('matchingProfilePopup');
+    if (oldPopup) {
+        oldPopup.remove();
     }
 
-    requestBtn.dataset.mine = markerData.mine;
-    requestBtn.dataset.waitingId = markerData.waitingId;
-    requestBtn.dataset.userProfileId = markerData.userProfileId;
+    const popup = document.createElement('div');
+    popup.id = 'matchingProfilePopup';
+    popup.className = 'matching-profile-popup';
+
+    const imageUrl = markerData.profileImageUrl || DEFAULT_PROFILE_IMAGE_URL;
+    const typeText = getMatchingTypeText(markerData);
+    const nickname = markerData.nickname || '상대방';
+    const message = markerData.message || '매칭 대기 중입니다.';
+    const ageText = markerData.age ? `${markerData.age}세` : '나이 미입력';
+    const departmentText = markerData.department || '학과 미입력';
+    const foodText = markerData.preferredFoodCategory || '선호 음식 없음';
+    const mannerText =
+        markerData.mannerTemperature !== null && markerData.mannerTemperature !== undefined
+            ? `${markerData.mannerTemperature}℃`
+            : '-';
+
+    popup.innerHTML = `
+        <div class="matching-profile-popup-dim" onclick="closeProfilePopup()"></div>
+        <div class="matching-profile-popup-card">
+            <button type="button" class="matching-profile-popup-close" onclick="closeProfilePopup()">×</button>
+
+            <div class="matching-profile-popup-head">
+                <img class="matching-profile-popup-img"
+                     src="${escapeHtml(imageUrl)}"
+                     alt="프로필">
+
+                <div>
+                    <div class="matching-profile-popup-type">${escapeHtml(typeText)}</div>
+                    <div class="matching-profile-popup-name">${escapeHtml(nickname)}</div>
+                    <div class="matching-profile-popup-temp">매너온도 ${escapeHtml(mannerText)}</div>
+                </div>
+            </div>
+
+            <p class="matching-profile-popup-message">
+                ${escapeHtml(message)}
+            </p>
+
+            <div class="matching-profile-popup-info">
+                <span>${escapeHtml(ageText)}</span>
+                <span>${escapeHtml(departmentText)}</span>
+                <span>${escapeHtml(foodText)}</span>
+            </div>
+        </div>
+    `;
+
+    const appShell = document.querySelector('.app-shell') || document.body;
+    appShell.appendChild(popup);
+}
+
+// 프로필 팝업 닫기
+function closeProfilePopup() {
+    const popup = document.getElementById('matchingProfilePopup');
+
+    if (popup) {
+        popup.remove();
+    }
 }
 
 // 알림 출력
@@ -506,44 +596,13 @@ function cancelMyWaiting() {
 
             myWaitingMarker = null;
 
-            const profile = document.getElementById('selectedProfile');
-            if (profile) {
-                profile.classList.remove('active');
-            }
-
+            closeProfilePopup();
             loadMatchingMarkers();
         })
         .catch(error => {
             console.error(error);
             notify('매칭 취소 중 오류가 발생했습니다.', 'error');
         });
-}
-
-// 매칭 신청 버튼 클릭
-function requestMatching() {
-    const requestBtn = document.getElementById('requestBtn');
-
-    if (!requestBtn) return;
-
-    const waitingId = requestBtn.dataset.waitingId;
-    const mine = requestBtn.dataset.mine === 'true';
-
-    if (mine) {
-        cancelMyWaiting();
-        return;
-    }
-
-    if (!waitingId) {
-        notify('매칭 대상을 선택해주세요.', 'error');
-        return;
-    }
-
-    if (myWaitingMarker && myWaitingMarker.matchingType === 'GROUP_MEAL') {
-        notify('단체방 모집 중에는 다른 매칭을 신청할 수 없습니다. 현재 매칭을 취소한 뒤 손들기 모드로 변경해주세요.', 'error');
-        return;
-    }
-
-    sendMatchingRequest(waitingId);
 }
 
 // 정보창 매칭 신청
@@ -586,23 +645,88 @@ function sendMatchingRequest(waitingId) {
 
 // 지도 정보창 생성
 function createInfoWindow(markerData) {
-    const typeText = getMatchingTypeText(markerData);
+    const typeText = escapeHtml(getMatchingTypeText(markerData));
+    const nickname = escapeHtml(markerData.nickname || '상대방');
+    const message = escapeHtml(markerData.message || '매칭 대기 중입니다.');
+    const waitingId = Number(markerData.waitingId);
+
     const requestText = markerData.mode === 'MEAL' && markerData.matchingType === 'GROUP_MEAL'
         ? '참가 신청'
         : '매칭 신청';
 
     return new naver.maps.InfoWindow({
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        disableAnchor: true,
+        pixelOffset: new naver.maps.Point(0, -8),
         content: `
-            <div class="info-window">
-                <strong>${markerData.nickname}</strong>
-                <p>${typeText}</p>
-                <p>${markerData.message ?? ''}</p>
-                ${markerData.mine
-            ? '<button type="button" onclick="cancelMyWaiting()">현재 매칭 취소</button>'
-            : `<button type="button" onclick="requestMatchingByWaitingId(${markerData.waitingId})">${requestText}</button>`}
+            <div class="match-info-card">
+                <div class="match-info-top">
+                    <span class="match-info-badge ${getMarkerThemeClass(markerData)}">
+                        ${typeText}
+                    </span>
+                    <strong>${nickname}</strong>
+                </div>
+
+                <p class="match-info-message">${message}</p>
+
+                <div class="match-info-actions">
+                    <button type="button"
+                            class="match-info-btn secondary"
+                            onclick="showSelectedProfileById(${waitingId})">
+                        프로필 보기
+                    </button>
+
+                    ${markerData.mine
+            ? `<button type="button"
+                                   class="match-info-btn primary"
+                                   onclick="cancelMyWaiting()">매칭 취소</button>`
+            : `<button type="button"
+                                   class="match-info-btn primary"
+                                   onclick="requestMatchingByWaitingId(${waitingId})">${requestText}</button>`
+        }
+                </div>
             </div>
         `
     });
+}
+
+// 마커 테마 클래스
+function getMarkerThemeClass(markerData) {
+    if (markerData.mine) {
+        return 'theme-mine';
+    }
+
+    if (markerData.mode === 'MEAL' && markerData.matchingType === 'GROUP_MEAL') {
+        return 'theme-group-meal';
+    }
+
+    if (markerData.mode === 'MEAL') {
+        return 'theme-meal';
+    }
+
+    if (markerData.mode === 'BLIND_DATE') {
+        return 'theme-blind';
+    }
+
+    if (markerData.mode === 'GROUP') {
+        return 'theme-group-date';
+    }
+
+    return 'theme-default';
+}
+
+// 정보창에서 프로필 모달 표시
+function showSelectedProfileById(waitingId) {
+    const targetMarker = markerList
+        .map(marker => marker.markerData)
+        .find(markerData => Number(markerData.waitingId) === Number(waitingId));
+
+    if (!targetMarker) {
+        return;
+    }
+
+    openProfilePopup(targetMarker);
 }
 
 // 매칭 유형별 표시 문구 생성
@@ -686,7 +810,7 @@ function drawMarkers(markers) {
             map: map,
             icon: {
                 content: createMarkerContent(markerData),
-                anchor: new naver.maps.Point(21, 21)
+                anchor: new naver.maps.Point(0, 0)
             }
         });
 
@@ -696,12 +820,7 @@ function drawMarkers(markers) {
             if (openedInfoWindow === infoWindow) {
                 infoWindow.close();
                 openedInfoWindow = null;
-
-                const profile = document.getElementById('selectedProfile');
-                if (profile) {
-                    profile.classList.remove('active');
-                }
-
+                closeProfilePopup();
                 return;
             }
 
@@ -711,16 +830,14 @@ function drawMarkers(markers) {
 
             infoWindow.open(map, marker);
             openedInfoWindow = infoWindow;
-
-            showSelectedProfile(markerData);
         });
 
+        marker.markerData = markerData;
         markerList.push(marker);
 
         if (markerData.mine) {
             myWaitingMarker = markerData;
             map.setCenter(position);
-            showSelectedProfile(markerData);
         }
     });
 
@@ -729,19 +846,35 @@ function drawMarkers(markers) {
 
 // 매칭 유형별 마커 HTML 생성
 function createMarkerContent(markerData) {
-    if (markerData.mine) {
-        return `<div class="my-marker">나</div>`;
-    }
+    const themeClass = getMarkerThemeClass(markerData);
 
-    if (markerData.mode === 'MEAL' && markerData.matchingType === 'GROUP_MEAL') {
+    if (markerData.mine) {
         return `
-            <div class="group-meal-marker">
-                ${markerData.currentParticipants}/${markerData.maxParticipants}
+            <div class="matching-map-marker ${themeClass}">
+                <div class="matching-map-marker-bubble">내 위치</div>
+                <div class="matching-map-marker-dot"></div>
             </div>
         `;
     }
 
-    return `<div class="one-to-one-marker">1:1</div>`;
+    let label = '매칭';
+
+    if (markerData.mode === 'MEAL' && markerData.matchingType === 'GROUP_MEAL') {
+        label = `학식 ${markerData.currentParticipants}/${markerData.maxParticipants}`;
+    } else if (markerData.mode === 'MEAL') {
+        label = '학식 1:1';
+    } else if (markerData.mode === 'BLIND_DATE') {
+        label = '소개팅';
+    } else if (markerData.mode === 'GROUP') {
+        label = '과팅';
+    }
+
+    return `
+        <div class="matching-map-marker ${themeClass}">
+            <div class="matching-map-marker-bubble">${label}</div>
+            <div class="matching-map-marker-dot"></div>
+        </div>
+    `;
 }
 
 // 마커 조회
@@ -843,8 +976,6 @@ function bindMatchingActionEvents() {
     document.getElementById('createGroupMealBtn')
         ?.addEventListener('click', createGroupMealWaiting);
 
-    document.getElementById('requestBtn')
-        ?.addEventListener('click', requestMatching);
     document.getElementById('matchingFilterBtn')
         ?.addEventListener('click', openMatchingFilterModal);
 
@@ -862,6 +993,7 @@ function bindMatchingActionEvents() {
 setCurrentModeTitle();
 setWaitingModeSelectCard();
 bindMatchingActionEvents();
+createLocationRefreshButton();
 refreshMyLocation(true);
 
 // 마커 자동 갱신
