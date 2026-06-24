@@ -177,6 +177,43 @@
     </form>
 
     <div class="auth-modal-backdrop" id="emailModal">
+      <div class="auth-modal-box">
+        <h2 class="auth-modal-title">학교 이메일 인증</h2>
+
+        <div class="auth-field">
+          <label for="modalEmail">학교 이메일</label>
+
+          <div class="auth-input-row">
+            <input type="email"
+                   id="modalEmail"
+                   placeholder="학교 이메일 입력">
+
+            <button type="button" class="auth-action-btn" id="emailSendBtn">
+              전송
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="modalCode">인증번호</label>
+
+          <div class="auth-input-row">
+            <input type="text"
+                   id="modalCode"
+                   placeholder="인증번호 6자리">
+
+            <button type="button" class="auth-action-btn" id="emailVerifyBtn">
+              확인
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-modal-actions">
+          <button type="button" class="auth-cancel-btn" id="emailModalCloseBtn">
+            닫기
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="auth-modal-backdrop" id="termsModal">
