@@ -76,9 +76,7 @@ async function fetchNotifications() {
 
             if (noti.targetType === 'CHAT_INVITE') {
                 item.innerHTML = `
-                    <div class="noti-main-row">
-                        <span class="noti-title">${escapeNotificationHtml(noti.title || '채팅방 초대')}</span>
-                    </div>
+                    <span class="noti-msg">${escapeNotificationHtml(noti.title || '채팅방 초대')}</span>
                     <span class="noti-msg">${escapeNotificationHtml(noti.content || '')}</span>
                     <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
 
@@ -121,9 +119,9 @@ async function fetchNotifications() {
 
             if (isChatNotification) {
                 item.innerHTML = `
-                    <div class="noti-main-row">
-                        <span class="noti-title">${escapeNotificationHtml(noti.title || '')}</span>
-                        <span class="noti-count">${escapeNotificationHtml(noti.content || '')}</span>
+                    <div class="noti-chat-row">
+                        <span class="noti-chat-title">${escapeNotificationHtml(noti.title || '')}</span>
+                        <span class="noti-chat-count">${escapeNotificationHtml(noti.content || '')}</span>
                     </div>
                     <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
                 `;
