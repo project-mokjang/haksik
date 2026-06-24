@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
 
 @Getter
 @AllArgsConstructor
@@ -39,6 +41,18 @@ public class MatchingWaitingMarkerResponse {
 
     private boolean mine; // 내 마커인지 구분
 
+    private String profileImageUrl;
+
+    private String gender;
+
+    private Integer age;
+
+    private String department;
+
+    private String preferredFoodCategory;
+
+    private BigDecimal mannerTemperature;
+
     // 지도 마커 응답 생성
     public static MatchingWaitingMarkerResponse from(
             MatchingWaiting waiting,
@@ -59,7 +73,31 @@ public class MatchingWaitingMarkerResponse {
                 location.getLatitude(),
                 location.getLongitude(),
                 location.getAccuracyRangeM(),
-                mine
+                mine,
+                getProfileImageUrl(userProfile),
+                userProfile.getGender() == null ? null : String.valueOf(userProfile.getGender()),
+                getAge(userProfile),
+                userProfile.getDepartment(),
+                userProfile.getPreferredFoodCategory() == null
+                        ? null
+                        : String.valueOf(userProfile.getPreferredFoodCategory()),
+                userProfile.getMannerTemperature()
         );
+    }
+
+    private static String getProfileImageUrl(UserProfile userProfile) {
+        if (userProfile.getProfileImage() == null) {
+            return null;
+        }
+
+        return "/api/images/" + userProfile.getProfileImage().getFileId();
+    }
+
+    private static Integer getAge(UserProfile userProfile) {
+        if (userProfile.getBirthDate() == null) {
+            return null;
+        }
+
+        return Period.between(userProfile.getBirthDate(), LocalDate.now()).getYears();
     }
 }
