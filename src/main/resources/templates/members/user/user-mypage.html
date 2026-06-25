@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/css/base.css" th:href="@{/css/base.css}">
     <link rel="stylesheet" href="/css/common-ui.css" th:href="@{/css/common-ui.css}">
     <link rel="stylesheet" href="/css/members/user/user-mypage.css" th:href="@{/css/members/user.css}">
+
 </head>
 
 <body class="app-body">
@@ -35,6 +36,11 @@
                     <div class="profile-school">
                         <span th:text="${myPage.schoolName}">학교명</span> /
                         <span th:text="${myPage.department}">학과명</span>
+                    </div>
+
+                    <div class="profile-school">
+                        <span th:text="${myPage.name}">이름</span>
+                        <span th:if="${myPage.birthDate != null and myPage.birthDate != ''}" th:text="'(' + ${myPage.birthDate} + ')'">(생년월일)</span>
                     </div>
 
                     <div class="trust-info">

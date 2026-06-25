@@ -13,8 +13,10 @@ public class MyPageResponse {
     private String schoolName;
     private String department;
     private String profileImageUrl;
-
+    private String birthDate;
     private String preferredFoodCategory;
+    private String email;
+
 
     // 계정 정보
     private String loginId;

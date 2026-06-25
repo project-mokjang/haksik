@@ -23,6 +23,11 @@ function updatePassword(event) {
         return;
     }
 
+    if (newPassword.length < 8) {
+        showToast('새 비밀번호는 8자 이상으로 입력해주세요.', 'error');
+        return;
+    }
+
     if (newPassword !== newPasswordConfirm) {
         showToast('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.','error');
         return;
@@ -43,10 +48,15 @@ function updatePassword(event) {
     })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
 
             if (data.success) {
-                window.location.href = '/api/view/user/my-page';
+                showToast('비밀번호가 성공적으로 변경되었습니다.', 'success');
+
+                setTimeout(() => {
+                    window.location.href = '/api/view/user/my-page';
+                }, 1000);
+            } else {
+                showToast(data.message, 'error');
             }
         })
         .catch(error => {

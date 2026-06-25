@@ -6,9 +6,16 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class ProfileUpdateRequest {
+
+    @NotBlank(message = "이름은 필수입니다.")
+    private String name;
+
+    private LocalDate birthDate;
     @NotBlank(message = "닉네임은 필수입니다.")
     @Size(max = 50, message = "닉네임은 50자 이하여야 합니다.")
     private String nickname;

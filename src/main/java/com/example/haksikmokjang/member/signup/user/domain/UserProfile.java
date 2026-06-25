@@ -61,10 +61,12 @@ public class UserProfile extends BaseEntity {
     @Column(name = "no_show_count", nullable = false)
     private Integer noShowCount;
 
-    public void updateInfo(String nickname, String department, String preferredFoodCategory) {
+    public void updateInfo(String nickname, String department, String preferredFoodCategory, String name, LocalDate birthDate) {
         this.nickname = nickname;
         this.department = department;
         this.preferredFoodCategory = preferredFoodCategory;
+        this.name = name;
+        this.birthDate = birthDate;
     }
 
     public void updateProfileImage(FileAttachment profileImage) {
