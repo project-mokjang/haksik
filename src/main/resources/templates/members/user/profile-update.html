@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/common-ui.css}">
     <link rel="stylesheet" th:href="@{/css/members/user.css}">
+    <link rel="stylesheet" th:href="@{/css/members/auth.css}">
 </head>
 
 <body class="app-body">
@@ -42,6 +43,26 @@
                 <section class="profile-form-card">
 
                     <div class="profile-field">
+                        <label for="name">이름</label>
+                        <input type="text"
+                               id="name"
+                               th:value="${myPage.name}"
+                               placeholder="이름 입력"
+                               required>
+                    </div>
+
+                    <div class="profile-field">
+                        <label for="birthDate">생년월일</label>
+                        <input type="date"
+                               id="birthDate"
+                               th:value="${myPage.birthDate}"
+                               placeholder="예: 2003-05-15"
+                               required>
+                    </div>
+
+
+
+                    <div class="profile-field">
                         <label for="nickname">닉네임</label>
 
                         <div class="profile-input-row">
@@ -57,6 +78,16 @@
                             </button>
                         </div>
                     </div>
+                    <div class="profile-field">
+                        <label for="email">학교 이메일</label>
+                        <div class="profile-input-row">
+                            <input type="email" id="email" th:value="${myPage.email}"
+                                   readonly style="background-color: #f2f2f2; pointer-events: none;">
+                            <button type="button" class="profile-action-btn" id="emailModalOpenBtn">변경</button>
+                        </div>
+                    </div>
+
+
 
                     <div class="profile-field">
                         <label for="school">학교</label>
@@ -64,6 +95,8 @@
                                id="school"
                                th:value="${myPage.schoolName}"
                                placeholder="예: 인덕대학교"
+                               readonly
+                               style="background-color: #f2f2f2; pointer-events: none;"
                                required>
                     </div>
 
@@ -86,13 +119,39 @@
                 </button>
             </div>
 
-        </form>
+        </form><div class="auth-modal-backdrop" id="emailModal">
+        <div class="auth-modal-box">
+            <h2 class="auth-modal-title">학교 이메일 인증</h2>
+            <div class="auth-field">
+                <label for="modalEmail">학교 이메일</label>
+                <div class="auth-input-row">
+                    <input type="email" id="modalEmail" placeholder="학교 이메일 입력">
+                    <button type="button" class="auth-action-btn" id="emailSendBtn">전송</button>
+                </div>
+            </div>
+            <div class="auth-field">
+                <label for="modalCode">인증번호</label>
+                <div class="auth-input-row">
+                    <input type="text" id="modalCode" placeholder="인증번호 6자리">
+                    <button type="button" class="auth-action-btn" id="emailVerifyBtn">확인</button>
+                </div>
+            </div>
+            <div class="auth-modal-actions">
+                <button type="button" class="auth-cancel-btn" id="emailModalCloseBtn">닫기</button>
+            </div>
+        </div>
+    </div>
+
 
     </div>
 </div>
 
 <script th:src="@{/js/common/feedback.js}"></script>
 <script th:src="@{/js/members/user/profile-update.js}"></script>
+
+
+
+
 
 </body>
 </html>

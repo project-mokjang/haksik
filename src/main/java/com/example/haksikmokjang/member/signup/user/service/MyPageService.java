@@ -31,6 +31,8 @@ public class MyPageService {
                 .loginId(member.getLoginId())
                 .profileImageUrl(getProfileImageUrl(profile.getProfileImage()))
                 .preferredFoodCategory(profile.getPreferredFoodCategory())
+                .email(member.getEmail())
+                .birthDate(profile.getBirthDate() != null ? profile.getBirthDate().toString() : null)
                 .build();
     }
 

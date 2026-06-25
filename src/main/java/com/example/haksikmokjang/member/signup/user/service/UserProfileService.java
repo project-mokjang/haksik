@@ -42,7 +42,15 @@ public class UserProfileService {
         }
 
         //  텍스트 정보 바꾸기
-        profile.updateInfo(request.getNickname(), request.getDepartment(), request.getPreferredFoodCategory());
+
+
+        profile.updateInfo(
+                request.getNickname(),
+                request.getDepartment(),
+                request.getPreferredFoodCategory(),
+                request.getName(),
+                request.getBirthDate()
+        );
 
         //  DB에서 학교 찾기 (
         School newSchool = schoolRepository.findBySchoolName(request.getSchoolName())
