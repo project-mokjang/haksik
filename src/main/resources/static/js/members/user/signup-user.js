@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const nicknameInput = document.getElementById('nickname');
     const modalEmailInput = document.getElementById('modalEmail');
 
+    setupSignupInputRules();
+
     const emailModalOpenBtn = document.getElementById('emailModalOpenBtn');
     const emailModalCloseBtn = document.getElementById('emailModalCloseBtn');
     const emailSendBtn = document.getElementById('emailSendBtn');
@@ -116,6 +118,156 @@ function completeDuplicateButton(type) {
     button.classList.add('success');
 }
 
+// 회원가입 입력값 제한 설정
+function setupSignupInputRules() {
+    setInputRule('loginId', 20, function (value) {
+        return value.replace(/[^a-zA-Z0-9]/g, '');
+    });
+
+    setInputRule('name', 20, function (value) {
+        return value.replace(/[^가-힣a-zA-Z]/g, '');
+    });
+
+    setInputRule('nickname', 10, function (value) {
+        return value.replace(/[^가-힣a-zA-Z0-9]/g, '');
+    });
+
+    setInputRule('department', 30, function (value) {
+        return value.replace(/[^가-힣a-zA-Z0-9\s]/g, '');
+    });
+
+    setInputRule('phone', 14, function (value) {
+        return formatPhone(value);
+    });
+    setInputRule('password', 20, function (value) {
+        return value;
+    });
+
+    setInputRule('passwordConfirm', 20, function (value) {
+        return value;
+    });
+    setInputRule('modalCode', 6, function (value) {
+        return value.replace(/\D/g, '');
+    });
+    setInputRule('modalEmail', 100, function (value) {
+        return value.replace(/\s/g, '');
+    });
+}
+
+// 특정 input에 maxLength + 입력값 정리 적용
+function setInputRule(id, maxLength, formatter) {
+    const input = document.getElementById(id);
+
+    if (!input) {
+        return;
+    }
+
+    input.maxLength = maxLength;
+
+    input.addEventListener('input', function () {
+        const before = input.value;
+
+        input.value = formatter(input.value).slice(0, maxLength);
+
+        if (before !== input.value) {
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+    });
+}
+
+// 전화번호 자동 포맷
+// 01012345678 -> 010-1234-5678
+// 050712345678 -> 0507-1234-5678
+function formatPhone(value) {
+    const numbers = value.replace(/\D/g, '').slice(0, 12);
+
+    if (numbers.startsWith('0507')) {
+        if (numbers.length <= 4) {
+            return numbers;
+        }
+
+        if (numbers.length <= 8) {
+            return numbers.slice(0, 4) + '-' + numbers.slice(4);
+        }
+
+        return numbers.slice(0, 4) + '-' + numbers.slice(4, 8) + '-' + numbers.slice(8);
+    }
+
+    if (numbers.length <= 3) {
+        return numbers;
+    }
+
+    if (numbers.length <= 7) {
+        return numbers.slice(0, 3) + '-' + numbers.slice(3);
+    }
+
+    return numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7, 11);
+}
+
+// 서버로 보낼 때는 숫자만 전송
+function normalizePhone(value) {
+    return value.replace(/\D/g, '');
+}
+
+// 생년월일 과거 날짜 검증
+function isPastDate(value) {
+    const selectedDate = new Date(value);
+    const today = new Date();
+
+    selectedDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return selectedDate < today;
+}
+
+// 회원가입 입력값 최종 검증
+function validateSignupInput(data) {
+    if (!/^[a-zA-Z0-9]{4,20}$/.test(data.loginId)) {
+        return '아이디는 영문/숫자 4~20자로 입력해주세요.';
+    }
+
+    if (data.password.length < 8 || data.password.length > 20) {
+        return '비밀번호는 8~20자로 입력해주세요.';
+    }
+
+    if (!/^[가-힣a-zA-Z]{2,20}$/.test(data.name)) {
+        return '이름은 한글/영문 2~20자로 입력해주세요.';
+    }
+
+    if (!/^[가-힣a-zA-Z0-9]{2,10}$/.test(data.nickname)) {
+        return '닉네임은 한글/영문/숫자 2~10자로 입력해주세요.';
+    }
+
+    if (!/^[가-힣a-zA-Z0-9\s]{2,30}$/.test(data.department)) {
+        return '학과는 2~30자로 입력해주세요.';
+    }
+
+    if (!data.birthDate || !isPastDate(data.birthDate)) {
+        return '생년월일은 오늘보다 이전 날짜여야 합니다.';
+    }
+
+    const phoneNumbers = normalizePhone(data.phone);
+
+    if (!/^(01[016789]\d{7,8}|0507\d{8})$/.test(phoneNumbers)) {
+        return '전화번호는 010-1234-5678 또는 0507-1234-5678 형식으로 입력해주세요.';
+    }
+
+    return null;
+}
+
+// 중복확인 전 아이디/닉네임 형식 검증
+function validateDuplicateValue(type, value) {
+    if (type === 'loginId' && !/^[a-zA-Z0-9]{4,20}$/.test(value)) {
+        return '아이디는 영문/숫자 4~20자로 입력해주세요.';
+    }
+
+    if (type === 'nickname' && !/^[가-힣a-zA-Z0-9]{2,10}$/.test(value)) {
+        return '닉네임은 한글/영문/숫자 2~10자로 입력해주세요.';
+    }
+
+    return null;
+}
+
 // 응답 body를 JSON으로 변환
 async function safeJson(response) {
     try {
@@ -190,6 +342,11 @@ async function verifyEmailCode() {
         return;
     }
 
+    if (!/^\d{6}$/.test(code)) {
+        showToast('인증번호는 6자리 숫자로 입력해주세요.', 'warning');
+        return;
+    }
+
     if (!schoolId || sentEmail !== email) {
         showToast('먼저 현재 이메일로 인증번호 전송을 해주세요.', 'error');
         return;
@@ -248,8 +405,10 @@ async function checkDuplicate(type) {
         return;
     }
 
-    if (type === 'nickname' && value.length > 10) {
-        showToast('닉네임은 10자 이내로 설정해야 합니다.', 'warning');
+    const duplicateValidationMessage = validateDuplicateValue(type, value);
+
+    if (duplicateValidationMessage) {
+        showToast(duplicateValidationMessage, 'warning');
         return;
     }
 
@@ -312,8 +471,23 @@ async function signupUser(event) {
     const gender = document.getElementById('gender').value;
     const phone = document.getElementById('phone').value.trim();
 
-    if (!loginId || !password || !name || !nickname || !department || !birthDate || !gender) {
+    if (!loginId || !password || !name || !nickname || !department || !birthDate || !gender || !phone) {
         showToast('필수 입력값을 모두 입력해주세요.', 'error');
+        return;
+    }
+
+    const validationMessage = validateSignupInput({
+        loginId: loginId,
+        password: password,
+        name: name,
+        nickname: nickname,
+        department: department,
+        birthDate: birthDate,
+        phone: phone
+    });
+
+    if (validationMessage) {
+        showToast(validationMessage, 'warning');
         return;
     }
 
@@ -367,7 +541,7 @@ async function signupUser(event) {
         schoolEmail: schoolEmail,
         birthDate: birthDate,
         gender: gender,
-        phone: phone,
+        phone: normalizePhone(phone),
         termsIds: termsIds
     };
 
