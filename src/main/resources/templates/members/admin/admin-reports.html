@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 신고 관리',
+        'reports',
+        '신고 관리',
+        ~{::content}
+      )}">
+
+<th:block th:fragment="content">
+
+    <div class="data-card">
+
+        <div class="filter-bar">
+            <select class="filter-input" id="statusFilter" onchange="fetchReports(0)">
+                <option value="ALL">전체 상태</option>
+                <option value="PENDING">대기</option>
+                <option value="PROCESSING">처리중</option>
+                <option value="RESOLVED">처리완료</option>
+                <option value="REJECTED">반려</option>
+            </select>
+
+            <select class="filter-input" id="targetTypeFilter" onchange="fetchReports(0)">
+                <option value="ALL">전체 대상</option>
+                <option value="POST">게시글</option>
+                <option value="COMMENT">댓글</option>
+                <option value="CHAT_MESSAGE">채팅 메시지</option>
+                <option value="CHAT_MEMBER">채팅 상대</option>
+                <option value="REVIEW">리뷰</option>
+            </select>
+
+            <input
+                    type="text"
+                    class="filter-input"
+                    id="reportKeywordInput"
+                    placeholder="신고자 아이디 또는 사유 검색"
+                    onkeydown="handleReportSearchEnter(event)"
+            >
+
+            <button class="filter-btn" onclick="fetchReports(0)">조회</button>
+        </div>
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>신고번호</th>
+                    <th>신고자</th>
+                    <th>대상</th>
+                    <th>대상번호</th>
+                    <th>사유</th>
+                    <th>상태</th>
+                    <th>처리자</th>
+                    <th>처리일시</th>
+                    <th>상세</th>
+                    <th>처리</th>
+                </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="reportPaginationArea" class="pagination-area"></div>
+
+    </div>
+
+    <!-- 신고 상세 모달 -->
+    <div id="reportDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 상세 정보</h3>
+                <button class="close-btn" onclick="closeReportDetail()">×</button>
+            </div>
+
+            <div id="reportDetailBody" class="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <!-- 신고 처리 사유 모달 -->
+    <div id="reportProcessModal" class="modal-overlay">
+        <div class="modal-content process-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 처리 사유 입력</h3>
+                <button class="close-btn" onclick="closeReportProcessModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="processReportId">
+                <input type="hidden" id="processAction">
+
+                <label class="modal-label" for="processedReasonInput">처리 사유</label>
+                <textarea
+                        id="processedReasonInput"
+                        class="modal-textarea"
+                        placeholder="예: 욕설 및 부적절한 표현으로 블라인드 처리"
+                ></textarea>
+
+                <div class="modal-footer clean-footer">
+                    <button class="btn-cancel" onclick="closeReportProcessModal()">취소</button>
+                    <button class="btn-submit" onclick="submitReportProcess()">처리</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 신고 처리 취소 사유 모달 -->
+    <div id="reportCancelModal" class="modal-overlay">
+        <div class="modal-content process-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">신고 처리 취소</h3>
+                <button class="close-btn" onclick="closeReportCancelModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="cancelReportId">
+
+                <label class="modal-label" for="cancelReasonInput">취소 사유</label>
+                <textarea
+                        id="cancelReasonInput"
+                        class="modal-textarea"
+                        placeholder="예: 관리자 오처리로 인해 처리 취소"
+                ></textarea>
+
+                <div class="modal-footer clean-footer">
+                    <button class="btn-cancel" onclick="closeReportCancelModal()">닫기</button>
+                    <button class="btn-danger" onclick="submitReportCancel()">처리 취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin/admin-report.js}"></script>
+
+</th:block>
+</html>

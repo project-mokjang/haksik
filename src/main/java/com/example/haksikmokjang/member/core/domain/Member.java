@@ -1,0 +1,94 @@
+package com.example.haksikmokjang.member.core.domain;
+
+import com.example.haksikmokjang.global.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "MEMBER")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
+public class Member extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id")
+    private Long memberId;
+
+    @Column(name = "login_id", nullable = false, unique = true, length = 50)
+    private String loginId;
+
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private MemberRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status", nullable = false, length = 20)
+    private AccountStatus accountStatus;
+
+    @Column(name = "withdrawn_at")
+    private LocalDateTime withdrawnAt;
+
+    @Builder.Default
+    @Column(name = "login_fail_count", nullable = false)
+    private int loginFailCount = 0;
+
+    @Builder.Default
+    @Column(name = "locked_yn", nullable = false, length = 1)
+    private String lockedYn = "N";
+
+    @Column(name = "locked_at")
+    private LocalDateTime lockedAt;
+
+    @Column(name = "locked_reason", length = 500)
+    private String lockedReason;
+
+    public void increaseLoginFailCount() {
+        this.loginFailCount++;
+
+        if (this.loginFailCount >= 5) {
+            this.lockedYn = "Y";
+            this.lockedAt = LocalDateTime.now();
+            this.lockedReason = "로그인 실패 5회 초과";
+        }
+    }
+
+    public void resetLoginFailCount() {
+        this.loginFailCount = 0;
+        this.lockedYn = "N";
+        this.lockedAt = null;
+        this.lockedReason = null;
+    }
+
+    // 매너점수 0점 이하로 인한 계정 잠금
+    public void lockByTrust(String reason) {
+        this.lockedYn = "Y";
+        this.lockedAt = LocalDateTime.now();
+        this.lockedReason = reason;
+    }
+
+    // 관리자 계정 잠금 해제
+    public void unlock() {
+        this.lockedYn = "N";
+        this.lockedAt = null;
+        this.lockedReason = null;
+        this.loginFailCount = 0;
+    }
+
+    public boolean isLocked() {
+        return "Y".equals(this.lockedYn);
+    }
+}

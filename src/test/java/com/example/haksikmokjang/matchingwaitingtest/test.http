@@ -1,0 +1,10 @@
+POST http://localhost:8080/api/matching/waiting/enter
+Content-Type: application/json
+
+{
+  "mode": "MEAL",
+  "latitude": 37.6299,
+  "longitude": 127.0548,
+  "accuracyRangeM": 30,
+  "message": "밥 먹을 사람 구해요"
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>학식목장 - 커뮤니티</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/community/board.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell community-shell">
+
+    <header th:replace="~{fragments/mobile-layout :: appHeader('커뮤니티', 'back', 'alarm')}"></header>
+
+
+    <main class="app-scroll has-bottom-nav board-list-scroll">
+
+      <section class="board-filter-section">
+
+        <div class="board-filter-row">
+          <select id="boardType" class="board-select">
+            <option value="GLOBAL">전국구</option>
+            <option value="SCHOOL">우리학교</option>
+          </select>
+
+          <select id="sortType" class="board-select">
+            <option value="LATEST">최신순</option>
+            <option value="POPULAR">인기순</option>
+          </select>
+
+          <select id="category" class="board-select">
+            <option value="">말머리 전체</option>
+            <option value="FREE">자유</option>
+            <option value="FOOD">맛집추천</option>
+            <option value="QUESTION">질문</option>
+            <option value="MEETUP">만남</option>
+          </select>
+        </div>
+
+        <div class="board-search-row">
+          <input type="text"
+                 id="keyword"
+                 class="board-input"
+                 placeholder="검색어 입력">
+
+          <button type="button" class="board-search-btn" id="searchBtn">
+            검색
+          </button>
+        </div>
+
+      </section>
+
+      <!-- 🚨 기존 postContainer 바로 위에 삽입 -->
+      <ul id="hotPostContainer" class="board-post-list" style="margin-bottom: 8px;"></ul>
+
+      <ul id="postContainer" class="board-post-list"></ul>
+
+      <div id="loading" class="board-loading">
+        데이터를 불러오는 중...
+      </div>
+
+      <div id="observerTarget" class="board-observer-target"></div>
+
+    </main>
+
+    <button type="button"
+            id="writePostBtn"
+            class="community-write-floating">
+      ✏️ 새 글쓰기
+    </button>
+
+    <nav th:replace="~{fragments/mobile-layout :: bottomNav('community')}"></nav>
+
+  </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/community/board-list.js}"></script>
+
+</body>
+</html>

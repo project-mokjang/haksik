@@ -1,0 +1,426 @@
+/* user-review-write.css */
+
+.hidden {
+    display: none !important;
+}
+
+.review-write-scroll {
+    padding-top: 20px;
+}
+
+/* 상단 안내 */
+.review-write-hero {
+    margin-bottom: 18px;
+    padding: 22px;
+    border: 2px solid var(--line);
+    border-radius: 28px;
+    background: linear-gradient(135deg, #fffdf8 0%, var(--card) 58%, #edf6ed 100%);
+    box-shadow: var(--shadow);
+}
+
+.review-write-hero h2 {
+    margin-bottom: 10px;
+    color: var(--forest);
+    font-size: 25px;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -0.06em;
+}
+
+.review-write-hero p {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.55;
+}
+
+/* 요약 */
+.review-write-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.review-summary-card,
+.review-write-card,
+.review-write-loading,
+.review-write-empty {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.review-summary-card {
+    padding: 16px;
+}
+
+.review-summary-number {
+    color: var(--green);
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.review-summary-label {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* 상태 메시지 */
+.review-write-loading,
+.review-write-empty {
+    padding: 28px 18px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.review-write-empty {
+    border-style: dashed;
+    box-shadow: none;
+    background-color: var(--card);
+}
+
+/* 섹션 */
+.review-write-section {
+    margin-top: 22px;
+}
+
+.review-write-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.review-write-section-title::before {
+    content: "";
+    width: 5px;
+    height: 22px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background-color: var(--green);
+}
+
+.review-write-section-title span {
+    flex: 1;
+}
+
+.review-write-section-title small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.review-write-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 리뷰 카드 */
+.review-write-card {
+    padding: 16px;
+}
+
+.review-write-card.pending {
+    border-color: var(--green);
+}
+
+.review-write-card.waiting {
+    background-color: var(--card);
+}
+
+.review-write-card.completed {
+    opacity: 0.78;
+}
+
+.review-write-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.review-write-room-name,
+.review-write-card-title,
+.review-write-target-title {
+    color: var(--forest);
+    font-weight: 900;
+}
+
+.review-write-room-name {
+    font-size: 15px;
+}
+
+.review-write-card-title {
+    margin-bottom: 6px;
+    font-size: 16px;
+    line-height: 1.35;
+}
+
+.review-write-card-meta,
+.review-write-card-desc,
+.review-write-target-desc {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.review-write-card-desc {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.review-write-badges {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+/* 뱃지 */
+.review-type-badge,
+.review-status-badge {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.review-type-badge.chat,
+.review-status-badge.completed {
+    background-color: var(--ivory2);
+    color: var(--forest);
+}
+
+.review-type-badge.store {
+    background-color: rgba(18, 107, 79, 0.1);
+    color: var(--green);
+}
+
+.review-status-badge.pending {
+    background-color: var(--green);
+    color: white;
+}
+
+.review-status-badge.waiting {
+    background-color: var(--soil);
+    color: white;
+}
+
+/* 버튼 */
+.review-write-card-actions {
+    margin-top: 14px;
+}
+
+.review-write-main-button,
+.review-write-disabled-button,
+.review-write-completed-button,
+.review-write-cancel-button,
+.review-write-submit-button {
+    border: none;
+    border-radius: 15px;
+    font-weight: 900;
+}
+
+.review-write-main-button,
+.review-write-disabled-button,
+.review-write-completed-button {
+    width: 100%;
+    min-height: 42px;
+    font-size: 13px;
+}
+
+.review-write-main-button,
+.review-write-submit-button {
+    background-color: var(--green);
+    color: white;
+    cursor: pointer;
+}
+
+.review-write-main-button:hover,
+.review-write-submit-button:hover {
+    background-color: var(--green2);
+}
+
+.review-write-disabled-button,
+.review-write-cancel-button {
+    background-color: var(--ivory2);
+    color: var(--forest);
+}
+
+.review-write-disabled-button,
+.review-write-completed-button {
+    cursor: not-allowed;
+}
+
+.review-write-completed-button {
+    background-color: var(--line);
+    color: var(--forest);
+}
+
+/* 모달 */
+.review-write-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-color: rgba(23, 63, 53, 0.36);
+}
+
+.review-write-modal {
+    width: 100%;
+    max-height: 90%;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 26px;
+    background-color: var(--paper);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.review-write-modal-header,
+.review-write-target-card {
+    display: flex;
+    align-items: center;
+}
+
+.review-write-modal-header {
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.review-write-modal-header h3 {
+    color: var(--forest);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.review-write-modal-header button {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.review-write-target-card {
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--card);
+}
+
+.review-write-target-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background-color: var(--ivory2);
+    color: var(--forest);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+/* 입력 */
+.review-write-field {
+    margin-bottom: 14px;
+}
+
+.review-write-field-title {
+    margin-bottom: 8px;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.review-write-score-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.review-write-score-list label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background-color: var(--paper);
+    color: var(--forest);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.review-write-noshow {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.review-write-textarea,
+.review-write-file-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: white;
+    color: var(--forest);
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+}
+
+.review-write-textarea {
+    min-height: 110px;
+    resize: none;
+    margin-bottom: 14px;
+    padding: 13px;
+    line-height: 1.45;
+}
+
+.review-write-file-input {
+    padding: 10px;
+}
+
+.review-write-textarea:focus {
+    border-color: var(--green);
+}
+
+/* 모달 하단 */
+.review-write-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.review-write-cancel-button,
+.review-write-submit-button {
+    min-height: 44px;
+    font-size: 14px;
+    cursor: pointer;
+}

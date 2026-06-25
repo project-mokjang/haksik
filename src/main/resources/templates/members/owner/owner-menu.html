@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>학식목장 - 메뉴 추가</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/community/board.css}">
+</head>
+<body class="app-body">
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('새로운 메뉴 추가', 'back', 'none')}"></header>
+
+        <main class="app-scroll board-write-scroll has-bottom-nav">
+            <form id="menuAddForm" class="board-write-form">
+                <section class="board-write-card">
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="menuName">메뉴 이름</label>
+                        <input type="text" id="menuName" name="menuName" class="board-write-input" placeholder="예: 치즈 돈까스" required>
+                    </div>
+
+                    <div class="board-write-field">
+                        <label class="board-write-label" for="menuPrice">가격 (원)</label>
+                        <input type="number" id="menuPrice" name="menuPrice" class="board-write-input" placeholder="숫자만 입력 (예: 8500)" required>
+                    </div>
+
+                    <div class="board-write-field last">
+                        <label class="board-write-label" for="menuImage">메뉴 사진 (선택)</label>
+                        <input type="file" id="menuImage" name="menuImage" class="board-write-input" accept="image/*" style="padding-top:10px;">
+                    </div>
+
+                </section>
+
+                <button type="submit" id="submitBtn" class="board-write-submit-btn">
+                    메뉴 등록하기
+                </button>
+            </form>
+            <div style="margin: 30px 0 20px 0; border-top: 2px dashed var(--line); padding-top: 25px;">
+                <div style="font-size: 16px; font-weight: 900; color: var(--forest); margin-bottom: 12px;">📋 등록된 메뉴 관리</div>
+
+                <ul id="menuListContainer" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align:center; padding: 20px; color: var(--muted); font-weight: 700;">메뉴 목록을 불러오는 중입니다...</div>
+                </ul>
+            </div>
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: ownerBottomNav('menu')}"></nav>
+
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/owner/owner-menu.js}"></script>
+</body>
+</html>

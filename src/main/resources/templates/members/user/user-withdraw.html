@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>회원 탈퇴</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/members/user.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('회원 탈퇴', 'back', 'none')}"></header>
+
+        <main class="app-scroll withdraw-scroll">
+
+            <section class="withdraw-warning-box">
+                <p><strong>🚨 탈퇴 전 반드시 확인해 주세요!</strong></p>
+                <p>1. 탈퇴 즉시 회원님의 모든 데이터(프로필, 위치 정보, 매칭 내역 등)가 <strong>영구적으로 삭제</strong>됩니다.</p>
+                <p>2. 삭제된 데이터는 절대 복구할 수 없습니다.</p>
+            </section>
+
+            <form id="withdrawForm" class="withdraw-form">
+
+                <div class="withdraw-field">
+                    <label for="passwordInput">
+                        본인 확인을 위해 비밀번호를 입력해 주세요.
+                    </label>
+
+                    <input type="password"
+                           id="passwordInput"
+                           placeholder="비밀번호 입력"
+                           required>
+                </div>
+
+                <div class="withdraw-button-row">
+                    <button type="button" class="withdraw-cancel-btn" id="withdrawCancelBtn">
+                        취소
+                    </button>
+
+                    <button type="submit" class="withdraw-submit-btn">
+                        탈퇴하기
+                    </button>
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+</div>
+
+<script th:src="@{/js/members/user/user-withdraw.js}"></script>
+
+</body>
+</html>

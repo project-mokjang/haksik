@@ -1,0 +1,186 @@
+.hidden {
+    display: none !important;
+}
+
+/* 채팅 목록 */
+.chat-list-scroll {
+    padding: 20px;
+}
+
+.chat-tab-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--card);
+}
+
+.chat-tab {
+    height: 36px;
+    border: none;
+    border-radius: 12px;
+    background-color: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.chat-tab.active {
+    background-color: var(--green);
+    color: white;
+}
+
+.chat-room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-room-item {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background-color: var(--paper);
+    cursor: pointer;
+    text-align: left;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.chat-room-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-room-name {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.chat-room-title-text {
+    min-width: 0;
+    color: var(--forest);
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.35;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.last-message {
+    width: 100%;
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.chat-room-right {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.last-time {
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.unread-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: var(--red);
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-type {
+    padding: 3px 6px;
+    border-radius: 999px;
+    background-color: var(--ivory2);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.room-status {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.room-status.closed {
+    background-color: var(--ivory2);
+    color: var(--muted);
+}
+
+.empty-message {
+    margin-top: 100px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.empty-icon {
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+@media (max-width: 420px) {
+    .chat-list-scroll {
+        padding: 18px;
+    }
+
+    .chat-room-item {
+        padding: 14px;
+        gap: 8px;
+    }
+
+    .chat-room-title-text {
+        font-size: 14px;
+    }
+
+    .last-message {
+        font-size: 12px;
+    }
+}

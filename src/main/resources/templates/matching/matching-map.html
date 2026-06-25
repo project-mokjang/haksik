@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>매칭 지도</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/matching/matching-map.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell" id="matchingPage" th:data-mode="${mode}">
+
+        <header class="app-header">
+            <button type="button"
+                    class="app-header-btn"
+                    onclick="history.back()">
+                &lt;
+            </button>
+
+            <div class="app-header-title">상대 찾기 지도</div>
+
+            <div class="header-actions">
+                <div th:replace="~{fragments/mobile-layout :: notificationBell}"></div>
+
+                <button type="button"
+                        class="app-header-btn header-filter-btn"
+                        id="matchingFilterBtn">
+                    필터
+                </button>
+            </div>
+        </header>
+
+        <main class="app-scroll has-bottom-nav">
+
+            <div class="current-mode-card">
+                <div class="current-mode-label">현재 매칭 모드</div>
+                <div class="current-mode-title" id="currentModeTitle">학식메이트</div>
+                <p class="current-mode-desc">
+                    다른 모드로 변경하려면 이전 화면에서 다시 선택해주세요.
+                </p>
+            </div>
+
+            <!-- 학식 모드 선택 -->
+            <section class="meal-mode-select-card" id="mealModeSelectCard">
+                <div class="meal-mode-label">학식 모드 선택</div>
+                <p class="meal-mode-desc">
+                    한 번 선택하면 취소하기 전까지 다른 방식으로 변경할 수 없습니다.
+                </p>
+
+                <div class="meal-mode-option-list">
+                    <button type="button" class="meal-mode-option" id="oneToOneWaitingBtn">
+                        <span class="meal-mode-option-title">🙋 손들기</span>
+                        <span class="meal-mode-option-desc">1:1로 같이 먹을 사람을 찾습니다.</span>
+                    </button>
+
+                    <button type="button" class="meal-mode-option" id="groupMealWaitingBtn">
+                        <span class="meal-mode-option-title">👥 단체방 만들기</span>
+                        <span class="meal-mode-option-desc">여러 명이 함께 먹을 단체방을 만듭니다.</span>
+                    </button>
+                </div>
+
+                <div class="current-waiting-box" id="currentWaitingBox" style="display: none;">
+                    <div>
+                        <div class="current-waiting-label">현재 대기 상태</div>
+                        <div class="current-waiting-title" id="currentWaitingTitle">대기 중</div>
+                    </div>
+
+                    <button type="button" class="current-waiting-cancel-btn" id="cancelCurrentWaitingBtn">
+                        현재 매칭 취소
+                    </button>
+                </div>
+            </section>
+
+            <!-- 단체 학식 모집 모달 -->
+            <div class="group-meal-modal" id="groupMealModal" style="display: none;">
+                <div class="group-meal-modal-box">
+                    <div class="group-meal-modal-title">단체방 만들기</div>
+
+                    <label class="group-meal-label" for="groupMealMaxParticipants">
+                        모집 인원
+                    </label>
+                    <input
+                            type="number"
+                            id="groupMealMaxParticipants"
+                            class="group-meal-input"
+                            min="3"
+                            placeholder="예: 4, 10, 20">
+
+                    <label class="group-meal-label" for="groupMealMessage">
+                        모집 메시지
+                    </label>
+                    <textarea
+                            id="groupMealMessage"
+                            class="group-meal-textarea"
+                            placeholder="같이 학식 먹을 사람 구해요"></textarea>
+
+                    <div class="group-meal-actions">
+                        <button type="button" class="match-btn sub" id="closeGroupMealModalBtn">
+                            취소
+                        </button>
+                        <button type="button" class="match-btn" id="createGroupMealBtn">
+                            만들기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 매칭 필터 모달 -->
+            <div class="group-meal-modal" id="matchingFilterModal" style="display: none;">
+                <div class="group-meal-modal-box">
+                    <div class="group-meal-modal-title">매칭 필터</div>
+
+                    <label class="group-meal-label" for="filterMatchingType">
+                        매칭 유형
+                    </label>
+                    <select id="filterMatchingType" class="group-meal-input">
+                        <option value="">전체</option>
+                        <option value="ONE_TO_ONE">1:1</option>
+                        <option value="GROUP_MEAL">단체방</option>
+                    </select>
+
+                    <label class="group-meal-label" for="filterGender">
+                        성별
+                    </label>
+                    <select id="filterGender" class="group-meal-input">
+                        <option value="">전체</option>
+                        <option value="MALE">남성</option>
+                        <option value="FEMALE">여성</option>
+                    </select>
+
+                    <label class="group-meal-label" for="filterAgeMin">
+                        나이
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <input type="number"
+                               id="filterAgeMin"
+                               class="group-meal-input"
+                               min="18"
+                               placeholder="최소 나이">
+
+                        <input type="number"
+                               id="filterAgeMax"
+                               class="group-meal-input"
+                               min="18"
+                               placeholder="최대 나이">
+                    </div>
+
+                    <label class="group-meal-label" for="filterFoodCategory">
+                        선호 음식
+                    </label>
+                    <select id="filterFoodCategory" class="group-meal-input">
+                        <option value="">전체</option>
+                        <option value="한식">🍚 한식</option>
+                        <option value="양식">🍝 양식</option>
+                        <option value="중식">🥟 중식</option>
+                        <option value="일식">🍣 일식</option>
+                    </select>
+
+                    <label class="group-meal-label" for="filterRadiusKm">
+                        거리
+                    </label>
+                    <select id="filterRadiusKm" class="group-meal-input">
+                        <option value="">전체</option>
+                        <option value="1">1km 이내</option>
+                        <option value="3">3km 이내</option>
+                        <option value="5">5km 이내</option>
+                    </select>
+
+                    <div class="filter-modal-footer">
+                        <div class="filter-sub-btn-row">
+                            <button type="button"
+                                    class="filter-sub-btn"
+                                    id="resetMatchingFilterBtn">
+                                초기화
+                            </button>
+
+                            <button type="button"
+                                    class="filter-sub-btn"
+                                    id="closeMatchingFilterBtn">
+                                닫기
+                            </button>
+                        </div>
+
+                        <button type="button"
+                                class="filter-apply-btn"
+                                id="applyMatchingFilterBtn">
+                            적용
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-box">
+                <div id="matchingMap"></div>
+            </div>
+
+            <section class="selected-profile" id="selectedProfile">
+                <div class="match-profile-card">
+
+                    <div class="match-profile-top">
+                        <div>
+                            <span class="selected-type" id="selectedType">매칭</span>
+                            <div class="match-profile-title" id="selectedNickname">닉네임</div>
+                            <div class="match-profile-online">● 온라인</div>
+                        </div>
+
+                        <div class="match-profile-image-wrap">
+                            <img id="selectedProfileImage"
+                                 class="match-profile-image"
+                                 src="/images/default-profile.png"
+                                 alt="프로필">
+                        </div>
+                    </div>
+
+                    <p class="match-profile-desc" id="selectedMessage">
+                        매칭 대기 중입니다.
+                    </p>
+
+                    <div class="match-profile-meta">
+                        <span id="selectedAge">나이 미입력</span>
+                        <span id="selectedDepartment">학과 미입력</span>
+                        <span id="selectedFood">선호 음식 없음</span>
+                        <span id="selectedManner">매너온도 -</span>
+                    </div>
+
+                    <div class="match-action-row">
+                        <button type="button" class="match-btn sub" id="profileBtn">
+                            프로필 보기
+                        </button>
+
+                        <button type="button" class="match-btn" id="requestBtn">
+                            매칭 신청
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: bottomNav('match')}"></nav>
+
+    </div>
+</div>
+
+<script th:src="'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + ${naverMapClientId}"></script>
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/matching/matching-map.js}"></script>
+
+</body>
+</html>

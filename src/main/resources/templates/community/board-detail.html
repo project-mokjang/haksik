@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>학식목장 - 상세조회</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/community/board.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell board-detail-shell">
+
+        <input type="hidden" id="postId" th:value="${postId}">
+
+        <header class="app-header">
+            <button type="button" class="app-header-btn" onclick="location.href='/api/view/community'">
+                &lt;
+            </button>
+
+            <div class="app-header-title">게시글</div>
+
+            <div class="app-header-right"></div>
+        </header>
+
+        <main class="app-scroll board-detail-scroll">
+
+            <section class="board-detail-header">
+                <div class="board-detail-top-row">
+                    <div class="board-detail-category" id="categoryBadge"></div>
+
+                    <div class="board-detail-options-wrap" id="actionOptions">
+                        <button type="button" class="board-detail-options-btn" id="optionsBtn">
+                            ⋮
+                        </button>
+
+                        <div class="board-detail-options-dropdown" id="optionsDropdown">
+                            <button type="button" id="editPostBtn">수정하기</button>
+                            <button type="button" class="delete-text" id="deletePostBtn">삭제하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h1 class="board-detail-title" id="postTitle">로딩 중...</h1>
+
+                <div class="board-detail-meta">
+                    <span id="authorName"></span>
+                    <span id="postInfo"></span>
+                </div>
+            </section>
+
+            <section class="board-detail-content" id="postContent"></section>
+
+            <section class="board-detail-gallery" id="imageGallery"></section>
+
+            <section class="board-comment-section">
+                <div class="board-comment-title">
+                    댓글
+                    <span id="commentCount">0</span>
+                </div>
+
+                <div id="commentContainer"></div>
+            </section>
+
+        </main>
+
+        <section class="board-comment-input-wrapper">
+
+            <div class="board-reply-indicator" id="replyIndicator">
+                <span id="replyTargetName"></span>님에게 답글 작성 중
+                <button type="button" id="cancelReplyBtn">취소</button>
+            </div>
+
+            <div class="board-comment-input-area">
+                <label class="board-anon-check" for="anonComment">
+                    <input type="checkbox" id="anonComment">
+                    <span>익명</span>
+                </label>
+
+                <input type="text"
+                       id="commentInput"
+                       class="board-comment-input"
+                       placeholder="댓글을 남겨보세요.">
+
+                <button type="button" id="commentSubmitBtn" class="board-comment-submit-btn">
+                    등록
+                </button>
+            </div>
+
+        </section>
+
+        <div class="board-report-modal" id="reportModal">
+            <div class="board-report-sheet">
+                <div class="board-report-header">
+                    <span class="board-report-title">신고사유 선택</span>
+                    <button type="button" class="board-report-close-btn" id="reportCloseBtn">
+                        ×
+                    </button>
+                </div>
+
+                <input type="hidden" id="reportTargetType">
+                <input type="hidden" id="reportTargetId">
+
+                <button type="button" class="board-report-option" data-report-reason="욕설 / 비하 / 혐오 조장">
+                    욕설 / 비하 / 혐오 조장
+                </button>
+
+                <button type="button" class="board-report-option" data-report-reason="음란물 / 성희롱">
+                    음란물 / 성희롱
+                </button>
+
+                <button type="button" class="board-report-option" data-report-reason="스팸 / 상업적 광고 도배">
+                    스팸 / 상업적 광고 도배
+                </button>
+
+                <button type="button" class="board-report-option" data-report-reason="게시판 성격에 맞지 않는 부적절한 글">
+                    게시판 성격에 맞지 않는 부적절한 글
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/community/board-detail.js}"></script>
+
+</body>
+</html>
