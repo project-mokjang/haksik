@@ -1,7 +1,6 @@
 package com.example.haksikmokjang.ownerpage;
 
 import com.example.haksikmokjang.member.core.domain.Member;
-import com.example.haksikmokjang.member.core.domain.MemberRole;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
 import com.example.haksikmokjang.notification.service.NotificationService;
 import com.example.haksikmokjang.ownerpage.store.domain.Reservation;

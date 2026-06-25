@@ -109,14 +109,26 @@ async function fetchNotifications() {
 
             let clickTargetUrl = noti.targetUrl;
 
-            // 타입이 'RESERVATION'이면서, 점주용 알림("접수")이 아닐 경우 = 유저용 예약 결과 알림
+            // 🚨 팩트 1: 예약 결과 알림은 제자리 대기 (이동 차단)
             if (noti.targetType === 'RESERVATION' && noti.title && !noti.title.includes('접수')) {
                 clickTargetUrl = '#';
             }
 
+            // 🚨 팩트 2: 리뷰 알림 타겟팅 라우팅 (점주 vs 유저 분기)
+            if (noti.targetType === 'REVIEW') {
+                if (noti.title && noti.title.includes('새 리뷰')) {
+                    // 점주가 받는 알림 -> 오너 리뷰 관리 페이지로 이동
+                    clickTargetUrl = '/api/view/owner/reviews';
+                } else if (noti.title && noti.title.includes('답글')) {
+                    // 유저가 받는 알림 -> 유저 마이페이지 리뷰 목록으로 이동
+                    clickTargetUrl = '/api/view/user/reviews';
+                }
+            }
+
+            // 완성된 clickTargetUrl을 이벤트 리스너에 장착
             item.addEventListener('click', function (event) {
                 event.stopPropagation(); // 클릭 시 알림창이 닫히는 현상 방지
-                readAndMove(noti.notificationId, clickTargetUrl); // '#'으로 날아가서 제자리에서 읽음 처리만 됨
+                readAndMove(noti.notificationId, clickTargetUrl);
             });
 
             const notiType = noti.notificationType || noti.type || '';
