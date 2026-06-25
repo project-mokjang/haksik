@@ -448,3 +448,183 @@
 .accepted-matching-actions-three {
     grid-template-columns: 1fr;
 }
+
+/* =========================
+   매칭 상태 카드 공통 디자인
+   ========================= */
+
+.received-request-card,
+.current-matching-card,
+.sent-request-card,
+.accepted-matching-card {
+    position: relative;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 2px solid var(--line);
+    border-radius: 26px;
+    background-color: var(--paper);
+    box-shadow: 0 10px 24px rgba(55, 42, 26, 0.07);
+    overflow: hidden;
+}
+
+/* 은은한 포인트 배경 */
+.received-request-card::before,
+.current-matching-card::before,
+.sent-request-card::before,
+.accepted-matching-card::before {
+    content: "";
+    position: absolute;
+    top: -34px;
+    right: -34px;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background-color: rgba(26, 127, 87, 0.08);
+    pointer-events: none;
+}
+
+/* 라벨 공통 */
+.received-request-label,
+.current-matching-label,
+.sent-request-label,
+.accepted-matching-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    height: 30px;
+    margin-bottom: 12px;
+    padding: 0 13px;
+    border-radius: 999px;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 카드별 라벨 색상 */
+.received-request-label {
+    background-color: var(--green);
+}
+
+.current-matching-label {
+    background-color: var(--green);
+}
+
+.sent-request-label {
+    background-color: var(--soil);
+}
+
+.accepted-matching-label {
+    background-color: var(--green);
+}
+
+/* 제목 공통 */
+.received-request-title,
+.current-matching-title,
+.sent-request-title,
+.accepted-matching-title {
+    position: relative;
+    margin-bottom: 8px;
+    color: var(--forest);
+    font-size: 19px;
+    font-weight: 900;
+    line-height: 1.35;
+    letter-spacing: -0.04em;
+}
+
+/* 설명 공통 */
+.received-request-desc,
+.current-matching-desc,
+.sent-request-desc,
+.accepted-matching-desc {
+    position: relative;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+    word-break: keep-all;
+}
+
+/* 버튼 영역 공통 */
+.received-request-actions,
+.current-matching-actions,
+.sent-request-actions,
+.accepted-matching-actions {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* 확정 매칭 버튼 3개는 세로로 */
+.accepted-matching-actions-three {
+    grid-template-columns: 1fr;
+}
+
+/* 버튼 공통 둥글게 */
+.received-request-actions .ui-btn,
+.current-matching-actions .ui-btn,
+.sent-request-actions .ui-btn,
+.accepted-matching-actions .ui-btn {
+    height: 44px;
+    border-radius: 16px;
+    border: none;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+/* 기본 버튼 */
+.received-request-actions .ui-btn:not(.sub):not(.danger),
+.current-matching-actions .ui-btn:not(.sub):not(.danger),
+.sent-request-actions .ui-btn:not(.sub):not(.danger),
+.accepted-matching-actions .ui-btn:not(.sub):not(.danger) {
+    background-color: var(--green);
+    color: white;
+}
+
+/* 보조 버튼 */
+.received-request-actions .ui-btn.sub,
+.current-matching-actions .ui-btn.sub,
+.sent-request-actions .ui-btn.sub,
+.accepted-matching-actions .ui-btn.sub {
+    background-color: var(--ivory2);
+    color: var(--forest);
+    border: 1px solid var(--line);
+}
+
+/* 위험 버튼 */
+.received-request-actions .ui-btn.danger,
+.current-matching-actions .ui-btn.danger,
+.sent-request-actions .ui-btn.danger,
+.accepted-matching-actions .ui-btn.danger {
+    background-color: #df5a4f;
+    color: white;
+}
+
+/* 버튼 눌림 */
+.received-request-actions .ui-btn:active,
+.current-matching-actions .ui-btn:active,
+.sent-request-actions .ui-btn:active,
+.accepted-matching-actions .ui-btn:active {
+    transform: scale(0.97);
+}
+
+/* 현재 대기/확정 카드는 조금 더 강조 */
+.current-matching-card,
+.accepted-matching-card {
+    border-color: rgba(26, 127, 87, 0.35);
+}
+
+/* 받은 요청 카드는 새 요청 느낌 */
+.received-request-card {
+    border-color: rgba(26, 127, 87, 0.28);
+}
+
+/* 보낸 요청 카드는 대기 느낌 */
+.sent-request-card {
+    border-color: rgba(147, 107, 66, 0.28);
+}
+
