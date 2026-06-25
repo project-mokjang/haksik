@@ -107,8 +107,28 @@ async function fetchNotifications() {
                 return;
             }
 
-            item.addEventListener('click', function () {
-                readAndMove(noti.notificationId, noti.targetUrl);
+            let clickTargetUrl = noti.targetUrl;
+
+            // 🚨 팩트 1: 예약 결과 알림은 제자리 대기 (이동 차단)
+            if (noti.targetType === 'RESERVATION' && noti.title && !noti.title.includes('접수')) {
+                clickTargetUrl = '#';
+            }
+
+            // 🚨 팩트 2: 리뷰 알림 타겟팅 라우팅 (점주 vs 유저 분기)
+            if (noti.targetType === 'REVIEW') {
+                if (noti.title && noti.title.includes('새 리뷰')) {
+                    // 점주가 받는 알림 -> 오너 리뷰 관리 페이지로 이동
+                    clickTargetUrl = '/api/view/owner/reviews';
+                } else if (noti.title && noti.title.includes('답글')) {
+                    // 유저가 받는 알림 -> 유저 마이페이지 리뷰 목록으로 이동
+                    clickTargetUrl = '/api/view/user/reviews';
+                }
+            }
+
+            // 완성된 clickTargetUrl을 이벤트 리스너에 장착
+            item.addEventListener('click', function (event) {
+                event.stopPropagation(); // 클릭 시 알림창이 닫히는 현상 방지
+                readAndMove(noti.notificationId, clickTargetUrl);
             });
 
             const notiType = noti.notificationType || noti.type || '';
@@ -126,7 +146,9 @@ async function fetchNotifications() {
                     <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
                 `;
             } else {
+                // 🚨 팩트: 알림 제목(noti.title)을 굵은 녹색 글씨로 띄워주어 직관성을 200% 끌어올립니다.
                 item.innerHTML = `
+                    <span class="noti-msg" style="font-weight: 900; color: var(--forest); display: block; margin-bottom: 2px;">${escapeNotificationHtml(noti.title || '')}</span>
                     <span class="noti-msg">${escapeNotificationHtml(noti.content || '')}</span>
                     <span class="noti-time">${escapeNotificationHtml(dateStr)}</span>
                 `;
@@ -187,17 +209,31 @@ window.addEventListener('click', function(event) {
     }
 });
 
+let sseEventSource = null;
 // 실시간 알림 수신기
 function connectSSE() {
-    const eventSource = new EventSource('/api/notifications/subscribe');
+    // 기존에 켜져 있는 수신기가 있다면 확실히 끄고 초기화
+    if (sseEventSource != null) {
+        sseEventSource.close();
+    }
 
-    eventSource.addEventListener('notification', function(event) {
-        console.log('실시간 알림 수신 완료!');
-        fetchNotifications();
+    sseEventSource = new EventSource('/api/notifications/subscribe');
+
+    sseEventSource.addEventListener('notification', function(event) {
+        console.log('🚨 실시간 알림 펌핑 신호 수신!');
+
+        // 🚨 즉각 조회 코드는 삭제하고, DB 커밋을 기다리기 위해 0.5초(500ms) 뒤에만 단 한 번 조회합니다.
+        setTimeout(fetchNotifications, 500);
     });
 
-    eventSource.onerror = function(error) {
-        eventSource.close();
+    //에러 발생 시 포기하고 죽는 게 아니라, 5초 뒤에 강제로 다시 연결을 시도합니다.
+    sseEventSource.onerror = function(error) {
+        console.error('SSE 연결 끊김. 5초 뒤 실시간 파이프라인 복구 시도...');
+        sseEventSource.close();
+        sseEventSource = null;
+
+        // 5초 후 자기 자신(connectSSE)을 다시 호출하여 무한 재연결
+        setTimeout(connectSSE, 5000);
     };
 }
 

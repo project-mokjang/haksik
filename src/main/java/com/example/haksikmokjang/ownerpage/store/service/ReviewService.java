@@ -82,10 +82,20 @@ public class ReviewService {
 
         StoreReview savedReview = storeReviewRepository.save(newReview);
 
-        //프론트가 리뷰 사진을 던졌다면 "REVIEW" 타겟으로 저장 격발
+        // 프론트가 리뷰 사진을 던졌다면 "REVIEW" 타겟으로 저장 격발
         if (request.getReviewImage() != null && !request.getReviewImage().isEmpty()) {
             saveImage(member, savedReview.getReviewId(), "REVIEW", request.getReviewImage());
         }
+
+        // 🚨 팩트: 유저가 리뷰를 남기면, 해당 가게의 점주(Owner)에게 즉각 알림을 쏩니다.
+        notificationService.sendNotification(
+                reservation.getStore().getMember(), // 수신자: 가게 점주
+                "REVIEW",                           // 타입
+                "새 리뷰 등록",                       // 알림 제목
+                "[" + reservation.getStore().getName() + "] 새로운 리뷰가 등록되었습니다.", // 알림 내용
+                "REVIEW",                           // 타겟 타입
+                savedReview.getReviewId()           // 타겟 ID (클릭 시 이동할 타점용)
+        );
 
         return savedReview.getReviewId();
     }
