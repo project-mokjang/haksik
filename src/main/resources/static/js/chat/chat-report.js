@@ -2,6 +2,9 @@ let reportTargetType = null;
 let reportTargetId = null;
 let reportTargetUrl = null;
 
+const MAX_REPORT_REASON_LENGTH = 200;
+const REPORT_REASON_LENGTH_ERROR = "신고 사유는 최대 200자까지 입력할 수 있습니다.";
+
 // 메시지 신고 모달 열기
 function openMessageReportModal() {
     if (!selectedMessageId) {
@@ -80,6 +83,16 @@ function openReviewTargetReportModal(memberId) {
     reportTargetUrl = "/api/reports/chat/rooms/" + chatRoomId + "/members/" + memberId;
 
     openReportModal();
+}
+
+// 신고 사유 길이 검사
+function validateReportReasonLength(reason) {
+    if (reason && reason.length > MAX_REPORT_REASON_LENGTH) {
+        showToast(REPORT_REASON_LENGTH_ERROR, "error");
+        return false;
+    }
+
+    return true;
 }
 
 // 신고 모달 열기

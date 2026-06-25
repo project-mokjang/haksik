@@ -140,7 +140,7 @@
                   id="inviteNicknameInput"
                   class="invite-nickname-input"
                   placeholder="닉네임 입력"
-                  maxlength="30"
+                  maxlength="51"
                   autocomplete="off"
                   onkeydown="if (event.key === 'Enter') { event.preventDefault(); submitInviteMember(); }"
           >
@@ -191,7 +191,7 @@
                 id="customReportReason"
                 class="custom-report-reason hidden"
                 placeholder="신고 사유를 입력해 주세요."
-                maxlength="100"></textarea>
+                maxlength="201"></textarea>
 
         <div class="report-actions">
           <button type="button" class="report-cancel-button" onclick="closeReportModal()">취소</button>
@@ -234,7 +234,7 @@
 
         <div class="chat-form-field">
           <label for="voteFormTitleInput">투표 제목</label>
-          <input type="text" id="voteFormTitleInput" maxlength="100" placeholder="예: 뭐 먹을래?">
+          <input type="text" id="voteFormTitleInput" maxlength="51" placeholder="예: 뭐 먹을래?">
         </div>
 
         <div class="chat-form-field">
@@ -268,7 +268,7 @@
 
         <div class="chat-form-field">
           <label for="placeFormTitleInput">약속 투표 제목</label>
-          <input type="text" id="placeFormTitleInput" maxlength="100" placeholder="예: 어디서 언제 만날래?">
+          <input type="text" id="placeFormTitleInput" maxlength="51" placeholder="예: 어디서 언제 만날래?">
         </div>
 
         <div class="chat-form-actions">
@@ -362,7 +362,7 @@
                       id="timeOptionMemoInput"
                       class="time-option-memo-input"
                       placeholder="메모 선택사항 예: 수업 끝나고"
-                      maxlength="100"
+                      maxlength="101"
               >
 
               <div class="time-option-panel-actions">
@@ -428,8 +428,8 @@
             <div class="custom-place-title">직접 장소 추가</div>
             <div id="customPlaceCoordinateText" class="custom-place-coordinate">선택 좌표</div>
 
-            <input type="text" id="customPlaceNameInput" placeholder="장소명" maxlength="100">
-            <input type="text" id="customPlaceAddressInput" placeholder="주소 또는 설명" maxlength="200">
+            <input type="text" id="customPlaceNameInput" placeholder="장소명" maxlength="51">
+            <input type="text" id="customPlaceAddressInput" placeholder="주소 또는 설명" maxlength="151">
 
             <div class="custom-place-actions">
               <button type="button" onclick="cancelCustomPlaceAdd()">취소</button>

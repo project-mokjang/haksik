@@ -143,7 +143,7 @@ function addVoteOptionInput(value) {
             type="text"
             class="vote-option-input"
             placeholder="선택지 입력"
-            maxlength="101"
+            maxlength="51"
             value="${escapeAttribute(value || "")}">
         <button type="button" class="vote-option-remove-button" onclick="removeVoteOptionInput(this)">×</button>
     `;

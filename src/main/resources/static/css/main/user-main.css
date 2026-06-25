@@ -448,6 +448,7 @@
 .accepted-matching-actions-three {
     grid-template-columns: 1fr;
 }
+<<<<<<< Updated upstream
 
 /* =========================
    매칭 상태 카드 공통 디자인
@@ -628,3 +629,5 @@
     border-color: rgba(147, 107, 66, 0.28);
 }
 
+=======
+>>>>>>> Stashed changes
