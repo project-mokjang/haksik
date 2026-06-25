@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
 public class ChatImageController {
+
     private final ChatImageService chatImageService;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -27,12 +28,12 @@ public class ChatImageController {
     )
     public ChatMessageResponse sendImage(
             @PathVariable Long chatRoomId,
-            @RequestParam("imageFile") MultipartFile imageFile,
+            @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         Member loginMember = customUserDetails.getMember();
 
-        ChatMessageResponse message = chatImageService.sendImage(chatRoomId, imageFile, loginMember);
+        ChatMessageResponse message = chatImageService.sendImage(chatRoomId, file, loginMember);
 
         messagingTemplate.convertAndSend(
                 "/sub/chat/rooms/" + chatRoomId,

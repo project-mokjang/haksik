@@ -6,6 +6,8 @@ let lastSentReadMessageId = null;
 
 const MAX_CHAT_MESSAGE_LENGTH = 500;
 const CHAT_MESSAGE_LENGTH_ERROR = "채팅 메시지는 최대 500자까지 입력할 수 있습니다.";
+const MAX_INVITE_NICKNAME_LENGTH = 50;
+const INVITE_NICKNAME_LENGTH_ERROR = "닉네임은 최대 50자까지 입력할 수 있습니다.";
 
 document.addEventListener("DOMContentLoaded", function () {
     loadChatRoomDetail()
@@ -33,6 +35,16 @@ document.addEventListener("DOMContentLoaded", function () {
 function validateChatMessageLength(message) {
     if (message && message.length > MAX_CHAT_MESSAGE_LENGTH) {
         showToast(CHAT_MESSAGE_LENGTH_ERROR, "error");
+        return false;
+    }
+
+    return true;
+}
+
+// 초대 닉네임 길이 검사
+function validateInviteNicknameLength(nickname) {
+    if (nickname && nickname.length > MAX_INVITE_NICKNAME_LENGTH) {
+        showToast(INVITE_NICKNAME_LENGTH_ERROR, "error");
         return false;
     }
 
@@ -401,20 +413,20 @@ function sendChatImage() {
         return;
     }
 
-    const imageFile = chatImageInput.files[0];
+    const file = chatImageInput.files[0];
 
-    if (!imageFile) {
+    if (!file) {
         return;
     }
 
-    if (!imageFile.type.startsWith("image/")) {
+    if (!file.type || !file.type.startsWith("image/")) {
         showToast("이미지 파일만 선택할 수 있습니다.", "error");
         chatImageInput.value = "";
         return;
     }
 
     const formData = new FormData();
-    formData.append("imageFile", imageFile);
+    formData.append("file", file);
 
     fetch("/api/chat/rooms/" + chatRoomId + "/images", {
         method: "POST",

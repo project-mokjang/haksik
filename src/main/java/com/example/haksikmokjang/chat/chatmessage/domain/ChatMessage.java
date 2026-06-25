@@ -87,7 +87,12 @@ public class ChatMessage extends BaseEntity {
         this.edited = false;
     }
 
-
+    // 이미지 URL 변경
+    public void updateImageUrl(String imageUrl) {
+        this.messageType = ChatMessageType.IMAGE;
+        this.message = "이미지";
+        this.imageUrl = imageUrl;
+    }
 
     // 폼 메시지 생성자
     public ChatMessage(ChatRoom chatRoom, Member sender, String message, Long formId) {

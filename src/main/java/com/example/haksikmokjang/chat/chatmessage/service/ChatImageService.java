@@ -8,50 +8,40 @@ import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomMember;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomMemberRepository;
 import com.example.haksikmokjang.chat.chatroom.repository.ChatRoomRepository;
 import com.example.haksikmokjang.fileattachment.domain.FileAttachment;
-import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
+import com.example.haksikmokjang.fileattachment.service.FileAttachmentService;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatImageService {
 
+    private static final String CHAT_IMAGE_TARGET_TYPE = "CHAT_MESSAGE";
+    private static final String COMMON_IMAGE_URL_PREFIX = "/api/images/";
+
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserProfileRepository userProfileRepository;
 
-    // 이미지 메시지 도착 시 종 알림 처리
+    private final FileAttachmentService fileAttachmentService;
     private final ChatNotificationService chatNotificationService;
-    private final FileAttachmentRepository fileAttachmentRepository;
-
-    // WebConfig에서 /uploads/** 를 src/main/resources/static/uploads/ 로 연결하고 있으므로 여기에 저장
-    @Value("${file.upload.dir}")
-    private String uploadDir;
-
-    @Value("${file.upload.url-prefix}")
-    private String uploadUrlPrefix;
 
     // 이미지 메시지 전송
     @Transactional
     public ChatMessageResponse sendImage(
             Long chatRoomId,
-            MultipartFile imageFile,
+            MultipartFile file,
             Member loginMember
     ) {
         ChatRoom chatRoom = getChatRoom(chatRoomId);
@@ -62,20 +52,29 @@ public class ChatImageService {
             throw new CustomException(ErrorCode.CHAT_ROOM_CLOSED);
         }
 
-        validateImageFile(imageFile);
+        validateImageFile(file);
 
-        SavedChatImage savedImage = saveImageFile(imageFile);
-
+        // 먼저 채팅 메시지를 저장해서 chatMessageId를 만든다.
         ChatMessage chatMessage = new ChatMessage(
                 chatRoom,
                 loginMember,
                 "이미지",
-                savedImage.imageUrl()
+                null
         );
 
         ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
 
-        saveFileAttachment(loginMember, savedChatMessage, savedImage);
+        // 파일 저장은 공통 FileAttachmentService만 사용한다.
+        // CHAT_MESSAGE는 FileAttachmentService 내부에서 uploads/chat 폴더로 저장된다.
+        Long fileId = fileAttachmentService.uploadFile(
+                loginMember.getLoginId(),
+                file,
+                CHAT_IMAGE_TARGET_TYPE,
+                savedChatMessage.getChatMessageId()
+        );
+
+        // 프론트에 내려줄 URL은 공통 이미지 조회 경로만 사용한다.
+        savedChatMessage.updateImageUrl(createCommonImageUrl(fileId));
 
         // 채팅방 목록에는 이미지 URL이 아니라 [사진]으로 표시
         chatRoom.updateLastMessage("[사진]");
@@ -83,7 +82,11 @@ public class ChatImageService {
         List<ChatRoomMember> chatRoomMembers =
                 chatRoomMemberRepository.findAllByChatRoom(chatRoom);
 
-        ChatMessageResponse response = createChatMessageResponse(savedChatMessage, chatRoomMembers, loginMember);
+        ChatMessageResponse response = createChatMessageResponse(
+                savedChatMessage,
+                chatRoomMembers,
+                loginMember
+        );
 
         // 이미지 메시지 저장 후 채팅방 밖에 있는 상대방들에게만 종 알림 전송
         chatNotificationService.sendMessageNotification(chatRoom, loginMember);
@@ -92,81 +95,16 @@ public class ChatImageService {
     }
 
     // 이미지 파일 검증
-    private void validateImageFile(MultipartFile imageFile) {
-        if (imageFile == null || imageFile.isEmpty()) {
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_CHAT_IMAGE_FILE);
         }
 
-        String contentType = imageFile.getContentType();
+        String contentType = file.getContentType();
 
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new CustomException(ErrorCode.INVALID_CHAT_IMAGE_FILE);
         }
-    }
-
-    // 이미지 파일 저장
-    private SavedChatImage saveImageFile(MultipartFile imageFile) {
-        try {
-            String originalFilename = imageFile.getOriginalFilename();
-
-            if (originalFilename == null || originalFilename.isBlank()) {
-                originalFilename = "chat-image.jpg";
-            }
-
-            String extension = getExtension(originalFilename);
-            String savedFilename = UUID.randomUUID() + extension;
-
-            Path uploadPath = Path.of(
-                    System.getProperty("user.dir"),
-                    uploadDir,
-                    "chat"
-            );
-
-            Files.createDirectories(uploadPath);
-
-            Path filePath = uploadPath.resolve(savedFilename);
-
-            imageFile.transferTo(filePath.toFile());
-
-            return new SavedChatImage(
-                    uploadUrlPrefix + "/chat/" + savedFilename,
-                    filePath.toAbsolutePath().toString(),
-                    originalFilename,
-                    extension,
-                    imageFile.getSize()
-            );
-
-        } catch (IOException e) {
-            throw new CustomException(ErrorCode.CHAT_IMAGE_UPLOAD_FAILED);
-        }
-    }
-
-    // 채팅 이미지 첨부파일 정보 저장
-    private void saveFileAttachment(
-            Member uploader,
-            ChatMessage chatMessage,
-            SavedChatImage savedImage
-    ) {
-        FileAttachment fileAttachment = FileAttachment.builder()
-                .uploader(uploader)
-                .targetType("CHAT_MESSAGE")
-                .targetId(chatMessage.getChatMessageId())
-                .originalName(savedImage.originalName())
-                .storedPath(savedImage.storedPath())
-                .extension(savedImage.extension())
-                .fileSize(savedImage.fileSize())
-                .build();
-
-        fileAttachmentRepository.save(fileAttachment);
-    }
-
-    // 파일 확장자 추출
-    private String getExtension(String originalFilename) {
-        if (originalFilename == null || !originalFilename.contains(".")) {
-            return ".jpg";
-        }
-
-        return originalFilename.substring(originalFilename.lastIndexOf("."));
     }
 
     // 메시지 응답 생성
@@ -183,7 +121,9 @@ public class ChatImageService {
                 .messageType(chatMessage.getMessageType().name())
                 .message(chatMessage.getMessage())
                 .imageUrl(chatMessage.getImageUrl())
+                .formId(chatMessage.getFormId())
                 .imageMessage(chatMessage.isImageMessage())
+                .formMessage(chatMessage.isFormMessage())
                 .deleted(chatMessage.isDeleted())
                 .edited(chatMessage.isEdited())
                 .editedAt(chatMessage.getEditedAt())
@@ -191,6 +131,11 @@ public class ChatImageService {
                 .unreadMemberCount(getUnreadMemberCount(chatMessage, chatRoomMembers, loginMember))
                 .createdAt(chatMessage.getCreatedAt())
                 .build();
+    }
+
+    // 공통 이미지 조회 URL 생성
+    private String createCommonImageUrl(Long fileId) {
+        return COMMON_IMAGE_URL_PREFIX + fileId;
     }
 
     // 메시지별 읽지 않은 인원 수 계산
@@ -235,20 +180,12 @@ public class ChatImageService {
                 .orElse(member.getLoginId());
     }
 
-    // 프로필 이미지 조회
+    // 프로필 이미지도 공통 이미지 조회 경로로 반환
     private String getProfileImageUrl(Member member) {
         return userProfileRepository.findByMember(member)
                 .map(UserProfile::getProfileImage)
-                .map(FileAttachment::getStoredPath)
+                .map(FileAttachment::getFileId)
+                .map(this::createCommonImageUrl)
                 .orElse(null);
-    }
-
-    private record SavedChatImage(
-            String imageUrl,
-            String storedPath,
-            String originalName,
-            String extension,
-            Long fileSize
-    ) {
     }
 }
