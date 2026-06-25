@@ -194,7 +194,32 @@ public class ReviewService {
             throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
+        // 1. 텍스트 및 별점 정보 업데이트
         review.updateReview(request.getRating(), request.getContent());
+
+        // 🚨 2. 하드코어 사진 덮어쓰기 로직
+        // 프론트에서 새로운 리뷰 사진을 보냈을 때만 발동합니다.
+        if (request.getReviewImage() != null && !request.getReviewImage().isEmpty()) {
+
+            // 이 리뷰(REVIEW)에 결속된 기존 사진 데이터들을 싹 긁어옵니다.
+            List<FileAttachment> oldFiles = fileAttachmentRepository.findByTargetTypeAndTargetId("REVIEW", reviewId);
+
+            // 물리적 하드디스크 파일 폭파
+            for (FileAttachment oldFile : oldFiles) {
+                try {
+                    java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(oldFile.getStoredPath()));
+                } catch (java.io.IOException e) {
+                    // 삭제 실패 시 뻗지 않고 로그만 남깁니다.
+                    System.err.println("기존 물리 파일 삭제 실패: " + oldFile.getStoredPath());
+                }
+            }
+
+            // DB 매핑 테이블에서 기존 사진 기록 폭파
+            fileAttachmentRepository.deleteAll(oldFiles);
+
+            // 새로운 사진 저장 및 DB 재결속 (기존 saveImage 메서드 재활용)
+            saveImage(review.getMember(), reviewId, "REVIEW", request.getReviewImage());
+        }
     }
 
     // 내 리뷰 삭제 (DB 완전 삭제가 아닌 상태값 변경(Soft Delete)으로 데이터 보존)

@@ -178,13 +178,37 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-        // 작성자 검증
+        // 작성자 검증 방어벽
         if (!post.getMember().getLoginId().equals(loginId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        // 엔티티 내부 메서드(Dirty Checking)를 통한 업데이트
+        // 텍스트 정보 업데이트 (Dirty Checking)
         post.updatePost(request.getTitle(), request.getContent());
+
+        // 하드코어 사진 덮어쓰기 로직
+        // 프론트에서 새로운 사진을 보냈을 때만 발동합니다.
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+
+            // 기존 이 게시글(POST)에 결속된 사진 데이터들을 싹 긁어옵니다.
+            List<FileAttachment> oldFiles = fileAttachmentRepository.findByTargetTypeAndTargetId("POST", postId);
+
+            // 물리적 하드디스크 파일 폭파
+            for (FileAttachment oldFile : oldFiles) {
+                try {
+                    java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(oldFile.getStoredPath()));
+                } catch (java.io.IOException e) {
+                    // 삭제 실패 시 로그만 남기고 패스 (DB 정합성이 더 중요)
+                    System.err.println("기존 물리 파일 삭제 실패: " + oldFile.getStoredPath());
+                }
+            }
+
+            // DB 매핑 테이블에서 기존 사진 기록 폭파
+            fileAttachmentRepository.deleteAll(oldFiles);
+
+            // 새로운 사진들 저장 및 DB 재결속
+            savePostImages(post, request.getImages());
+        }
     }
 
     @Transactional

@@ -29,11 +29,13 @@ async function setupEditMode() {
     document.querySelector('.app-header-title').innerText = '게시글 수정';
     document.getElementById('submitBtn').innerText = '수정하기';
 
-    // 백엔드 PUT 요청에 맞게 불필요한 입력 필드 숨김 처리 (HTML 수정 불필요)
+    // 백엔드 PUT 요청에 맞게 불필요한 입력 필드 숨김 처리
     document.getElementById('boardType').closest('.board-write-field').style.display = 'none';
     document.getElementById('category').closest('.board-write-field').style.display = 'none';
     document.getElementById('anonymousCheck').closest('.board-write-field').style.display = 'none';
-    document.getElementById('images').closest('.board-write-field').style.display = 'none';
+
+    // 🚨 팩트: 기존에 사진 버튼을 숨기던 코드(display = 'none')를 삭제했습니다.
+    // 기존 사진 렌더링 로직도 없습니다. 유저는 빈 사진 첨부 버튼만 보게 됩니다.
 
     try {
         const response = await fetch('/api/posts/' + editPostId);
@@ -68,12 +70,16 @@ async function submitPost(event) {
     btn.innerText = '처리 중...';
 
     try {
+        // 🚨 팩트: 신규 작성이든 수정이든 이제 파일이 포함될 수 있으므로 무조건 FormData로 묶습니다.
+        const formData = new FormData(form);
+
         if (editPostId) {
-            // 🏋️‍♂️ 1. 수정 모드 로직 (PUT 전송)
+            // 🏋️‍♂️ 1. 수정 모드 로직 (PUT 전송 + FormData)
             const response = await fetch('/api/posts/' + editPostId, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title, content: content })
+                // 🚨 경고: FormData를 보낼 때는 headers에 'Content-Type'을 절대 수동으로 적으면 안 됩니다.
+                // 브라우저가 알아서 multipart/form-data와 boundary 경계선을 세팅합니다.
+                body: formData
             });
 
             if (!response.ok) throw new Error('수정 실패');
@@ -81,8 +87,7 @@ async function submitPost(event) {
             setTimeout(() => location.replace('/api/view/community/' + editPostId), 900);
 
         } else {
-            // 🏋️‍♂️ 2. 신규 작성 모드 로직 (POST 전송)
-            const formData = new FormData(form);
+            // 🏋️‍♂️ 2. 신규 작성 모드 로직 (POST 전송 + FormData)
             const response = await fetch('/api/posts', {
                 method: 'POST',
                 body: formData
