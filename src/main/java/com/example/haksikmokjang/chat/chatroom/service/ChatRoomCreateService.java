@@ -158,8 +158,6 @@ public class ChatRoomCreateService {
         );
     }
 
-    // 기존 호출부 유지용
-    // 이제 과팅 생성 시 memberIds는 초기 입장시키지 않는다.
     // 대표자 2명만 넣고, 나머지는 리더가 초대한다.
     @Transactional
     public ChatRoomResponse createGroupDateChatRoom(
@@ -338,6 +336,22 @@ public class ChatRoomCreateService {
         );
 
         chatRoomMemberRepository.save(chatRoomMember);
+    }
+
+    // 기존 채팅방에서 멤버 제거
+    @Transactional
+    public void removeMemberFromChatRoom(Long chatRoomId, Long memberId) {
+        if (chatRoomId == null || memberId == null) {
+            return;
+        }
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        Member member = getMember(memberId);
+
+        chatRoomMemberRepository.findByChatRoomAndMember(chatRoom, member)
+                .ifPresent(chatRoomMemberRepository::delete);
     }
 
     // 회원 조회
