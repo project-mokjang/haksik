@@ -107,13 +107,14 @@ function renderReviews(reviews) {
                 
                 <select id="edit-rating-${review.reviewId}" class="board-write-input" style="padding: 8px; font-size: 14px; margin-bottom: 8px; width: 100%;">
                     <option value="5" ${review.rating === 5 ? 'selected' : ''}>⭐⭐⭐⭐⭐ (5점)</option>
-                    <option value="4" ${review.rating === 4 ? 'selected' : ''}>⭐⭐⭐⭐ (4점)</option>
-                    <option value="3" ${review.rating === 3 ? 'selected' : ''}>⭐⭐⭐ (3점)</option>
-                    <option value="2" ${review.rating === 2 ? 'selected' : ''}>⭐⭐ (2점)</option>
-                    <option value="1" ${review.rating === 1 ? 'selected' : ''}>⭐ (1점)</option>
-                </select>
+                    </select>
                 
                 <textarea id="edit-content-${review.reviewId}" class="board-write-textarea" style="width: 100%; min-height: 80px; font-size: 14px; margin-bottom: 12px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); outline: none;">${review.content}</textarea>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 4px; display:block;">사진 수정 (새 사진 업로드 시 기존 사진 삭제)</label>
+                    <input type="file" id="edit-image-${review.reviewId}" class="board-write-input" accept="image/*" style="width: 100%; padding: 8px; font-size: 13px;">
+                </div>
                 
                 <div style="display: flex; gap: 8px;">
                     <button onclick="toggleEditMode(${review.reviewId}, false)" style="flex: 1; background: var(--card); color: var(--muted); border: 1px solid var(--line); padding: 12px; border-radius: 8px; font-weight: 900; cursor: pointer;">취소</button>
@@ -133,18 +134,31 @@ function toggleEditMode(reviewId, showEdit) {
     document.getElementById(`edit-mode-${reviewId}`).style.display = showEdit ? 'block' : 'none';
 }
 
-// 5. 리뷰 수정 타격 (PATCH)
+// 5. 리뷰 수정 타격 (PATCH) - FormData로 교체
 async function submitEditReview(reviewId) {
     const rating = document.getElementById(`edit-rating-${reviewId}`).value;
     const content = document.getElementById(`edit-content-${reviewId}`).value.trim();
+    // 🚨 팩트: 수정 폼 안에 숨어있을지 모르는 파일 input을 찾습니다.
+    // HTML에 없다면 텍스트와 별점만 폼 데이터로 날아갑니다.
+    const imageInput = document.getElementById(`edit-image-${reviewId}`);
 
     if (!content) return showToast('리뷰 내용을 입력해주세요.', 'error');
 
+    // 🚨 팩트: JSON 통신 대신 FormData 규격으로 조립
+    const formData = new FormData();
+    formData.append('rating', rating);
+    formData.append('content', content);
+
+    // 파일이 첨부되었다면 폼 데이터에 꽂아 넣습니다.
+    if (imageInput && imageInput.files && imageInput.files.length > 0) {
+        formData.append('reviewImage', imageInput.files[0]);
+    }
+
     try {
         const response = await fetch(`/api/reviews/${reviewId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rating: parseInt(rating), content: content })
+            method: 'PATCH', // 또는 백엔드 구현에 따라 PUT
+            // 🚨 경고: FormData 전송 시 Content-Type 헤더는 절대 수동으로 세팅하면 안 됩니다.
+            body: formData
         });
 
         if (!response.ok) {

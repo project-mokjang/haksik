@@ -78,12 +78,12 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getMyReviews(loginId, pageable));
     }
 
-    // 유저용: 내 리뷰 수정 API (PATCH)
-    @PatchMapping("/{reviewId}")
+    // 유저용 리뷰 수정 API (PATCH) - FormData를 받도록 톨게이트 확장
+    @PatchMapping(value = "/{reviewId}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateReview(
             Authentication authentication,
             @PathVariable Long reviewId,
-            @Valid @RequestBody ReviewUpdateRequest request) {
+            @Valid @ModelAttribute ReviewUpdateRequest request) { // 🚨 @RequestBody ➔ @ModelAttribute 교체
 
         reviewService.updateReview(authentication.getName(), reviewId, request);
         return ResponseEntity.ok("리뷰가 수정되었습니다.");

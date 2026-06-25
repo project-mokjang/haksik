@@ -91,18 +91,17 @@ public class PostController {
     }
 
     // 게시글 수정 (PUT)
-    @PutMapping("/{postId}")
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updatePost(
             @PathVariable Long postId,
             Authentication authentication,
-            @Valid @RequestBody PostUpdateRequest request) {
+            @Valid @ModelAttribute PostUpdateRequest request) { // @RequestBody ➔ @ModelAttribute 교체
 
         String loginId = authentication.getName();
         postService.updatePost(postId, loginId, request);
 
         return ResponseEntity.ok("게시글이 성공적으로 수정되었습니다.");
     }
-
     //게시글 삭제 (DELETE)
     @DeleteMapping("/{postId}")
     public ResponseEntity<String> deletePost(
