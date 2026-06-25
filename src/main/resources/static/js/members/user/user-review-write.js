@@ -54,7 +54,10 @@ async function loadReviewWritePage() {
             })
         );
 
-        reviewWriteItems = itemGroups.flat();
+        const chatRoomReviewItems = itemGroups.flat();
+        const myReviewItems = await loadMyCompletedStoreReviewItems(chatRoomReviewItems);
+
+        reviewWriteItems = chatRoomReviewItems.concat(myReviewItems);
         sortReviewWriteItems();
         renderReviewWriteItems();
 
@@ -169,6 +172,114 @@ async function fetchStoreReviewTarget(chatRoomId) {
         console.error("[review-write] 식당 리뷰 대상 조회 실패:", error);
         return null;
     }
+}
+
+// 내 리뷰 관리에 존재하는 작성 완료 리뷰를 리뷰쓰기 페이지에도 표시
+async function loadMyCompletedStoreReviewItems(chatRoomReviewItems) {
+    const myReviews = await fetchMyReviews();
+
+    return myReviews
+        .filter(function (review) {
+            return !!review && !!review.reviewId;
+        })
+        .filter(function (review) {
+            return !isAlreadyIncludedMyReview(review, chatRoomReviewItems);
+        })
+        .map(function (review) {
+            return createCompletedStoreReviewItemFromMyReview(review);
+        });
+}
+
+// 내 리뷰 목록 조회
+async function fetchMyReviews() {
+    try {
+        const response = await fetch("/api/reviews/my?size=100");
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const result = await response.json();
+
+        if (Array.isArray(result)) {
+            return result;
+        }
+
+        if (result && Array.isArray(result.content)) {
+            return result.content;
+        }
+
+        if (result && Array.isArray(result.data)) {
+            return result.data;
+        }
+
+        if (result && Array.isArray(result.reviews)) {
+            return result.reviews;
+        }
+
+        console.warn("[review-write] 예상하지 못한 내 리뷰 목록 응답:", result);
+        return [];
+    } catch (error) {
+        console.error("[review-write] 내 리뷰 목록 조회 실패:", error);
+        return [];
+    }
+}
+
+// 채팅방 리뷰 대상에서 이미 잡힌 작성 완료 리뷰와 중복 표시 방지
+function isAlreadyIncludedMyReview(review, chatRoomReviewItems) {
+    if (!review || !Array.isArray(chatRoomReviewItems)) {
+        return false;
+    }
+
+    return chatRoomReviewItems.some(function (item) {
+        if (!item || item.status !== "COMPLETED") {
+            return false;
+        }
+
+        if (review.reservationId && item.reservationId) {
+            return String(review.reservationId) === String(item.reservationId);
+        }
+
+        if (review.storeId && item.storeId && review.createdAt && item.reservationAt) {
+            return String(review.storeId) === String(item.storeId)
+                && formatDate(review.createdAt) === formatDate(item.reservationAt);
+        }
+
+        return false;
+    });
+}
+
+// 내 리뷰 데이터를 작성 완료 카드 데이터로 변환
+function createCompletedStoreReviewItemFromMyReview(review) {
+    return {
+        itemId: "MY_REVIEW_" + review.reviewId,
+        type: "STORE",
+        status: "COMPLETED",
+        chatRoomId: null,
+        roomName: "내 리뷰 관리",
+        matchingMode: "REVIEW",
+        lastMessageAt: review.createdAt,
+        sortValue: getDateSortValue(review.createdAt, review.reviewId),
+        reviewId: review.reviewId,
+        reservationId: review.reservationId || null,
+        storeId: review.storeId,
+        storeName: review.storeName || "식당",
+        reservationAt: null,
+        reservationStatus: null,
+        alreadyReviewed: true,
+        canReview: false,
+        title: (review.storeName || "식당") + " 리뷰",
+        description: getMyReviewDescription(review),
+        guideMessage: "이미 작성한 식당 리뷰입니다."
+    };
+}
+
+// 내 리뷰 카드 설명 생성
+function getMyReviewDescription(review) {
+    const ratingText = review.rating ? "별점 " + review.rating + "점" : "작성 완료";
+    const contentText = review.content ? " · " + review.content : "";
+
+    return ratingText + contentText;
 }
 
 // 식당 리뷰 상태 결정
@@ -458,6 +569,19 @@ function getRoomSortValue(room) {
     return Number(room.chatRoomId || 0);
 }
 
+// 날짜 기준 정렬값
+function getDateSortValue(dateTime, fallbackValue) {
+    if (dateTime) {
+        const time = new Date(dateTime).getTime();
+
+        if (!Number.isNaN(time)) {
+            return time;
+        }
+    }
+
+    return Number(fallbackValue || 0);
+}
+
 // 매칭 모드 표시
 function getMatchingModeText(mode) {
     if (mode === "MEAL") {
@@ -470,6 +594,10 @@ function getMatchingModeText(mode) {
 
     if (mode === "BLIND_DATE") {
         return "소개팅";
+    }
+
+    if (mode === "REVIEW") {
+        return "작성 완료 리뷰";
     }
 
     return "채팅방";

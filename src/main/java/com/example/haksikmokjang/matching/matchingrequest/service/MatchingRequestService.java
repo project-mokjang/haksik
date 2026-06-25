@@ -171,11 +171,36 @@ public class MatchingRequestService {
         if (matching.getMatchingType() == MatchingType.GROUP_MEAL && isRequester) {
             MatchingWaiting targetWaiting = matching.getTargetWaiting();
 
+            Long chatRoomId = matching.getChatRoomId();
+            Long requesterMemberId = matching.getRequester().getMember().getMemberId();
+            Long ownerMemberId = targetWaiting.getUserProfile().getMember().getMemberId();
+
+            boolean hasOtherAcceptedParticipant = matchingRepository.findByTargetWaitingAndStatusIn(
+                    targetWaiting,
+                    List.of(MatchingStatus.ACCEPTED)
+            ).stream().anyMatch(acceptedMatching ->
+                    !acceptedMatching.getMatchingId().equals(matching.getMatchingId())
+            );
+
             matching.cancel();
             targetWaiting.decreaseParticipant();
 
             matchingRepository.save(matching);
             matchingWaitingRepository.save(targetWaiting);
+
+            // 취소한 참가자를 채팅방에서 제거
+            chatRoomCreateService.removeMemberFromChatRoom(
+                    chatRoomId,
+                    requesterMemberId
+            );
+
+            // 남은 확정 참가자가 없으면 모집자도 채팅방에서 제거
+            if (!hasOtherAcceptedParticipant) {
+                chatRoomCreateService.removeMemberFromChatRoom(
+                        chatRoomId,
+                        ownerMemberId
+                );
+            }
 
             sendMatchingNotification(
                     matching.getTarget(),
@@ -215,8 +240,23 @@ public class MatchingRequestService {
                 List.of(MatchingStatus.REQUESTED, MatchingStatus.ACCEPTED)
         );
 
-        // 연결된 요청 전체 취소 + 신청자/참가자에게 알림 전송
+        List<Long> chatRoomIds = new ArrayList<>();
+
+        // 연결된 요청 전체 취소 + 채팅방 참가자 제거 + 알림 전송
         matchings.forEach(matching -> {
+            Long chatRoomId = matching.getChatRoomId();
+
+            if (chatRoomId != null) {
+                if (!chatRoomIds.contains(chatRoomId)) {
+                    chatRoomIds.add(chatRoomId);
+                }
+
+                chatRoomCreateService.removeMemberFromChatRoom(
+                        chatRoomId,
+                        matching.getRequester().getMember().getMemberId()
+                );
+            }
+
             matching.cancel();
 
             sendMatchingNotification(
@@ -226,6 +266,15 @@ public class MatchingRequestService {
                     matching.getMatchingId()
             );
         });
+
+        Long ownerMemberId = targetWaiting.getUserProfile().getMember().getMemberId();
+
+        chatRoomIds.forEach(chatRoomId ->
+                chatRoomCreateService.removeMemberFromChatRoom(
+                        chatRoomId,
+                        ownerMemberId
+                )
+        );
 
         matchingRepository.saveAll(matchings);
         matchingWaitingRepository.save(targetWaiting);
