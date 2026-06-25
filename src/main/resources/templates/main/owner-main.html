@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>학식목장 - 점주 대시보드</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <style>
+        /* 점주 대시보드 전용 퀵 스타일 (기존 테마 100% 호환) */
+        .owner-store-card { background-color: var(--forest); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .owner-store-card h2 { font-size: 20px; font-weight: 900; margin-bottom: 12px; }
+        .status-toggle-row { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+        .status-select { background-color: var(--paper); color: var(--forest); border: none; padding: 6px 10px; border-radius: 8px; font-weight: 800; outline: none; }
+
+        .section-title { font-size: 16px; font-weight: 900; color: var(--forest); margin-bottom: 12px; }
+        .reservation-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .res-card { background-color: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+        .res-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 900; }
+        .res-status.REQUESTED { color: var(--red); }
+        .res-status.ACCEPTED { color: var(--green); }
+        .res-info { font-size: 15px; font-weight: 800; color: var(--forest); margin-bottom: 12px; line-height: 1.4; }
+        .res-memo { font-size: 13px; color: var(--muted); background-color: var(--card); padding: 8px; border-radius: 8px; margin-bottom: 12px; }
+
+        .res-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-accept { background-color: var(--green); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 900; cursor: pointer; }
+        .btn-reject { background-color: var(--card); color: var(--muted); border: 1px solid var(--line); padding: 10px; border-radius: 10px; font-weight: 900; cursor: pointer; }
+        .btn-complete { grid-column: span 2; background-color: var(--forest); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 900; cursor: pointer; }
+
+        .manage-btn { width: 100%; background-color: var(--green2); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; }
+    </style>
+</head>
+<body class="app-body">
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('점주 대시보드', 'none', 'alarm')}"></header>
+
+        <main class="app-scroll has-bottom-nav">
+
+            <section class="owner-store-card" id="storeInfoCard">
+                <div id="hasStoreView" style="display: none;">
+                    <h2 id="storeNameText">가게 정보 로딩중...</h2>
+                    <div class="status-toggle-row">
+                        <span>현재 영업 상태</span>
+                        <select class="status-select" id="businessStatusSelect" onchange="changeBusinessStatus()">
+                            <option value="OPEN">영업중 (OPEN)</option>
+                            <option value="BREAK_TIME">준비중 (BREAK)</option>
+                            <option value="CLOSED">영업종료 (CLOSED)</option>
+                        </select>
+                    </div>
+                    <button class="manage-btn" onclick="location.href='/api/view/owner/store'">가게 및 메뉴 수정</button>
+                </div>
+
+                <div id="noStoreView" style="display: none; text-align: center; padding: 10px 0;">
+                    <h2 style="color: var(--red);">등록된 가게가 없습니다.</h2>
+                    <p style="font-size: 13px; color: var(--ivory2); margin-bottom: 16px;">영업을 시작하려면 가게를 먼저 등록해주세요.</p>
+                    <button class="manage-btn" onclick="location.href='/api/view/owner/store'">+ 내 가게 최초 등록하기</button>
+                </div>
+            </section>
+
+            <div class="section-title">실시간 예약 대기열</div>
+
+            <div class="reservation-list" id="reservationContainer">
+                <div style="text-align:center; padding: 20px; color: var(--muted); font-weight: 700;">
+                    예약 내역을 불러오는 중입니다...
+                </div>
+            </div>
+
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: ownerBottomNav('home')}"></nav>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/owner/owner-main.js}"></script>
+
+</body>
+</html>

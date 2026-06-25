@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>학식목장 - 아이디 찾기</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/members/auth.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell">
+
+    <header th:replace="~{fragments/mobile-layout :: appHeader('아이디 찾기', 'back', 'none')}"></header>
+
+    <main class="app-scroll find-account-scroll">
+
+      <section class="find-account-header">
+        <div class="find-account-logo">🐑</div>
+        <h1 class="find-account-title">아이디 찾기</h1>
+        <p class="find-account-desc">
+          가입한 이름과 이메일 인증을 통해<br>
+          아이디를 확인할 수 있습니다.
+        </p>
+      </section>
+
+      <form class="find-account-form" id="findIdForm">
+
+        <input type="hidden" id="emailVerified" name="emailVerified" value="false">
+
+        <section class="auth-section">
+
+          <div class="auth-field">
+            <label for="name">이름</label>
+            <input type="text"
+                   id="name"
+                   name="name"
+                   placeholder="가입한 이름을 입력해주세요"
+                   required>
+          </div>
+
+          <div class="auth-field">
+            <label for="email">이메일 인증</label>
+
+            <div class="auth-input-row">
+              <input type="email"
+                     id="email"
+                     name="email"
+                     placeholder="가입한 이메일을 입력해주세요"
+                     required>
+
+              <button type="button" class="auth-action-btn" id="sendCodeBtn">
+                전송
+              </button>
+            </div>
+
+            <div class="auth-input-row auth-code-row">
+              <input type="text"
+                     id="emailCode"
+                     name="emailCode"
+                     placeholder="인증번호 6자리 입력">
+
+              <button type="button" class="auth-action-btn" id="verifyBtn">
+                확인
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-error-msg" id="findIdError">
+            이름과 인증번호를 확인해주세요.
+          </div>
+
+          <button type="submit" class="auth-submit-btn">
+            아이디 찾기
+          </button>
+
+        </section>
+
+      </form>
+
+      <div class="find-account-link-section">
+        <a th:href="@{/api/view/login}">로그인으로 돌아가기</a>
+      </div>
+
+    </main>
+
+  </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/find-id.js}"></script>
+
+</body>
+</html>

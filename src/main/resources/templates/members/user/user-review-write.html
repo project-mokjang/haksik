@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰쓰기</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/members/user-review-write.css}">
+</head>
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('리뷰쓰기', 'back', 'alarm')}"></header>
+
+        <main class="app-scroll has-bottom-nav review-write-scroll">
+
+            <section class="review-write-hero">
+                <h2>작성할 식당 리뷰를<br>한 번에 확인해요.</h2>
+                <p>
+                    종료된 채팅방에서 작성할 수 있는 식당 리뷰를 모아서 보여줍니다.
+                    새로 작성해야 하는 식당 리뷰가 위에 먼저 표시됩니다.
+                </p>
+            </section>
+
+            <section class="review-write-summary">
+                <div class="review-summary-card">
+                    <div class="review-summary-number" id="pendingReviewCount">0</div>
+                    <div class="review-summary-label">작성 필요</div>
+                </div>
+
+                <div class="review-summary-card">
+                    <div class="review-summary-number" id="completedReviewCount">0</div>
+                    <div class="review-summary-label">작성 완료</div>
+                </div>
+            </section>
+
+            <div id="reviewWriteLoading" class="review-write-loading">
+                식당 리뷰 대상을 불러오는 중입니다.
+            </div>
+
+            <div id="reviewWriteContent" class="hidden">
+
+                <section class="review-write-section">
+                    <div class="review-write-section-title">
+                        <span>작성할 식당 리뷰</span>
+                        <small id="pendingReviewSectionCount">0개</small>
+                    </div>
+
+                    <div id="pendingReviewList" class="review-write-list">
+                        <!-- JS로 작성 필요 식당 리뷰 추가 -->
+                    </div>
+                </section>
+
+                <section class="review-write-section completed-section">
+                    <div class="review-write-section-title">
+                        <span>작성 완료</span>
+                        <small id="completedReviewSectionCount">0개</small>
+                    </div>
+
+                    <div id="completedReviewList" class="review-write-list">
+                        <!-- JS로 작성 완료 식당 리뷰 추가 -->
+                    </div>
+                </section>
+
+            </div>
+
+        </main>
+
+        <nav th:replace="~{fragments/mobile-layout :: bottomNav('my')}"></nav>
+
+        <!-- 식당 리뷰 모달 -->
+        <div id="storeReviewWriteModal" class="review-write-modal-backdrop hidden">
+            <div class="review-write-modal">
+                <div class="review-write-modal-header">
+                    <h3>식당 리뷰</h3>
+                    <button type="button" onclick="closeStoreReviewWriteModal()">×</button>
+                </div>
+
+                <div class="review-write-target-card">
+                    <div class="review-write-target-icon">🍽️</div>
+                    <div>
+                        <div class="review-write-target-title" id="storeReviewTargetName">식당</div>
+                        <div class="review-write-target-desc" id="storeReviewRoomName">약속 식당</div>
+                    </div>
+                </div>
+
+                <div class="review-write-field">
+                    <div class="review-write-field-title">별점</div>
+                    <div class="review-write-score-list">
+                        <label><input type="radio" name="writeStoreRating" value="5" checked> 5점</label>
+                        <label><input type="radio" name="writeStoreRating" value="4"> 4점</label>
+                        <label><input type="radio" name="writeStoreRating" value="3"> 3점</label>
+                        <label><input type="radio" name="writeStoreRating" value="2"> 2점</label>
+                        <label><input type="radio" name="writeStoreRating" value="1"> 1점</label>
+                    </div>
+                </div>
+
+                <textarea
+                        id="storeReviewWriteContent"
+                        class="review-write-textarea"
+                        placeholder="식당 방문 후기를 입력해 주세요."
+                        maxlength="500"></textarea>
+
+                <div class="review-write-field">
+                    <div class="review-write-field-title">리뷰 사진</div>
+                    <input type="file" id="storeReviewWriteImage" class="review-write-file-input" accept="image/*">
+                </div>
+
+                <div class="review-write-modal-actions">
+                    <button type="button" class="review-write-cancel-button" onclick="closeStoreReviewWriteModal()">취소</button>
+                    <button type="button" class="review-write-submit-button" onclick="submitStoreReviewWrite()">리뷰 등록</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/user/user-review-write.js}"></script>
+</body>
+</html>

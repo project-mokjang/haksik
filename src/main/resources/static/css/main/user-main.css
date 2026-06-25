@@ -1,0 +1,630 @@
+/* user-main.css */
+
+/* 메인 상단 안내 카드 */
+.main-hero-card {
+    background: linear-gradient(135deg, #fffdf8 0%, var(--card) 55%, #edf6ed 100%);
+    border: 2px solid var(--line);
+    border-radius: 28px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+}
+
+.main-hero-card h2 {
+    font-size: 26px;
+    line-height: 1.25;
+    color: var(--forest);
+    letter-spacing: -0.06em;
+    margin-bottom: 12px;
+}
+
+.main-hero-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+/* 섹션 제목 */
+.main-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 14px;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--forest);
+    letter-spacing: -0.04em;
+}
+
+.main-section-title::before {
+    content: "";
+    width: 5px;
+    height: 24px;
+    border-radius: 999px;
+    background-color: var(--green);
+}
+
+/* 매칭 모드 카드 */
+.mode-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.mode-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--green);
+}
+
+.mode-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    background-color: var(--ivory2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+.mode-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mode-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--forest);
+    margin-bottom: 5px;
+}
+
+.mode-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+/* 빠른 메뉴 */
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.quick-card {
+    min-height: 88px;
+    padding: 16px;
+    border-radius: 20px;
+    background-color: var(--card);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--forest);
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(55, 42, 26, 0.06);
+}
+
+.quick-card span {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/*  챗봇 모바일 화면 기준점 잡기  */
+.app-shell {
+    position: relative;
+}
+
+/* 챗봇 플로팅 버튼  */
+.chatbot-fab {
+    position: absolute;
+    bottom: 90px;
+    right: 20px;
+    background-color: #6C9A8B;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+
+
+    color: white;
+    border: 3px solid gainsboro;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s;
+
+}
+.chatbot-fab:hover {
+    transform: scale(1.05);
+}
+
+/*  챗봇 모달창 */
+.chatbot-modal {
+    position: absolute;
+    bottom: 160px;
+    right: 20px;
+    width: 320px;
+    height: 480px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.chatbot-header {
+    background-color: #6C9A8B;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.chatbot-header button {
+    background: none; border: none; color: white; cursor: pointer; font-size: 16px;
+}
+
+.chatbot-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 말풍선 공통 & 봇/유저 분리 */
+.msg { margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    max-width: 80%;
+    line-height: 1.4;
+    font-size: 14px;
+    word-break: break-all; }
+.bot-msg { background-color: #ffffff;
+    color: #333;
+    align-self: flex-start;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 2px;
+}
+
+.user-msg { background-color: #6C9A8B;
+    color: white;
+    margin-left: auto;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+/* 질문 칩 디자인 */
+.chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.chip {
+    background-color: #ffffff;
+    border: 1px solid #2e7d32;
+    color: #2e7d32;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.chip:hover { background-color: #e8f5e9; }
+
+/* 입력창 */
+.chatbot-footer {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #eee;
+    background-color: white;
+}
+.chatbot-footer input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+    margin-right: 10px;
+    font-size: 14px;
+}
+.chatbot-footer input:focus {
+    border-color: #2e7d32;
+}
+.chatbot-footer button {
+    background-color: #6C9A8B;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.received-request-card {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    background-color: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.received-request-label {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--green);
+}
+
+.received-request-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--forest);
+}
+
+.received-request-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.received-request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+/* 현재 매칭 대기 카드 */
+.current-matching-card {
+    background-color: var(--paper);
+    border: 2px solid var(--green);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 현재 매칭 대기 라벨 */
+.current-matching-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 현재 매칭 대기 제목 */
+.current-matching-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 현재 매칭 대기 설명 */
+.current-matching-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 현재 매칭 대기 버튼 영역 */
+.current-matching-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 위험 버튼 */
+.ui-btn.danger {
+    background-color: var(--red);
+    color: white;
+}
+
+/* 보낸 매칭 요청 카드 */
+.sent-request-card {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 보낸 매칭 요청 라벨 */
+.sent-request-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--soil);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 보낸 매칭 요청 제목 */
+.sent-request-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 보낸 매칭 요청 설명 */
+.sent-request-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 보낸 매칭 요청 버튼 영역 */
+.sent-request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 확정된 매칭 카드 */
+.accepted-matching-card {
+    background-color: var(--paper);
+    border: 2px solid var(--green);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+}
+
+/* 확정된 매칭 라벨 */
+.accepted-matching-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background-color: var(--green);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 확정된 매칭 제목 */
+.accepted-matching-title {
+    margin-bottom: 6px;
+    color: var(--forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+/* 확정된 매칭 설명 */
+.accepted-matching-desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* 확정된 매칭 버튼 영역 */
+.accepted-matching-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* 확정 매칭 카드 버튼 3개 세로 배치 */
+.accepted-matching-actions-three {
+    grid-template-columns: 1fr;
+}
+
+/* =========================
+   매칭 상태 카드 공통 디자인
+   ========================= */
+
+.received-request-card,
+.current-matching-card,
+.sent-request-card,
+.accepted-matching-card {
+    position: relative;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 2px solid var(--line);
+    border-radius: 26px;
+    background-color: var(--paper);
+    box-shadow: 0 10px 24px rgba(55, 42, 26, 0.07);
+    overflow: hidden;
+}
+
+/* 은은한 포인트 배경 */
+.received-request-card::before,
+.current-matching-card::before,
+.sent-request-card::before,
+.accepted-matching-card::before {
+    content: "";
+    position: absolute;
+    top: -34px;
+    right: -34px;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background-color: rgba(26, 127, 87, 0.08);
+    pointer-events: none;
+}
+
+/* 라벨 공통 */
+.received-request-label,
+.current-matching-label,
+.sent-request-label,
+.accepted-matching-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    height: 30px;
+    margin-bottom: 12px;
+    padding: 0 13px;
+    border-radius: 999px;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* 카드별 라벨 색상 */
+.received-request-label {
+    background-color: var(--green);
+}
+
+.current-matching-label {
+    background-color: var(--green);
+}
+
+.sent-request-label {
+    background-color: var(--soil);
+}
+
+.accepted-matching-label {
+    background-color: var(--green);
+}
+
+/* 제목 공통 */
+.received-request-title,
+.current-matching-title,
+.sent-request-title,
+.accepted-matching-title {
+    position: relative;
+    margin-bottom: 8px;
+    color: var(--forest);
+    font-size: 19px;
+    font-weight: 900;
+    line-height: 1.35;
+    letter-spacing: -0.04em;
+}
+
+/* 설명 공통 */
+.received-request-desc,
+.current-matching-desc,
+.sent-request-desc,
+.accepted-matching-desc {
+    position: relative;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+    word-break: keep-all;
+}
+
+/* 버튼 영역 공통 */
+.received-request-actions,
+.current-matching-actions,
+.sent-request-actions,
+.accepted-matching-actions {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* 확정 매칭 버튼 3개는 세로로 */
+.accepted-matching-actions-three {
+    grid-template-columns: 1fr;
+}
+
+/* 버튼 공통 둥글게 */
+.received-request-actions .ui-btn,
+.current-matching-actions .ui-btn,
+.sent-request-actions .ui-btn,
+.accepted-matching-actions .ui-btn {
+    height: 44px;
+    border-radius: 16px;
+    border: none;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+/* 기본 버튼 */
+.received-request-actions .ui-btn:not(.sub):not(.danger),
+.current-matching-actions .ui-btn:not(.sub):not(.danger),
+.sent-request-actions .ui-btn:not(.sub):not(.danger),
+.accepted-matching-actions .ui-btn:not(.sub):not(.danger) {
+    background-color: var(--green);
+    color: white;
+}
+
+/* 보조 버튼 */
+.received-request-actions .ui-btn.sub,
+.current-matching-actions .ui-btn.sub,
+.sent-request-actions .ui-btn.sub,
+.accepted-matching-actions .ui-btn.sub {
+    background-color: var(--ivory2);
+    color: var(--forest);
+    border: 1px solid var(--line);
+}
+
+/* 위험 버튼 */
+.received-request-actions .ui-btn.danger,
+.current-matching-actions .ui-btn.danger,
+.sent-request-actions .ui-btn.danger,
+.accepted-matching-actions .ui-btn.danger {
+    background-color: #df5a4f;
+    color: white;
+}
+
+/* 버튼 눌림 */
+.received-request-actions .ui-btn:active,
+.current-matching-actions .ui-btn:active,
+.sent-request-actions .ui-btn:active,
+.accepted-matching-actions .ui-btn:active {
+    transform: scale(0.97);
+}
+
+/* 현재 대기/확정 카드는 조금 더 강조 */
+.current-matching-card,
+.accepted-matching-card {
+    border-color: rgba(26, 127, 87, 0.35);
+}
+
+/* 받은 요청 카드는 새 요청 느낌 */
+.received-request-card {
+    border-color: rgba(26, 127, 87, 0.28);
+}
+
+/* 보낸 요청 카드는 대기 느낌 */
+.sent-request-card {
+    border-color: rgba(147, 107, 66, 0.28);
+}
+

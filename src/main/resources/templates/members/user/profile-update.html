@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>프로필 수정</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/members/user.css}">
+</head>
+
+<body class="app-body">
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <header th:replace="~{fragments/mobile-layout :: appHeader('프로필 수정', 'back', 'alarm')}"></header>
+
+        <form id="profileUpdateForm" class="profile-update-form">
+
+            <main class="app-scroll profile-update-scroll">
+
+                <section class="profile-section-header">
+                    <h2>내 정보 수정</h2>
+                </section>
+
+                <div class="profile-upload-container">
+                    <label for="profileImage" class="image-preview-box">
+                        <img id="imagePreview"
+                             th:src="${myPage.profileImageUrl != null ? myPage.profileImageUrl : '/images/default-profile.png'}"
+                             alt="프로필 미리보기">
+                        <div class="upload-overlay">📷 사진 변경</div>
+                    </label>
+
+                    <input type="file"
+                           id="profileImage"
+                           accept="image/*"
+                           hidden>
+                </div>
+
+                <section class="profile-form-card">
+
+                    <div class="profile-field">
+                        <label for="nickname">닉네임</label>
+
+                        <div class="profile-input-row">
+                            <input type="text"
+                                   id="nickname"
+                                   th:value="${myPage.nickname}"
+                                   placeholder="새 닉네임 입력 (10자 이내)"
+                                   maxlength="10"
+                                   required>
+
+                            <button type="button" id="nicknameCheckBtn" class="profile-action-btn">
+                                중복
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label for="school">학교</label>
+                        <input type="text"
+                               id="school"
+                               th:value="${myPage.schoolName}"
+                               placeholder="예: 인덕대학교"
+                               required>
+                    </div>
+
+                    <div class="profile-field last">
+                        <label for="department">학과</label>
+                        <input type="text"
+                               id="department"
+                               th:value="${myPage.department}"
+                               placeholder="예: 컴퓨터공학과"
+                               required>
+                    </div>
+
+                </section>
+
+            </main>
+
+            <div class="profile-bottom-fixed">
+                <button type="submit" class="profile-submit-btn">
+                    수정 완료하기
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/members/user/profile-update.js}"></script>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>채팅</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/chat/chat-list.css}">
+</head>
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell chat-list-shell">
+
+    <header th:replace="~{fragments/mobile-layout :: appHeader('채팅방', 'menu', 'alarm')}"></header>
+
+    <main class="app-scroll chat-list-scroll">
+      <div class="chat-tab-bar">
+        <button type="button" class="chat-tab active" data-mode="MEAL" onclick="changeChatTab('MEAL')">
+          학식메이트
+        </button>
+        <button type="button" class="chat-tab" data-mode="GROUP_DATE" onclick="changeChatTab('GROUP_DATE')">
+          과팅
+        </button>
+        <button type="button" class="chat-tab" data-mode="BLIND_DATE" onclick="changeChatTab('BLIND_DATE')">
+          소개팅
+        </button>
+      </div>
+
+      <div id="chatRoomList" class="chat-room-list">
+        <!-- JS로 채팅방 목록 추가 -->
+      </div>
+
+      <div id="emptyChatRoom" class="empty-message hidden">
+        <div class="empty-icon">💬</div>
+        <p>참여 중인 채팅방이 없습니다.</p>
+      </div>
+    </main>
+    <nav th:replace="~{fragments/mobile-layout :: bottomNav('chat')}"></nav>
+  </div>
+</div>
+
+<script th:src="@{/js/common/feedback.js}"></script>
+<script th:src="@{/js/chat/chat-list.js}"></script>
+</body>
+</html>

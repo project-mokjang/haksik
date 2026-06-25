@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>학식목장 - 승인 대기</title>
+
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/members/auth.css}">
+</head>
+
+<body class="app-body">
+
+
+<div class="app-page">
+    <div class="app-shell">
+
+        <main class="app-scroll owner-pending-scroll">
+
+            <section class="owner-pending-card">
+                <div class="owner-pending-icon">⏳</div>
+
+                <h1 class="owner-pending-title">
+                    관리자 승인 대기중
+                </h1>
+
+                <p class="owner-pending-desc">
+                    점주 회원가입 신청이 완료되었습니다.<br>
+                    관리자가 사업자 정보를 확인한 뒤<br>
+                    이용 가능 상태로 변경합니다.
+                </p>
+            </section>
+
+            <a th:href="@{/api/view/login}" class="owner-pending-login-btn">
+                로그인으로 돌아가기
+            </a>
+
+        </main>
+
+    </div>
+</div>
+
+</body>
+</html>

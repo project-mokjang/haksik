@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>학식목장 - 시작하기</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/common-ui.css}">
+
+  <style>
+    .splash-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: var(--forest);
+    }
+
+    .splash-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('/bgimages/bgimg.png');
+      background-size: cover;
+      background-position: center bottom;
+      /* 밝기(brightness), 채도(saturate)로 사진을 포토샵처럼 화사하게 강제 부스팅 */
+      filter: brightness(1.05) saturate(1.2);
+      z-index: 1;
+    }
+
+
+    .splash-top {
+      position: relative;
+      z-index: 3;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 25%;
+    }
+
+    /* 8방향 텍스트 섀도우를 겹쳐서 깔끔한 아웃라인 생성 */
+    .splash-logo {
+      font-size: 46px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      /* 🎯 기존 text-stroke 삭제 */
+      /* -webkit-text-stroke: 1.5px var(--forest); */
+
+      /* 🎯 8방향 그림자 + 묵직한 하단 그림자로 로고 퀄리티 극대화 */
+      text-shadow:
+              -2px -2px 0 var(--forest),
+              2px -2px 0 var(--forest),
+              -2px  2px 0 var(--forest),
+              2px  2px 0 var(--forest),
+              0px -2px 0 var(--forest),
+              0px  2px 0 var(--forest),
+              -2px  0px 0 var(--forest),
+              2px  0px 0 var(--forest),
+              0px  6px 12px rgba(0,0,0,0.5); /* 기존 그림자 유지 */
+    }
+
+    .splash-desc {
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      /* 🎯 기존 text-stroke 삭제 */
+      /* -webkit-text-stroke: 0.8px var(--forest); */
+
+      /* 🎯 서브 텍스트는 로고보다 얇은 1px 두께의 8방향 그림자 적용 */
+      text-shadow:
+              -1px -1px 0 var(--forest),
+              1px -1px 0 var(--forest),
+              -1px  1px 0 var(--forest),
+              1px  1px 0 var(--forest),
+              0px -1px 0 var(--forest),
+              0px  1px 0 var(--forest),
+              -1px  0px 0 var(--forest),
+              1px  0px 0 var(--forest),
+              0px  2px 8px rgba(0,0,0,0.5); /* 기존 그림자 유지 */
+    }
+    .splash-bottom-wrap {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .wave-svg {
+      display: block;
+      width: 100%;
+      height: 40px;
+      transform: translateY(2px);
+    }
+
+    .splash-buttons {
+      background-color: var(--paper);
+      padding: 20px 24px 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-splash {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s ease;
+    }
+    .btn-splash:active { transform: scale(0.98); }
+    .btn-primary {
+      background-color: var(--green); color: white;
+      box-shadow: 0 8px 24px rgba(18, 107, 79, 0.3);
+    }
+    .btn-secondary {
+      background-color: var(--ivory); color: var(--forest);
+      border: 2px solid var(--line);
+    }
+  </style>
+</head>
+<body class="app-body">
+
+<div class="app-page">
+  <div class="app-shell">
+
+    <div class="splash-container">
+      <div class="splash-bg"></div>
+
+      <div class="splash-top">
+        <div class="splash-logo">학식목장</div>
+        <div class="splash-desc">캠퍼스 밥약 매칭의 모든 것</div>
+      </div>
+
+      <div class="splash-bottom-wrap">
+        <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path fill="#fffdf8" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+        </svg>
+        <div class="splash-buttons">
+          <button class="btn-splash btn-primary" onclick="location.href='/api/view/login'">로그인</button>
+          <button class="btn-splash btn-secondary" onclick="location.href='/api/view/signup-choice'">새로 오셨나요? 회원가입!</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

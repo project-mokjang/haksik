@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{members/admin/fragments/admin-layout :: layout(
+        '학식목장 관리자 - 점주 승인 관리',
+        'owners',
+        '점주 승인 관리',
+        ~{::content}
+      )}">
+
+<th:block th:fragment="content">
+
+  <div class="data-card">
+
+    <div class="filter-bar">
+        <select class="filter-input" id="statusFilter" onchange="fetchOwners(0)">
+        <option value="ALL">전체</option>
+        <option value="PENDING">승인 대기</option>
+        <option value="APPROVED">승인 완료</option>
+        <option value="REJECTED">반려</option>
+      </select>
+        <input
+                type="text"
+                class="filter-input"
+                id="ownerKeywordInput"
+                placeholder="아이디, 사업자명, 대표자 연락처 검색"
+                onkeydown="handleOwnerSearchEnter(event)"
+        >
+
+      <button class="filter-btn" onclick="fetchOwners(0)">조회</button>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>신청번호</th>
+          <th>회원 아이디</th>
+          <th>사업자명</th>
+          <th>대표자명</th>
+          <th>대표자 연락처</th>
+          <th>사업자번호</th>
+          <th>승인상태</th>
+          <th>처리일시</th>
+          <th>관리</th>
+        </tr>
+        </thead>
+        <tbody id="ownerTableBody"></tbody>
+      </table>
+    </div>
+      <div id="ownerPaginationArea" class="pagination-area"></div>
+
+  </div>
+
+    <script th:src="@{/js/admin/admin-owner.js}"></script>
+
+</th:block>
+</html>
