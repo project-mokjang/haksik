@@ -120,41 +120,39 @@ function completeDuplicateButton(type) {
 
 // 회원가입 입력값 제한 설정
 function setupSignupInputRules() {
+    // 아이디만 입력 중 영문/숫자 제한
     setInputRule('loginId', 20, function (value) {
         return value.replace(/[^a-zA-Z0-9]/g, '');
     });
 
-    setInputRule('name', 20, function (value) {
-        return value.replace(/[^가-힣a-zA-Z]/g, '');
-    });
+    // 한글 입력 필드는 입력 중에 value를 건드리지 않음
+    setInputRule('name', 30, null);
+    setInputRule('nickname', 30, null);
+    setInputRule('department', 40, null);
 
-    setInputRule('nickname', 10, function (value) {
-        return value.replace(/[^가-힣a-zA-Z0-9]/g, '');
-    });
-
-    setInputRule('department', 30, function (value) {
-        return value.replace(/[^가-힣a-zA-Z0-9\s]/g, '');
-    });
-
+    // 전화번호만 자동 하이픈 처리
     setInputRule('phone', 14, function (value) {
         return formatPhone(value);
     });
-    setInputRule('password', 20, function (value) {
-        return value;
-    });
 
-    setInputRule('passwordConfirm', 20, function (value) {
-        return value;
-    });
+    // 비밀번호는 maxlength만 적용
+    setInputRule('password', 20, null);
+    setInputRule('passwordConfirm', 20, null);
+
+    // 인증번호는 숫자만
     setInputRule('modalCode', 6, function (value) {
         return value.replace(/\D/g, '');
     });
+
+    // 이메일은 공백만 제거
     setInputRule('modalEmail', 100, function (value) {
         return value.replace(/\s/g, '');
     });
+
+    setupPasswordToggleButtons();
 }
 
-// 특정 input에 maxLength + 입력값 정리 적용
+// 특정 input에 maxLength + 필요한 경우에만 입력값 정리 적용
 function setInputRule(id, maxLength, formatter) {
     const input = document.getElementById(id);
 
@@ -165,13 +163,44 @@ function setInputRule(id, maxLength, formatter) {
     input.maxLength = maxLength;
 
     input.addEventListener('input', function () {
-        const before = input.value;
-
-        input.value = formatter(input.value).slice(0, maxLength);
-
-        if (before !== input.value) {
-            input.setSelectionRange(input.value.length, input.value.length);
+        // formatter 없는 필드는 maxlength만 적용하고 값은 건드리지 않음
+        if (!formatter) {
+            return;
         }
+
+        const before = input.value;
+        const nextValue = formatter(before).slice(0, maxLength);
+
+        if (before === nextValue) {
+            return;
+        }
+
+        input.value = nextValue;
+    });
+}
+
+// 비밀번호 보기 버튼 설정
+function setupPasswordToggleButtons() {
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        if (button.dataset.bound === 'true') {
+            return;
+        }
+
+        button.dataset.bound = 'true';
+
+        const targetId = button.dataset.target;
+        const input = document.getElementById(targetId);
+
+        if (!input) {
+            return;
+        }
+
+        button.addEventListener('click', function () {
+            const isPassword = input.type === 'password';
+
+            input.type = isPassword ? 'text' : 'password';
+            button.innerText = isPassword ? '숨김' : '보기';
+        });
     });
 }
 

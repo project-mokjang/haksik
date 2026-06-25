@@ -126,20 +126,44 @@
 
           <div class="auth-field">
             <label for="password">비밀번호</label>
-            <input type="password"
-                   id="password"
-                   placeholder="비밀번호 입력"
-                   required>
+
+            <div class="auth-input-row">
+              <input type="password"
+                     id="password"
+                     placeholder="비밀번호 입력"
+                     maxlength="20"
+                     autocomplete="new-password"
+                     required>
+
+              <button type="button"
+                      class="auth-action-btn password-toggle-btn"
+                      data-password-toggle
+                      data-target="password">
+                보기
+              </button>
+            </div>
 
             <p class="auth-help-text">※ 8자 이상으로 입력해주세요.</p>
           </div>
 
           <div class="auth-field">
             <label for="passwordConfirm">비밀번호 확인</label>
-            <input type="password"
-                   id="passwordConfirm"
-                   placeholder="비밀번호 다시 입력"
-                   required>
+
+            <div class="auth-input-row">
+              <input type="password"
+                     id="passwordConfirm"
+                     placeholder="비밀번호 다시 입력"
+                     maxlength="20"
+                     autocomplete="new-password"
+                     required>
+
+              <button type="button"
+                      class="auth-action-btn password-toggle-btn"
+                      data-password-toggle
+                      data-target="passwordConfirm">
+                보기
+              </button>
+            </div>
           </div>
         </section>
 
