@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const verifyBtn = document.getElementById('verifyBtn');
     const loginIdInput = document.getElementById('loginId');
     const emailInput = document.getElementById('email');
+    const emailCodeInput = document.getElementById('emailCode');
+
+    setupFindPwInputRules();
 
     if (sendCodeBtn) {
         sendCodeBtn.addEventListener('click', sendFindPwCode);
@@ -27,6 +30,42 @@ document.addEventListener('DOMContentLoaded', function () {
         emailInput.addEventListener('input', resetEmailVerified);
     }
 });
+
+function setupFindPwInputRules() {
+    setInputRule('loginId', 20, function (value) {
+        return value.replace(/[^a-zA-Z0-9]/g, '');
+    });
+
+    setInputRule('email', 100, function (value) {
+        return value.replace(/\s/g, '');
+    });
+
+    setInputRule('emailCode', 6, function (value) {
+        return value.replace(/\D/g, '');
+    });
+}
+
+function setInputRule(id, maxLength, formatter) {
+    const input = document.getElementById(id);
+
+    if (!input) {
+        return;
+    }
+
+    input.maxLength = maxLength;
+
+    input.addEventListener('input', function () {
+        input.value = formatter(input.value).slice(0, maxLength);
+    });
+}
+
+function isValidLoginId(loginId) {
+    return /^[a-zA-Z0-9]{4,20}$/.test(loginId);
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 // 이메일 인증 상태 초기화
 function resetEmailVerified() {
@@ -71,6 +110,15 @@ async function sendFindPwCode() {
         showToast('아이디와 이메일을 모두 입력해주세요.','error');
         return;
     }
+    if (!isValidLoginId(loginId)) {
+        showToast('아이디는 영문/숫자 4~20자로 입력해주세요.', 'warning');
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        showToast('이메일 형식이 올바르지 않습니다.', 'warning');
+        return;
+    }
 
     const response = await fetch('/api/members/find-pw/send-email', {
         method: 'POST',
@@ -100,6 +148,15 @@ async function verifyFindPwCode() {
 
     if (!email || !code) {
         showToast('이메일과 인증번호를 모두 입력해주세요.','error');
+        return;
+    }
+    if (!isValidEmail(email)) {
+        showToast('이메일 형식이 올바르지 않습니다.', 'warning');
+        return;
+    }
+
+    if (!/^\d{6}$/.test(code)) {
+        showToast('인증번호는 6자리 숫자로 입력해주세요.', 'warning');
         return;
     }
 
@@ -145,6 +202,15 @@ function goToResetPw(event) {
 
     if (emailVerified !== 'true') {
         showToast('이메일 인증을 먼저 완료해주세요.','error');
+        return;
+    }
+    if (!isValidLoginId(loginId)) {
+        showToast('아이디는 영문/숫자 4~20자로 입력해주세요.', 'warning');
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        showToast('이메일 형식이 올바르지 않습니다.', 'warning');
         return;
     }
 

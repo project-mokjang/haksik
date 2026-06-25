@@ -1,3 +1,59 @@
+// reset-pw.js
+
+document.addEventListener('DOMContentLoaded', function () {
+    setupResetPwInputRules();
+
+    const resetPwForm = document.getElementById('resetPwForm');
+
+    if (resetPwForm) {
+        resetPwForm.addEventListener('submit', submitResetPw);
+    }
+});
+
+function setupResetPwInputRules() {
+    setInputRule('newPassword', 20, function (value) {
+        return value;
+    });
+
+    setInputRule('confirmPassword', 20, function (value) {
+        return value;
+    });
+}
+
+function setInputRule(id, maxLength, formatter) {
+    const input = document.getElementById(id);
+
+    if (!input) {
+        return;
+    }
+
+    input.maxLength = maxLength;
+
+    input.addEventListener('input', function () {
+        input.value = formatter(input.value).slice(0, maxLength);
+    });
+}
+
+async function safeJson(response) {
+    try {
+        return await response.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+function getErrorMessage(result, fallback) {
+    if (result && result.message) {
+        return result.message;
+    }
+
+    if (result && result.data && result.data.message) {
+        return result.data.message;
+    }
+
+    return fallback;
+}
+
 // 비밀번호 재설정 요청
 async function submitResetPw(event) {
     event.preventDefault();
@@ -9,7 +65,9 @@ async function submitResetPw(event) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     const resetPwError = document.getElementById('resetPwError');
 
-    resetPwError.classList.remove('visible');
+    if (resetPwError) {
+        resetPwError.classList.remove('visible');
+    }
 
     if (!email) {
         showToast('비밀번호 재설정 이메일 정보가 없습니다. 다시 인증해주세요.', 'error');
@@ -26,13 +84,16 @@ async function submitResetPw(event) {
         return;
     }
 
-    if (newPassword.length < 8) {
-        showToast('비밀번호는 8자 이상으로 설정해주세요.', 'error');
+    if (newPassword.length < 8 || newPassword.length > 20) {
+        showToast('비밀번호는 8~20자로 설정해주세요.', 'warning');
         return;
     }
 
     if (newPassword !== confirmPassword) {
-        resetPwError.classList.add('visible');
+        if (resetPwError) {
+            resetPwError.classList.add('visible');
+        }
+
         showToast('비밀번호가 일치하지 않습니다.', 'error');
         return;
     }
@@ -50,8 +111,8 @@ async function submitResetPw(event) {
 
     const result = await safeJson(response);
 
-    if (!response.ok) {
-        showToast(result?.message || '비밀번호 변경에 실패했습니다. 다시 시도해주세요.', 'error');
+    if (!response.ok || !result || result.success === false) {
+        showToast(getErrorMessage(result, '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'), 'error');
         return;
     }
 
