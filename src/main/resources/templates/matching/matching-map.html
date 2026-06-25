@@ -88,7 +88,9 @@
                             id="groupMealMaxParticipants"
                             class="group-meal-input"
                             min="3"
-                            placeholder="예: 4, 10, 20">
+                            max="20"
+                            placeholder="예: 4, 10, 20"
+                            oninput="this.value = this.value.slice(0, 2)">
 
                     <label class="group-meal-label" for="groupMealMessage">
                         모집 메시지
@@ -96,7 +98,8 @@
                     <textarea
                             id="groupMealMessage"
                             class="group-meal-textarea"
-                            placeholder="같이 학식 먹을 사람 구해요"></textarea>
+                            maxlength="100"
+                            placeholder="같이 학식 먹을 사람 구해요 (100자 이내)"></textarea>
 
                     <div class="group-meal-actions">
                         <button type="button" class="match-btn sub" id="closeGroupMealModalBtn">
@@ -139,14 +142,18 @@
                         <input type="number"
                                id="filterAgeMin"
                                class="group-meal-input"
-                               min="18"
-                               placeholder="최소 나이">
+                               min="20"
+                               max="99"
+                               placeholder="최소 나이"
+                               oninput="this.value = this.value.slice(0, 2)">
 
                         <input type="number"
                                id="filterAgeMax"
                                class="group-meal-input"
-                               min="18"
-                               placeholder="최대 나이">
+                               min="20"
+                               max="99"
+                               placeholder="최대 나이"
+                               oninput="this.value = this.value.slice(0, 2)">
                     </div>
 
                     <label class="group-meal-label" for="filterFoodCategory">
