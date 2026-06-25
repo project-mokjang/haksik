@@ -3,6 +3,7 @@ package com.example.haksikmokjang.ownerpage;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.member.core.domain.MemberRole;
 import com.example.haksikmokjang.member.core.repository.MemberRepository;
+import com.example.haksikmokjang.notification.service.NotificationService;
 import com.example.haksikmokjang.ownerpage.store.domain.Reservation;
 import com.example.haksikmokjang.ownerpage.store.domain.ReservationStatus;
 import com.example.haksikmokjang.ownerpage.store.domain.Store;
@@ -23,36 +24,44 @@ class ReservationDummyTest {
     @Autowired StoreRepository storeRepository;
     @Autowired MemberRepository memberRepository;
     @Autowired ReservationRepository reservationRepository;
-
+    @Autowired NotificationService notificationService;
     @Test
     @Transactional
     @Rollback(false) // 🚨 팩트: 롤백을 끄고 DB에 영구적으로 때려 박습니다.
-    @DisplayName("화면 테스트용 신규 예약(승인 대기) 3건 강제 주입")
+    @DisplayName("pageuser01이 ownerpage01의 가게에 신규 예약 3건 강제 주입")
     void insertRequestedReservations() {
-        // 1. 타겟팅: 등록된 내 가게를 긁어옵니다.
-        Store store = storeRepository.findAll().stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("등록된 가게가 없습니다."));
 
-        // 2. 타겟팅: 예약을 신청한 일반 유저를 긁어옵니다.
-        Member user = memberRepository.findAll().stream()
-                .filter(m -> m.getRole() == MemberRole.USER)
+        // 1. 타겟팅 1: 예약을 신청할 특정 유저(pageuser01)를 정확히 긁어옵니다.
+        Member user = memberRepository.findByLoginId("pageuser01")
+                .orElseThrow(() -> new RuntimeException("pageuser01 계정이 없습니다. DB를 확인하십시오."));
+
+        // 2. 타겟팅 2: 타겟 점주(ownerpage01)를 찾습니다.
+        Member owner = memberRepository.findByLoginId("ownerpage01")
+                .orElseThrow(() -> new RuntimeException("ownerpage01 계정이 없습니다. DB를 확인하십시오."));
+
+        // 3. 타겟팅 3: ownerpage01이 소유한 가게를 정확히 긁어옵니다.
+        Store store = storeRepository.findAll().stream()
+                .filter(s -> s.getMember().getMemberId().equals(owner.getMemberId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("일반 유저 계정이 없습니다."));
+                .orElseThrow(() -> new RuntimeException("ownerpage01이 소유한 가게가 없습니다. 가게 더미 데이터를 먼저 주입하십시오."));
 
-        // 3. 상태가 'REQUESTED(승인 대기)'인 예약 3건을 미래 시간으로 세팅하여 주입
+        // 4. 상태가 'REQUESTED(승인 대기)'인 예약 3건을 미래 시간으로 세팅하여 주입
         for (int i = 1; i <= 3; i++) {
             Reservation res = Reservation.builder()
-                    .store(store)
-                    .member(user)
-                    // 지금으로부터 2시간, 4시간, 6시간 뒤 방문하겠다는 예약
-                    .reservationAt(LocalDateTime.now().plusHours(i * 2))
-                    .peopleCount(i + 1)
-                    .requestMemo(i + "번째 예약 테스트입니다. 수락/거절 버튼을 팩트 체크하십시오.")
-                    .status(ReservationStatus.REQUESTED) // 🚨 핵심 타점: 수락/거절을 띄우는 상태
+                    // ... (기존 코드) ...
+                    .status(ReservationStatus.REQUESTED)
                     .build();
             reservationRepository.save(res);
-        }
 
-        System.out.println("🚨 승인 대기(REQUESTED) 예약 3건 강제 주입 성공! 점주 메인 화면을 새로고침 하십시오.");
+            // 🚨 팩트: 더미 예약이 꽂힐 때 점주에게 강제로 알림도 같이 꽂아버립니다.
+            notificationService.sendNotification(
+                    store.getMember(), // 수신자: 점주
+                    "RESERVATION",     // 타입
+                    "새 예약 접수",      // 알림 제목
+                    "새로운 예약 요청이 들어왔습니다.", // 알림 내용
+                    "RESERVATION",     // 타겟 타입
+                    res.getReservationId() // 타겟 ID
+            );
+        }
     }
 }

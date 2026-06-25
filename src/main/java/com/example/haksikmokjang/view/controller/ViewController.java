@@ -216,6 +216,16 @@ public class ViewController {
     public String ownerMenuPage() {
         return "members/owner/owner-menu";
     }
+
+    @GetMapping("/reservations/{reservationId}")
+    public String routeReservationClick(@org.springframework.security.core.annotation.AuthenticationPrincipal com.example.haksikmokjang.global.security.CustomUserDetails userDetails) {
+        // 점주라면 예약 관리 페이지로
+        if (userDetails.getMember().getRole() == com.example.haksikmokjang.member.core.domain.MemberRole.OWNER) {
+            return "redirect:/api/view/owner/main";
+        }
+        // 일반 유저라면 마이페이지(또는 내 예약 확인 페이지)로
+        return "redirect:/api/view/user/my-page";
+    }
     // owner ------------------------------------
 
 }
