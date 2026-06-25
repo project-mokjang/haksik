@@ -4,6 +4,8 @@ let chatStompClient = null;
 let chatSocketConnected = false;
 let lastSentReadMessageId = null;
 
+const MAX_CHAT_MESSAGE_LENGTH = 500;
+const CHAT_MESSAGE_LENGTH_ERROR = "채팅 메시지는 최대 500자까지 입력할 수 있습니다.";
 
 document.addEventListener("DOMContentLoaded", function () {
     loadChatRoomDetail()
@@ -26,6 +28,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
+
+// 채팅 메시지 길이 검사
+function validateChatMessageLength(message) {
+    if (message && message.length > MAX_CHAT_MESSAGE_LENGTH) {
+        showToast(CHAT_MESSAGE_LENGTH_ERROR, "error");
+        return false;
+    }
+
+    return true;
+}
 
 // 현재 채팅방 ID
 function getChatRoomId() {
@@ -257,6 +269,11 @@ function sendMessage() {
         return;
     }
 
+    if (!validateChatMessageLength(message)) {
+        messageInput.focus();
+        return;
+    }
+
     if (sendSocketTextMessage(chatRoomId, message)) {
         messageInput.value = "";
         return;
@@ -364,8 +381,6 @@ function closeChatPlusMenu() {
 
     chatPlusMenu.classList.add("hidden");
 }
-
-
 
 // 채팅 이미지 전송
 function sendChatImage() {
@@ -652,7 +667,6 @@ function getMemberProfileHtml(member) {
     return `<div class="member-profile-default">${escapeHtml(firstLetter)}</div>`;
 }
 
-
 // 메시지 입력창 비활성화
 function closeMessageForm() {
     const messageForm = document.getElementById("messageForm");
@@ -682,7 +696,6 @@ function closeMessageForm() {
         chatPlusMenu.classList.add("hidden");
     }
 }
-
 
 // WebSocket 연결
 function connectChatSocket() {

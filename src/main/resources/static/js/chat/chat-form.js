@@ -9,6 +9,14 @@ let placeStoreCache = {};
 let placeAddMode = false;
 let pendingCustomPlace = null;
 
+const MAX_VOTE_FORM_TITLE_LENGTH = 50;
+const MAX_VOTE_OPTION_LENGTH = 50;
+const MAX_PLACE_FORM_TITLE_LENGTH = 50;
+const MAX_CUSTOM_PLACE_NAME_LENGTH = 50;
+const MAX_CUSTOM_PLACE_ADDRESS_LENGTH = 150;
+const MAX_TIME_OPTION_MEMO_LENGTH = 100;
+
+
 // 채팅 폼 UI 초기화
 function initChatFormUi() {
     const voteOptionList = document.getElementById("voteOptionList");
@@ -17,6 +25,44 @@ function initChatFormUi() {
         addVoteOptionInput();
         addVoteOptionInput();
     }
+}
+
+// 폼 입력 글자 수 검사
+function validateChatFormTextLength(value, maxLength, errorMessage, inputElement) {
+    if (value && value.length > maxLength) {
+        showToast(errorMessage, "error");
+
+        if (inputElement) {
+            inputElement.focus();
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+// 일반 투표 선택지 글자 수 검사
+function validateVoteOptionInputLengths(optionInputs) {
+    for (let i = 0; i < optionInputs.length; i++) {
+        const optionInput = optionInputs[i];
+        const optionValue = optionInput.value.trim();
+
+        if (optionValue === "") {
+            continue;
+        }
+
+        if (!validateChatFormTextLength(
+            optionValue,
+            MAX_VOTE_OPTION_LENGTH,
+            "투표 선택지는 최대 50자까지 입력할 수 있습니다.",
+            optionInput
+        )) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // 폼 종류 선택 모달 열기
@@ -97,7 +143,7 @@ function addVoteOptionInput(value) {
             type="text"
             class="vote-option-input"
             placeholder="선택지 입력"
-            maxlength="100"
+            maxlength="101"
             value="${escapeAttribute(value || "")}">
         <button type="button" class="vote-option-remove-button" onclick="removeVoteOptionInput(this)">×</button>
     `;
@@ -136,6 +182,19 @@ function submitVoteForm() {
     if (title === "") {
         showToast("투표 제목을 입력해 주세요.", "error");
         titleInput.focus();
+        return;
+    }
+
+    if (!validateChatFormTextLength(
+        title,
+        MAX_VOTE_FORM_TITLE_LENGTH,
+        "투표 제목은 최대 50자까지 입력할 수 있습니다.",
+        titleInput
+    )) {
+        return;
+    }
+
+    if (!validateVoteOptionInputLengths(optionInputs)) {
         return;
     }
 
@@ -233,6 +292,15 @@ function submitPlaceForm() {
     if (title === "") {
         showToast("약속 투표 제목을 입력해 주세요.", "error");
         titleInput.focus();
+        return;
+    }
+
+    if (!validateChatFormTextLength(
+        title,
+        MAX_PLACE_FORM_TITLE_LENGTH,
+        "약속 투표 제목은 최대 50자까지 입력할 수 있습니다.",
+        titleInput
+    )) {
         return;
     }
 
@@ -1391,6 +1459,24 @@ function submitCustomPlaceOption() {
         return;
     }
 
+    if (!validateChatFormTextLength(
+        placeName,
+        MAX_CUSTOM_PLACE_NAME_LENGTH,
+        "장소명은 최대 50자까지 입력할 수 있습니다.",
+        nameInput
+    )) {
+        return;
+    }
+
+    if (!validateChatFormTextLength(
+        address,
+        MAX_CUSTOM_PLACE_ADDRESS_LENGTH,
+        "장소 주소 또는 설명은 최대 150자까지 입력할 수 있습니다.",
+        addressInput
+    )) {
+        return;
+    }
+
     fetch("/api/chat/forms/" + currentPlaceFormId + "/options", {
         method: "POST",
         headers: {
@@ -1509,6 +1595,15 @@ function submitTimeOption() {
     if (!timeValue) {
         showToast("시간을 입력해 주세요.", "error");
         timeInput.focus();
+        return;
+    }
+
+    if (!validateChatFormTextLength(
+        memo,
+        MAX_TIME_OPTION_MEMO_LENGTH,
+        "시간 후보 메모는 최대 100자까지 입력할 수 있습니다.",
+        memoInput
+    )) {
         return;
     }
 

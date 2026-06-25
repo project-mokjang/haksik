@@ -25,11 +25,11 @@ public class ChatMessageEditHistory extends BaseEntity {
     private ChatMessage chatMessage;
 
     // 수정 전 메시지
-    @Column(name = "before_message", nullable = false, length = 1000)
+    @Column(name = "before_message", nullable = false, length = 500)
     private String beforeMessage;
 
     // 수정 후 메시지
-    @Column(name = "after_message", nullable = false, length = 1000)
+    @Column(name = "after_message", nullable = false, length = 500)
     private String afterMessage;
 
     // 수정한 회원

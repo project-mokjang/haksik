@@ -39,7 +39,7 @@ public class ChatMessage extends BaseEntity {
     // 메시지 내용
     // TEXT면 실제 메시지 내용
     // IMAGE면 "이미지" 같은 표시용 문구
-    @Column(name = "message", nullable = false, length = 1000)
+    @Column(name = "message", nullable = false, length = 500)
     private String message;
 
     // 이미지 메시지일 때만 값이 들어간다.
