@@ -74,6 +74,8 @@ public class ChatMessageService {
             throw new CustomException(ErrorCode.CHAT_ROOM_CLOSED);
         }
 
+        validateMessageLength(request.getMessage());
+
         ChatMessage chatMessage = new ChatMessage(
                 chatRoom,
                 loginMember,
@@ -111,6 +113,8 @@ public class ChatMessageService {
         if (!chatRoom.isActive()) {
             throw new CustomException(ErrorCode.CHAT_ROOM_CLOSED);
         }
+
+        validateMessageLength(formMessage);
 
         ChatMessage chatMessage = new ChatMessage(
                 chatRoom,
@@ -165,6 +169,8 @@ public class ChatMessageService {
 
         String beforeMessage = chatMessage.getMessage();
         String afterMessage = request.getMessage();
+
+        validateMessageLength(afterMessage);
 
         ChatMessageEditHistory editHistory = new ChatMessageEditHistory(
                 chatMessage,
@@ -330,5 +336,12 @@ public class ChatMessageService {
                 .map(UserProfile::getProfileImage)
                 .map(FileAttachment::getStoredPath)
                 .orElse(null);
+    }
+
+    // 메세지 최대 길이
+    private void validateMessageLength(String message) {
+        if (message != null && message.length() > 500) {
+            throw new IllegalArgumentException("채팅 메시지는 최대 500자까지 입력할 수 있습니다.");
+        }
     }
 }

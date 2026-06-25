@@ -27,8 +27,8 @@ class ChatRoomDummyTest {
     @Rollback(false)
     @DisplayName("pageuser01/pageuser02 채팅방 3종 생성")
     void createThreeTypeChatRooms() {
-        Member user01 = getMemberByLoginId("pageuser01");
-        Member user02 = getMemberByLoginId("pageuser02");
+        Member user01 = getMemberByLoginId("user1");
+        Member user02 = getMemberByLoginId("user2");
 
         ChatRoomResponse mealRoom = chatRoomCreateService.createMealChatRoom(
                 user01.getMemberId(),

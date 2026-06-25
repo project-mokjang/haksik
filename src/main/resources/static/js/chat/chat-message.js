@@ -299,7 +299,6 @@ function isPlaceFormCard(message) {
     return (message.message || "").startsWith("[장소 투표]");
 }
 
-
 // 폼 카드 종료 여부
 function isFormClosedCard(message) {
     if (!message || !message.formId) {
@@ -631,6 +630,11 @@ function updateSelectedMessage() {
 
     if (message === "") {
         showToast("메시지를 입력해 주세요.", "error");
+        return;
+    }
+
+    if (!validateChatMessageLength(message)) {
+        messageInput.focus();
         return;
     }
 

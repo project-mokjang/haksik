@@ -2,6 +2,7 @@ package com.example.haksikmokjang.chat.chatroom.service;
 
 import com.example.haksikmokjang.chat.chatmessage.domain.ChatMessage;
 import com.example.haksikmokjang.chat.chatmessage.repository.ChatMessageRepository;
+import com.example.haksikmokjang.chat.chatroom.domain.ChatMatchingMode;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoom;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomMember;
 import com.example.haksikmokjang.chat.chatroom.domain.ChatRoomType;
@@ -242,11 +243,10 @@ public class ChatRoomService {
 
     // 채팅방 종료 권한 확인
     private boolean canEndChatRoom(ChatRoom chatRoom, ChatRoomMember chatRoomMember) {
-        if (chatRoom.getRoomType() == ChatRoomType.DIRECT) {
-            return true;
+        if (chatRoom.getMatchingMode() == ChatMatchingMode.GROUP_DATE) {
+            return chatRoomMember.isLeader();
         }
-
-        return chatRoomMember.isLeader();
+        return true;
     }
 
     // 채팅방 조회
