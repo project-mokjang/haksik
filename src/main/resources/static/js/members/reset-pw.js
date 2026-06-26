@@ -1,5 +1,7 @@
 // reset-pw.js
 
+const resetPwInputWarningState = {};
+
 document.addEventListener('DOMContentLoaded', function () {
     setupResetPwInputRules();
 
@@ -10,27 +12,71 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// 비밀번호 재설정 입력값 안내 설정
 function setupResetPwInputRules() {
-    setInputRule('newPassword', 20, function (value) {
-        return value;
+    // 입력값을 막거나 자르지 않고, 조건을 벗어나면 toast만 띄움
+
+    addResetPwInputWarning('newPassword', {
+        maxLength: 20,
+        message: '비밀번호는 8자 이상, 20자 이내로 입력해주세요.'
     });
 
-    setInputRule('confirmPassword', 20, function (value) {
-        return value;
+    addResetPwInputWarning('confirmPassword', {
+        maxLength: 20,
+        message: '비밀번호 확인은 20자 이내로 입력해주세요.'
     });
 }
 
-function setInputRule(id, maxLength, formatter) {
+// 입력값은 건드리지 않고 조건 위반 시 안내만 띄움
+function addResetPwInputWarning(id, options) {
     const input = document.getElementById(id);
 
     if (!input) {
         return;
     }
 
-    input.maxLength = maxLength;
-
     input.addEventListener('input', function () {
-        input.value = formatter(input.value).slice(0, maxLength);
+        checkResetPwInputWarning(input, id, options);
+    });
+
+    input.addEventListener('blur', function () {
+        checkResetPwInputWarning(input, id, options, true);
+    });
+}
+
+function checkResetPwInputWarning(input, id, options, forceShow = false) {
+    const value = input.value;
+
+    if (!value) {
+        clearResetPwInputWarning(id);
+        return;
+    }
+
+    if (options.maxLength && value.length > options.maxLength) {
+        showResetPwInputWarningOnce(id, 'length', options.message, forceShow);
+        return;
+    }
+
+    clearResetPwInputWarning(id);
+}
+
+// 같은 입력창에서 toast가 계속 뜨는 것 방지
+function showResetPwInputWarningOnce(id, type, message, forceShow = false) {
+    const key = id + ':' + type;
+
+    if (!forceShow && resetPwInputWarningState[key]) {
+        return;
+    }
+
+    resetPwInputWarningState[key] = true;
+    showToast(message, 'warning');
+}
+
+function clearResetPwInputWarning(id) {
+    Object.keys(resetPwInputWarningState).forEach(function (key) {
+        if (key.startsWith(id + ':')) {
+            delete resetPwInputWarningState[key];
+        }
     });
 }
 
@@ -85,7 +131,12 @@ async function submitResetPw(event) {
     }
 
     if (newPassword.length < 8 || newPassword.length > 20) {
-        showToast('비밀번호는 8~20자로 설정해주세요.', 'warning');
+        showToast('비밀번호는 8자 이상, 20자 이내로 입력해주세요.', 'warning');
+        return;
+    }
+
+    if (confirmPassword.length > 20) {
+        showToast('비밀번호 확인은 20자 이내로 입력해주세요.', 'warning');
         return;
     }
 

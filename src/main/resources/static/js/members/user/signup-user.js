@@ -6,6 +6,8 @@ let nicknameChecked = false;
 let sentEmail = '';
 let verifiedSchoolName = '';
 
+const inputWarningState = {};
+
 document.addEventListener('DOMContentLoaded', function () {
     const signupForm = document.getElementById('signupForm');
     const loginIdInput = document.getElementById('loginId');
@@ -118,58 +120,145 @@ function completeDuplicateButton(type) {
     button.classList.add('success');
 }
 
-// 회원가입 입력값 제한 설정
+// 회원가입 입력값 안내 설정
 function setupSignupInputRules() {
-    // 아이디만 입력 중 영문/숫자 제한
-    setInputRule('loginId', 20, function (value) {
-        return value.replace(/[^a-zA-Z0-9]/g, '');
+    // 전화번호만 입력 중 자동 포맷을 적용하고, 나머지는 입력값을 지우지 않음
+
+    addInputWarning('loginId', {
+        maxLength: 20,
+        pattern: /^[a-zA-Z0-9]*$/,
+        message: '아이디는 영문/숫자로 4자 이상, 20자 이내로 입력해주세요.'
     });
 
-    // 한글 입력 필드는 입력 중에 value를 건드리지 않음
-    setInputRule('name', 30, null);
-    setInputRule('nickname', 30, null);
-    setInputRule('department', 40, null);
-
-    // 전화번호만 자동 하이픈 처리
-    setInputRule('phone', 14, function (value) {
-        return formatPhone(value);
+    addInputWarning('name', {
+        maxLength: 30,
+        pattern: /^[가-힣a-zA-Z]*$/,
+        message: '이름은 한글/영문 30자 이내로 입력해주세요.'
     });
 
-    // 비밀번호는 maxlength만 적용
-    setInputRule('password', 20, null);
-    setInputRule('passwordConfirm', 20, null);
-
-    // 인증번호는 숫자만
-    setInputRule('modalCode', 6, function (value) {
-        return value.replace(/\D/g, '');
+    addInputWarning('nickname', {
+        maxLength: 30,
+        pattern: /^[가-힣a-zA-Z0-9]*$/,
+        message: '닉네임은 한글/영문/숫자 30자 이내로 입력해주세요.'
     });
 
-    // 이메일은 공백만 제거
-    setInputRule('modalEmail', 100, function (value) {
-        return value.replace(/\s/g, '');
+    addInputWarning('department', {
+        maxLength: 40,
+        pattern: /^[가-힣a-zA-Z0-9\s]*$/,
+        message: '학과는 한글/영문/숫자 40자 이내로 입력해주세요.'
+    });
+
+    setPhoneFormatRule('phone');
+
+    addInputWarning('password', {
+        maxLength: 20,
+        message: '비밀번호는 8자 이상, 20자 이내로 입력해주세요.'
+    });
+
+    addInputWarning('passwordConfirm', {
+        maxLength: 20,
+        message: '비밀번호 확인은 20자 이내로 입력해주세요.'
+    });
+
+    addInputWarning('modalCode', {
+        maxLength: 6,
+        pattern: /^[0-9]*$/,
+        message: '인증번호는 6자리 숫자로 입력해주세요.'
+    });
+
+    addInputWarning('modalEmail', {
+        maxLength: 100,
+        pattern: /^\S*$/,
+        message: '이메일은 공백 없이 100자 이내로 입력해주세요.'
     });
 
     setupPasswordToggleButtons();
 }
 
-// 특정 input에 maxLength + 필요한 경우에만 입력값 정리 적용
-function setInputRule(id, maxLength, formatter) {
+// 입력값은 건드리지 않고 조건 위반 시 toast만 띄움
+function addInputWarning(id, options) {
     const input = document.getElementById(id);
 
     if (!input) {
         return;
     }
 
-    input.maxLength = maxLength;
+    let isComposing = false;
+
+    input.addEventListener('compositionstart', function () {
+        isComposing = true;
+    });
+
+    input.addEventListener('compositionend', function () {
+        isComposing = false;
+        checkInputWarning(input, id, options);
+    });
 
     input.addEventListener('input', function () {
-        // formatter 없는 필드는 maxlength만 적용하고 값은 건드리지 않음
-        if (!formatter) {
+        if (isComposing) {
             return;
         }
 
+        checkInputWarning(input, id, options);
+    });
+
+    input.addEventListener('blur', function () {
+        checkInputWarning(input, id, options, true);
+    });
+}
+
+function checkInputWarning(input, id, options, forceShow = false) {
+    const value = input.value;
+
+    if (!value) {
+        clearInputWarning(id);
+        return;
+    }
+
+    if (options.maxLength && value.length > options.maxLength) {
+        showInputWarningOnce(id, 'length', options.message, forceShow);
+        return;
+    }
+
+    if (options.pattern && !options.pattern.test(value)) {
+        showInputWarningOnce(id, 'pattern', options.message, forceShow);
+        return;
+    }
+
+    clearInputWarning(id);
+}
+
+// 같은 입력창에서 toast가 계속 뜨는 것 방지
+function showInputWarningOnce(id, type, message, forceShow = false) {
+    const key = id + ':' + type;
+
+    if (!forceShow && inputWarningState[key]) {
+        return;
+    }
+
+    inputWarningState[key] = true;
+    showToast(message, 'warning');
+}
+
+function clearInputWarning(id) {
+    Object.keys(inputWarningState).forEach(function (key) {
+        if (key.startsWith(id + ':')) {
+            delete inputWarningState[key];
+        }
+    });
+}
+
+// 전화번호만 입력 중 자동 포맷 유지
+function setPhoneFormatRule(id) {
+    const input = document.getElementById(id);
+
+    if (!input) {
+        return;
+    }
+
+    input.addEventListener('input', function () {
         const before = input.value;
-        const nextValue = formatter(before).slice(0, maxLength);
+        const nextValue = formatPhone(before);
 
         if (before === nextValue) {
             return;
@@ -252,23 +341,23 @@ function isPastDate(value) {
 // 회원가입 입력값 최종 검증
 function validateSignupInput(data) {
     if (!/^[a-zA-Z0-9]{4,20}$/.test(data.loginId)) {
-        return '아이디는 영문/숫자 4~20자로 입력해주세요.';
+        return '아이디는 영문/숫자로 4자 이상, 20자 이내로 입력해주세요.';
     }
 
     if (data.password.length < 8 || data.password.length > 20) {
-        return '비밀번호는 8~20자로 입력해주세요.';
+        return '비밀번호는 8자 이상, 20자 이내로 입력해주세요.';
     }
 
-    if (!/^[가-힣a-zA-Z]{2,20}$/.test(data.name)) {
-        return '이름은 한글/영문 2~20자로 입력해주세요.';
+    if (!/^[가-힣a-zA-Z]{1,30}$/.test(data.name)) {
+        return '이름은 한글/영문 30자 이내로 입력해주세요.';
     }
 
-    if (!/^[가-힣a-zA-Z0-9]{2,10}$/.test(data.nickname)) {
-        return '닉네임은 한글/영문/숫자 2~10자로 입력해주세요.';
+    if (!/^[가-힣a-zA-Z0-9]{1,30}$/.test(data.nickname)) {
+        return '닉네임은 한글/영문/숫자 30자 이내로 입력해주세요.';
     }
 
-    if (!/^[가-힣a-zA-Z0-9\s]{2,30}$/.test(data.department)) {
-        return '학과는 2~30자로 입력해주세요.';
+    if (!/^[가-힣a-zA-Z0-9\s]{1,40}$/.test(data.department)) {
+        return '학과는 한글/영문/숫자 40자 이내로 입력해주세요.';
     }
 
     if (!data.birthDate || !isPastDate(data.birthDate)) {
@@ -287,11 +376,11 @@ function validateSignupInput(data) {
 // 중복확인 전 아이디/닉네임 형식 검증
 function validateDuplicateValue(type, value) {
     if (type === 'loginId' && !/^[a-zA-Z0-9]{4,20}$/.test(value)) {
-        return '아이디는 영문/숫자 4~20자로 입력해주세요.';
+        return '아이디는 영문/숫자로 4자 이상, 20자 이내로 입력해주세요.';
     }
 
-    if (type === 'nickname' && !/^[가-힣a-zA-Z0-9]{2,10}$/.test(value)) {
-        return '닉네임은 한글/영문/숫자 2~10자로 입력해주세요.';
+    if (type === 'nickname' && !/^[가-힣a-zA-Z0-9]{1,30}$/.test(value)) {
+        return '닉네임은 한글/영문/숫자 30자 이내로 입력해주세요.';
     }
 
     return null;
@@ -500,7 +589,7 @@ async function signupUser(event) {
     const gender = document.getElementById('gender').value;
     const phone = document.getElementById('phone').value.trim();
 
-    if (!loginId || !password || !name || !nickname || !department || !birthDate || !gender || !phone) {
+    if (!loginId || !password || !passwordConfirm || !name || !nickname || !department || !birthDate || !gender || !phone) {
         showToast('필수 입력값을 모두 입력해주세요.', 'error');
         return;
     }
@@ -537,11 +626,6 @@ async function signupUser(event) {
 
     if (!schoolId || !schoolEmail) {
         showToast('학교 이메일 인증 정보가 없습니다. 다시 인증해주세요.', 'error');
-        return;
-    }
-
-    if (password.length < 8) {
-        showToast('비밀번호는 8자 이상이어야 합니다.', 'error');
         return;
     }
 
@@ -596,45 +680,40 @@ async function signupUser(event) {
     }, 900);
 }
 
-let currentTermCheckbox = null; // 현재 클릭한 체크박스를 기억할 변수
+let currentTermCheckbox = null;
 
-// 약관 모달 열기 (체크박스 클릭 시)
+// 약관 모달 열기
 function openTermsModal(event, checkbox) {
-    // 1. 이미 체크된 상태에서 또 누르면 그냥 체크 해제되도록 놔둠
     if (!checkbox.checked) {
         return;
     }
 
-    // 2. 체크를 시도하는 거라면, 일단 체크를 막고(모달에서 동의해야 체크됨) 모달을 띄움
     event.preventDefault();
     checkbox.checked = false;
-    currentTermCheckbox = checkbox; // 어떤 체크박스를 눌렀는지 기억
+    currentTermCheckbox = checkbox;
 
-    // 3. 모달에 제목과 내용 세팅
     document.getElementById('termsModalTitle').innerText = checkbox.getAttribute('data-title');
     document.getElementById('termsModalContent').innerText = checkbox.getAttribute('data-content');
 
-    // 4. 모달 열기
     document.getElementById('termsModal').classList.add('active');
 }
 
-// 약관 모달 닫기 (그냥 닫기 버튼)
+// 약관 모달 닫기
 function closeTermsModal() {
     document.getElementById('termsModal').classList.remove('active');
-    currentTermCheckbox = null; // 초기화
+    currentTermCheckbox = null;
 }
 
-// 약관 동의하고 닫기 버튼 클릭 이벤트 연결
 document.addEventListener('DOMContentLoaded', function () {
-    // ... 기존 DOMContentLoaded 로직 ...
-
     const termsAgreeBtn = document.getElementById('termsAgreeBtn');
+
     if (termsAgreeBtn) {
-        termsAgreeBtn.addEventListener('click', function() {
+        termsAgreeBtn.addEventListener('click', function () {
             if (currentTermCheckbox) {
-                currentTermCheckbox.checked = true; // 체크박스 체크 처리
+                currentTermCheckbox.checked = true;
             }
-            closeTermsModal(); // 모달 닫기
+
+            closeTermsModal();
         });
     }
 });

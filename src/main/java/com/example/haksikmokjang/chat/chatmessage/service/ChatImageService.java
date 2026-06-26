@@ -58,8 +58,7 @@ public class ChatImageService {
         ChatMessage chatMessage = new ChatMessage(
                 chatRoom,
                 loginMember,
-                "이미지",
-                null
+                "이미지"
         );
 
         ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
