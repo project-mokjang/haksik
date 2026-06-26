@@ -27,6 +27,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ChatMessageService {
 
+    private static final String COMMON_IMAGE_URL_PREFIX = "/api/images/";
+
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
@@ -334,8 +336,14 @@ public class ChatMessageService {
     private String getProfileImageUrl(Member member) {
         return userProfileRepository.findByMember(member)
                 .map(UserProfile::getProfileImage)
-                .map(FileAttachment::getStoredPath)
+                .map(FileAttachment::getFileId)
+                .map(this::createCommonImageUrl)
                 .orElse(null);
+    }
+
+    // 공통 이미지 조회 URL 생성
+    private String createCommonImageUrl(Long fileId) {
+        return COMMON_IMAGE_URL_PREFIX + fileId;
     }
 
     // 메세지 최대 길이

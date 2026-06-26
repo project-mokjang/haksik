@@ -32,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ChatRoomService {
-
+    private static final String COMMON_IMAGE_URL_PREFIX = "/api/images/";
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
@@ -272,7 +272,13 @@ public class ChatRoomService {
     private String getProfileImageUrl(Member member) {
         return userProfileRepository.findByMember(member)
                 .map(UserProfile::getProfileImage)
-                .map(FileAttachment::getStoredPath)
+                .map(FileAttachment::getFileId)
+                .map(this::createCommonImageUrl)
                 .orElse(null);
+    }
+
+    // 공통 이미지 조회 URL 생성
+    private String createCommonImageUrl(Long fileId) {
+        return COMMON_IMAGE_URL_PREFIX + fileId;
     }
 }
