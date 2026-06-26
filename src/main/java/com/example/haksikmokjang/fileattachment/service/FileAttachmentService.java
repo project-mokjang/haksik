@@ -122,4 +122,23 @@ public class FileAttachmentService {
 
         return originalName.substring(originalName.lastIndexOf("."));
     }
+
+    @Transactional
+    public void deleteFile(Long fileId) {
+        FileAttachment attachment = fileAttachmentRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다. ID: " + fileId));
+
+        // 1. 서버 하드디스크 물리 경로 추적 및 파일 사살
+        try {
+            // 🚨 팩트: 회원님의 엔티티 규격에 맞춰 getStoredPath()로 정확히 타겟팅합니다.
+            Path filePath = Paths.get(attachment.getStoredPath());
+            Files.deleteIfExists(filePath); // 파일이 존재하면 즉각 삭제
+        } catch (IOException e) {
+            // 팩트: 하드디스크 찌꺼기 누수를 막기 위해 예외를 던져 트랜잭션을 강제 롤백시킵니다.
+            throw new RuntimeException("물리 파일 삭제 중 치명적 오류가 발생했습니다.", e);
+        }
+
+        // 2. 물리 파일 삭제 성공 시, DB에서 레코드 삭제
+        fileAttachmentRepository.delete(attachment);
+    }
 }
