@@ -149,7 +149,7 @@ public class StoreService {
         store.changeBusinessStatus(status);
     }
 
-    // 개별 메뉴 정보 수정 및 품절 처리
+    // 🚨 팩트: 메뉴 정보 수정 및 사진 100% 물리적 덮어쓰기 로직
     @Transactional
     public void updateMenu(String loginId, Long storeId, Long menuId, MenuUpdateRequest request) {
         Store store = storeRepository.findById(storeId)
@@ -160,14 +160,57 @@ public class StoreService {
         }
 
         Menu menu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 메뉴 Not Found로 분리해도 됨
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
-        // 🚨 방어벽: 남의 가게 메뉴를 수정하려는 악의적 요청 차단
         if (!menu.getStore().getStoreId().equals(storeId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        //menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
+        // 1. 기본 텍스트 정보 업데이트
+        menu.updateMenuInfo(request.getName(), request.getPrice(), request.getSalesStatus());
+
+        // 2. 새로운 사진이 넘어왔다면, 기존 하드디스크 물리 파일 폭파 및 교체
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            List<FileAttachment> existingAttachments =
+                    fileAttachmentRepository.findByTargetTypeAndTargetId("MENU", menuId);
+
+            if (!existingAttachments.isEmpty()) {
+                FileAttachment oldFile = existingAttachments.get(0);
+                fileAttachmentService.deleteFile(oldFile.getFileId());
+            }
+            // 새 사진 결속
+            saveImage(store.getMember(), menu.getMenuId(), "MENU", request.getImage());
+        }
+    }
+
+    // 🚨 팩트: 메뉴 완전 삭제 및 묶인 사진 동시 폭파 로직
+    @Transactional
+    public void deleteMenu(String loginId, Long storeId, Long menuId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getMember().getLoginId().equals(loginId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!menu.getStore().getStoreId().equals(storeId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        // 1. 하드디스크에 남아있는 메뉴 사진부터 찾아내서 물리적으로 폭파시킴
+        List<FileAttachment> existingAttachments =
+                fileAttachmentRepository.findByTargetTypeAndTargetId("MENU", menuId);
+
+        if (!existingAttachments.isEmpty()) {
+            FileAttachment oldFile = existingAttachments.get(0);
+            fileAttachmentService.deleteFile(oldFile.getFileId());
+        }
+
+        // 2. DB에서 메뉴 엔티티 완전히 삭제
+        menuRepository.delete(menu);
     }
 
     @Transactional(readOnly = true)

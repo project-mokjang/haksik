@@ -66,16 +66,27 @@ public class StoreController {
         return ResponseEntity.ok("영업 상태가 [" + status.name() + "](으)로 변경되었습니다.");
     }
 
-    //개별 메뉴 수정 (PATCH /api/stores/{storeId}/menus/{menuId})
-    @PatchMapping("/{storeId}/menus/{menuId}")
+    // 🚨 팩트: 개별 메뉴 수정 (JSON -> FormData 수신으로 교체 완료)
+    @PatchMapping(value = "/{storeId}/menus/{menuId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateMenu(
             Authentication authentication,
             @PathVariable Long storeId,
             @PathVariable Long menuId,
-            @Valid @RequestBody MenuUpdateRequest request) {
+            @Valid @ModelAttribute MenuUpdateRequest request) {
 
         storeService.updateMenu(authentication.getName(), storeId, menuId, request);
         return ResponseEntity.ok("메뉴 정보가 성공적으로 수정되었습니다.");
+    }
+
+    // 🚨 팩트: 증발했던 메뉴 완전 삭제 API 신설
+    @DeleteMapping("/{storeId}/menus/{menuId}")
+    public ResponseEntity<String> deleteMenu(
+            Authentication authentication,
+            @PathVariable Long storeId,
+            @PathVariable Long menuId) {
+
+        storeService.deleteMenu(authentication.getName(), storeId, menuId);
+        return ResponseEntity.ok("메뉴가 성공적으로 삭제되었습니다.");
     }
     // 프론트가 찌를 API 입구
     @GetMapping("/my")
