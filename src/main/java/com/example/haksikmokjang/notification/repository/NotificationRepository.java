@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
+    void deleteByMember(Member member);
     // 🚨 팩트: receiver -> member 로 교체
     List<Notification> findTop20ByMemberOrderByCreatedAtDesc(Member member);
 

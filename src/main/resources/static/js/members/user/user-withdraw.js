@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {
-            history.back(); // 취소 누르면 뒤로가기
+            location.href = '/api/view/user/my-page' // 취소 누르면 뒤로가기
         });
     }
 });
@@ -144,7 +144,8 @@ async function handleWithdraw(event) {
         return;
     }
 
-    if (showToast('정말 탈퇴하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.','error')) {
+    if (!confirm('정말 탈퇴하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.')) {
+        console.log("탈퇴가 취소되었습니다.");
         return; // 사용자가 취소 누르면 중단
     }
 

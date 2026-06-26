@@ -4,6 +4,8 @@ package com.example.haksikmokjang.member.signup.user.service;
 import com.example.haksikmokjang.fileattachment.repository.FileAttachmentRepository;
 import com.example.haksikmokjang.global.exception.CustomException;
 import com.example.haksikmokjang.global.exception.ErrorCode;
+import com.example.haksikmokjang.member.badge.respository.BadgeRepository;
+import com.example.haksikmokjang.member.badge.respository.MemberBadgeRepository;
 import com.example.haksikmokjang.member.core.domain.Member;
 import com.example.haksikmokjang.matching.matchingwaiting.repository.MatchingWaitingRepository;
 import com.example.haksikmokjang.member.core.repository.MemberLocationRepository;
@@ -12,6 +14,7 @@ import com.example.haksikmokjang.member.signup.user.domain.UserProfile;
 import com.example.haksikmokjang.member.signup.user.dto.FindIdRequest;
 import com.example.haksikmokjang.member.signup.user.repository.UserProfileRepository;
 import com.example.haksikmokjang.member.terms.repository.TermsAgreementRepository;
+import com.example.haksikmokjang.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileAttachmentRepository fileAttachmentRepository;
     private final TermsAgreementRepository termsAgreementRepository;
+    private final NotificationRepository notificationRepository;
+    private final MemberBadgeRepository memberBadgeRepository;
     //  회원 탈퇴
     public void withdrawImmediately(Long memberId, String inputPassword) {
 
@@ -53,6 +58,10 @@ public class UserService {
         fileAttachmentRepository.deleteByUploader(member);
 
         termsAgreementRepository.deleteByMember(member);
+
+        notificationRepository.deleteByMember(member);
+
+        memberBadgeRepository.deleteByMember(member);
         //  마지막으로 회원 본인 데이터 완전 삭제
         memberRepository.delete(member);
     }
