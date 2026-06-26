@@ -6,6 +6,7 @@ let isNicknameChecked = true;
 document.addEventListener('DOMContentLoaded', function () {
     const profileForm = document.getElementById('profileUpdateForm');
 
+
     if (!profileForm) {
         return;
     }
@@ -115,5 +116,60 @@ async function updateProfile(event) {
     } catch (error) {
         console.error(error);
         showToast('서버와의 통신에 실패했습니다.','error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const withdrawForm = document.getElementById('withdrawForm');
+    const cancelBtn = document.getElementById('withdrawCancelBtn');
+
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', handleWithdraw);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            history.back(); // 취소 누르면 뒤로가기
+        });
+    }
+});
+
+async function handleWithdraw(event) {
+    event.preventDefault(); // 폼 기본 제출 막기
+
+    const password = document.getElementById('passwordInput').value.trim();
+
+    if (!password) {
+        showToast('비밀번호를 입력해 주세요.', 'error');
+        return;
+    }
+
+    if (showToast('정말 탈퇴하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.','error')) {
+        return; // 사용자가 취소 누르면 중단
+    }
+
+    try {
+        const response = await fetch('/api/members/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: password }) // 비밀번호 담아서 전송
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showToast('회원 탈퇴가 완료되었습니다.', 'success');
+            setTimeout(() => {
+                location.href = '/api/view/login'; // 탈퇴 성공 시 로그인 페이지로
+            }, 1000);
+        } else {
+            // 비밀번호 틀렸을 때 등 백엔드에서 주는 에러 메시지 띄우기
+            showToast(result.message || '회원 탈퇴에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showToast('서버 통신 중 오류가 발생했습니다.', 'error');
     }
 }
