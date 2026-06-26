@@ -90,7 +90,7 @@ async function fetchStoreMenus(storeId) {
     }
 }
 
-// 4. 🚨 팩트: 메뉴 리스트 및 인라인 수정 폼 렌더링
+// 4. 🚨 팩트: 메뉴 리스트 렌더링 (사진 교체용 input 및 삭제 버튼 이식)
 function renderMenus(menus) {
     const container = document.getElementById('menuListContainer');
     container.innerHTML = '';
@@ -102,25 +102,28 @@ function renderMenus(menus) {
 
     menus.forEach(menu => {
         const li = document.createElement('li');
-        li.style.cssText = "background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: center; box-shadow: var(--shadow);";
+        li.style.cssText = "background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: center; box-shadow: var(--shadow); flex-wrap: wrap;";
 
-        // 사진 렌더링 (없으면 NO IMG 처리)
+        // 사진 렌더링
         let imgHTML = menu.imageId
             ? `<img src="/api/images/${menu.imageId}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line);" onerror="this.style.display='none'">`
             : `<div style="width: 80px; height: 80px; background: var(--card); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: var(--muted); border: 1px dashed var(--line);">NO IMG</div>`;
 
-        // 이름, 가격, 상태를 바로 수정할 수 있는 인라인 폼
         li.innerHTML = `
             ${imgHTML}
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 200px;">
                 <input type="text" id="edit-name-${menu.menuId}" value="${menu.name}" class="board-write-input" style="padding: 8px; font-size: 14px; margin-bottom: 0;">
                 <input type="number" id="edit-price-${menu.menuId}" value="${menu.price}" class="board-write-input" style="padding: 8px; font-size: 14px; margin-bottom: 0;">
+                
+                <input type="file" id="edit-image-${menu.menuId}" accept="image/*" class="board-write-input" style="padding: 8px; font-size: 12px; margin-bottom: 0;">
+
                 <div style="display: flex; gap: 8px;">
                     <select id="edit-status-${menu.menuId}" class="board-write-input" style="padding: 8px; font-size: 13px; margin-bottom: 0; flex: 1;">
                         <option value="ON_SALE" ${menu.salesStatus === 'ON_SALE' ? 'selected' : ''}>판매중</option>
                         <option value="SOLD_OUT" ${menu.salesStatus === 'SOLD_OUT' ? 'selected' : ''}>품절 (숨김)</option>
                     </select>
-                    <button onclick="updateExistingMenu(${menu.menuId})" style="background: var(--forest); color: white; border: none; border-radius: 8px; font-weight: 900; padding: 0 16px; cursor: pointer;">수정</button>
+                    <button onclick="updateExistingMenu(${menu.menuId})" style="background: var(--forest); color: white; border: none; border-radius: 8px; font-weight: 900; padding: 0 12px; cursor: pointer;">수정</button>
+                    <button onclick="deleteExistingMenu(${menu.menuId})" style="background: var(--red); color: white; border: none; border-radius: 8px; font-weight: 900; padding: 0 12px; cursor: pointer;">삭제</button>
                 </div>
             </div>
         `;
@@ -128,30 +131,60 @@ function renderMenus(menus) {
     });
 }
 
-// 5. 🚨 팩트: 수정한 데이터 백엔드로 쏘기 (PATCH)
+// 5. 🚨 팩트: 수정한 데이터 백엔드로 쏘기 (JSON 멸망 -> FormData 도입)
 async function updateExistingMenu(menuId) {
     const name = document.getElementById(`edit-name-${menuId}`).value.trim();
     const price = document.getElementById(`edit-price-${menuId}`).value.trim();
     const status = document.getElementById(`edit-status-${menuId}`).value;
+    const imageFile = document.getElementById(`edit-image-${menuId}`).files[0]; // 파일 낚아채기
 
     if(!name || !price) {
         if (typeof showToast === 'function') showToast('메뉴 이름과 가격을 정확히 입력해주세요.', 'error');
         return;
     }
 
+    // JSON.stringify를 폐기하고 서버가 원하는 FormData 객체를 조립합니다.
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('price', price);
+    formData.append('salesStatus', status);
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+
     try {
         const response = await fetch(`/api/stores/${currentStoreId}/menus/${menuId}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, price: parseInt(price), salesStatus: status })
+            // 🚨 팩트: FormData를 보낼 때는 브라우저가 알아서 Boundary 헤더를 세팅해야 하므로,
+            // 절대로 'Content-Type' 헤더를 수동으로 적어주면 안 됩니다. (적으면 에러 터짐)
+            body: formData
         });
 
         if (!response.ok) throw new Error(await extractErrorMessage(response));
 
         if (typeof showToast === 'function') showToast('메뉴 정보가 변경되었습니다.', 'success');
 
-        // 데이터 갱신 후 화면 리렌더링
-        fetchStoreMenus(currentStoreId);
+        fetchStoreMenus(currentStoreId); // 리스트 갱신
+    } catch(e) {
+        console.error(e);
+        if (typeof showToast === 'function') showToast(e.message, 'error');
+    }
+}
+
+// 6. 🚨 팩트: 메뉴 완전 삭제 액션 (DELETE)
+async function deleteExistingMenu(menuId) {
+    if (!confirm('정말 이 메뉴를 삭제하시겠습니까?')) return;
+
+    try {
+        const response = await fetch(`/api/stores/${currentStoreId}/menus/${menuId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error(await extractErrorMessage(response));
+
+        if (typeof showToast === 'function') showToast('메뉴가 삭제되었습니다.', 'success');
+
+        fetchStoreMenus(currentStoreId); // 삭제 즉시 리스트 갱신
     } catch(e) {
         console.error(e);
         if (typeof showToast === 'function') showToast(e.message, 'error');
