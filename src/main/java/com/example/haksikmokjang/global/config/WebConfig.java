@@ -18,10 +18,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadPath = Path.of(
-                System.getProperty("user.dir"),
-                uploadDir
-        ).toUri().toString();
+        // 팩트: 절대 경로(uploadDir)를 그대로 URI 형태로 변환하여 정적 리소스 매핑
+        String uploadPath = Path.of(uploadDir).toUri().toString();
 
         registry.addResourceHandler(uploadUrlPrefix + "/**")
                 .addResourceLocations(uploadPath);

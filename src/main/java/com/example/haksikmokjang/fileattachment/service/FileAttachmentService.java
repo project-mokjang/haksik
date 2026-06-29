@@ -53,8 +53,9 @@ public class FileAttachmentService {
             // 확장자 분리 (".jpg") 및 고유 파일명 생성
             String extension = getExtension(originalName);
             String savedFilename = UUID.randomUUID() + extension;
+
+            // 🚨 팩트: 절대 경로를 쓸 때는 쓸데없는 현재 디렉토리 호출을 완전히 제거해야 합니다.
             Path uploadPath = Path.of(
-                    System.getProperty("user.dir"),
                     uploadDir,
                     getUploadFolder(targetType)
             );

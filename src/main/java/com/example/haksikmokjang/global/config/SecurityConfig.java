@@ -29,7 +29,9 @@ public class SecurityConfig {
             "/js/**",
             "/images/**",
             "/bgimages/**",
-            "/favicon.ico"
+            "/favicon.ico",
+            "/uploads/**",      // 🚨 팩트: WebConfig에서 맵핑한 물리 파일 접근 경로 개방
+            "/api/images/**"    // 🚨 팩트: ImageController에서 쏴주는 이미지 파일 접근 경로 개방
     };
 
     private static final String[] PUBLIC_VIEW_URLS = {

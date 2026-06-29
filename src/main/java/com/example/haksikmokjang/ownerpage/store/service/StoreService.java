@@ -75,7 +75,7 @@ public class StoreService {
 
                 Menu savedMenu = menuRepository.save(newMenu);
 
-                // 🚨 타점 2: 교체된 범용 메서드를 MENU 타겟으로 격발
+                // 타점 2: 교체된 범용 메서드를 MENU 타겟으로 격발
                 if (menuImage != null && !menuImage.isEmpty()) {
                     saveImage(owner, savedMenu.getMenuId(), "MENU", menuImage);
                 }
