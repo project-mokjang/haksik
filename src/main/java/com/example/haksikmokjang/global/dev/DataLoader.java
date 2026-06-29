@@ -116,6 +116,7 @@ public class DataLoader implements ApplicationRunner {
         upsertTerms();
         Member admin = getOrCreateAdmin();
         List<Member> users = createUsersAndMatchingData(indukSchool);
+        applyLockedDummyUsers();
         List<Member> owners = createOwners(admin);
         List<Store> stores = createStores(owners);
 
@@ -128,7 +129,7 @@ public class DataLoader implements ApplicationRunner {
         entityManager.flush();
         System.out.println("========== 학식목장 더미 데이터 주입 완료 ==========");
         System.out.println("ADMIN  : admin / qwer1234");
-        System.out.println("USER   : user1 ~ user90 / qwer1234");
+        System.out.println("USER   : user1 ~ user100 / qwer1234");
         System.out.println("OWNER  : owner1 ~ owner30 / qwer1234");
         System.out.println("SCHOOL : 인덕대학교(induk.ac.kr)");
     }
@@ -171,11 +172,15 @@ public class DataLoader implements ApplicationRunner {
         cancelExistingTestWaitings();
 
         List<Member> users = new ArrayList<>();
-        for (int i = 1; i <= 90; i++) {
+        for (int i = 1; i <= 100; i++) {
             Member member = getOrCreateUser(i);
             UserProfile userProfile = getOrCreateUserProfile(i, member, school);
             updateLocation(i, userProfile);
-            createWaiting(i, userProfile);
+
+            if (!isLockedDummyUser(i)) {
+                createWaiting(i, userProfile);
+            }
+
             users.add(member);
         }
         return users;
@@ -190,7 +195,7 @@ public class DataLoader implements ApplicationRunner {
                         .email(loginId + "@" + SCHOOL_DOMAIN)
                         .phone("010-1000-" + String.format("%04d", index))
                         .role(MemberRole.USER)
-                        .accountStatus(AccountStatus.ACTIVE)
+                        .accountStatus(createUserAccountStatus(index))
                         .build()));
     }
 
@@ -209,8 +214,8 @@ public class DataLoader implements ApplicationRunner {
                 .birthDate(createBirthDate(index))
                 .gender(createGender(index))
                 .preferredFoodCategory(createFoodCategory(index))
-                .mannerTemperature(BigDecimal.valueOf(36.5 + (index % 5)))
-                .noShowCount(index % 4)
+                .mannerTemperature(createMannerTemperature(index))
+                .noShowCount(createNoShowCount(index))
                 .build());
     }
 
@@ -222,6 +227,48 @@ public class DataLoader implements ApplicationRunner {
                 .setParameter("member", member)
                 .getResultStream()
                 .findFirst();
+    }
+
+    private boolean isLockedDummyUser(int index) {
+        return index >= 91 && index <= 100;
+    }
+
+    private AccountStatus createUserAccountStatus(int index) {
+        return AccountStatus.ACTIVE;
+    }
+
+    private BigDecimal createMannerTemperature(int index) {
+        if (isLockedDummyUser(index)) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(36.5 + (index % 5));
+    }
+
+    private int createNoShowCount(int index) {
+        if (isLockedDummyUser(index)) {
+            return (index - 90) * 5;
+        }
+        return index % 4;
+    }
+
+    private void applyLockedDummyUsers() {
+        for (int index = 91; index <= 100; index++) {
+            String loginId = "user" + index;
+
+            memberRepository.findByLoginId(loginId)
+                    .ifPresent(member -> member.lockByTrust("매너온도 0도 및 노쇼 누적"));
+
+            entityManager.createQuery("""
+                    update UserProfile up
+                    set up.mannerTemperature = :mannerTemperature,
+                        up.noShowCount = :noShowCount
+                    where up.member.loginId = :loginId
+                    """)
+                    .setParameter("mannerTemperature", BigDecimal.ZERO)
+                    .setParameter("noShowCount", createNoShowCount(index))
+                    .setParameter("loginId", loginId)
+                    .executeUpdate();
+        }
     }
 
     private void updateLocation(int index, UserProfile userProfile) {
@@ -279,7 +326,7 @@ public class DataLoader implements ApplicationRunner {
     }
 
     private List<String> testUserLoginIds() {
-        return IntStream.rangeClosed(1, 90)
+        return IntStream.rangeClosed(1, 100)
                 .mapToObj(i -> "user" + i)
                 .toList();
     }
@@ -447,44 +494,73 @@ public class DataLoader implements ApplicationRunner {
     }
 
     private void createBadgesAndGiveTo(Member member) {
-        if (badgeRepository.count() == 0) {
-            Object[][] badgeData = {
-                    {"새싹 메이트", "회원가입을 완료한 사용자", BadgeConditionType.SIGNUP, 1, "🌱"},
-                    {"첫 학식", "첫 학식 메이트 매칭을 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 1, "🍚"},
-                    {"혼밥 탈출", "학식 메이트 매칭을 3회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 3, "🙌"},
-                    {"혼밥 마스터", "학식 메이트 매칭을 10회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 10, "👑"},
-                    {"밥약 입문자", "식사 약속을 1회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 1, "🥄"},
-                    {"밥약 고수", "식사 약속을 5회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 5, "🍱"},
-                    {"밥약 장인", "식사 약속을 15회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 15, "🏆"},
-                    {"인덕 인싸", "서로 다른 사용자와 식사 약속을 10회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_MEMBER_COUNT, 10, "😎"},
-                    {"매너 좋은 친구", "매너온도 37도 이상을 달성한 사용자", BadgeConditionType.MANNER_TEMPERATURE, 37, "😊"},
-                    {"매너왕", "매너온도 40도 이상을 달성한 사용자", BadgeConditionType.MANNER_TEMPERATURE, 40, "🔥"},
-                    {"따뜻한 한 끼", "상대방에게 좋은 평가를 5회 이상 받은 사용자", BadgeConditionType.GOOD_REVIEW_COUNT, 5, "🍲"},
-                    {"칭찬 부자", "칭찬을 10회 이상 받은 사용자", BadgeConditionType.PRAISE_COUNT, 10, "👍"},
-                    {"노쇼 제로", "노쇼 없이 식사 약속을 5회 이상 완료한 사용자", BadgeConditionType.NO_SHOW_FREE_COUNT, 5, "✅"},
-                    {"약속 지킴이", "노쇼 없이 식사 약속을 10회 이상 완료한 사용자", BadgeConditionType.NO_SHOW_FREE_COUNT, 10, "🤝"},
-                    {"시간 약속왕", "약속 시간에 늦지 않고 10회 이상 참여한 사용자", BadgeConditionType.ON_TIME_COUNT, 10, "⏰"},
-                    {"학식 탐험가", "서로 다른 메뉴로 매칭을 5회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_MENU_COUNT, 5, "🧭"},
-                    {"메뉴 개척자", "새로운 메뉴 카테고리로 매칭을 10회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_MENU_COUNT, 10, "🍜"},
-                    {"캠퍼스 메이트", "같은 학교 사용자와 매칭을 10회 이상 완료한 사용자", BadgeConditionType.SAME_SCHOOL_MATCHING_COUNT, 10, "🏫"},
-                    {"전국구 메이트", "다른 학교 사용자와 매칭을 3회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_SCHOOL_MATCHING_COUNT, 3, "🌍"},
-                    {"믿음직한 메이트", "학식 메이트 매칭을 20회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 20, "🛡️"}
-            };
+        entityManager.createQuery("delete from MemberBadge mb").executeUpdate();
+        entityManager.createQuery("delete from Badge b").executeUpdate();
 
-            List<Badge> badges = new ArrayList<>();
-            for (Object[] data : badgeData) {
-                badges.add(new Badge(
-                        (String) data[0],
-                        (String) data[1],
-                        (BadgeConditionType) data[2],
-                        (Integer) data[3],
-                        (String) data[4]
-                ));
-            }
-            badgeRepository.saveAll(badges);
+        Object[][] badgeData = {
+                {"새싹 메이트", "회원가입을 완료한 사용자", BadgeConditionType.SIGNUP, 1, "🌱"},
+
+                {"첫 학식", "학식 메이트 매칭을 1회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 1, "🍚"},
+                {"혼밥 탈출", "학식 메이트 매칭을 3회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 3, "🙌"},
+                {"학식 단골", "학식 메이트 매칭을 5회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 5, "🥢"},
+                {"혼밥 마스터", "학식 메이트 매칭을 10회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 10, "👑"},
+                {"믿음직한 메이트", "학식 메이트 매칭을 20회 이상 완료한 사용자", BadgeConditionType.MATCHING_COUNT, 20, "💚"},
+
+                {"밥약 입문자", "식사 약속을 1회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 1, "🥄"},
+                {"밥약 고수", "식사 약속을 5회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 5, "🍱"},
+                {"밥약 마스터", "식사 약속을 10회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 10, "🍽"},
+                {"밥약 장인", "식사 약속을 15회 이상 완료한 사용자", BadgeConditionType.MEAL_APPOINTMENT_COUNT, 15, "🏆"},
+
+                {"인덕 인싸", "서로 다른 사용자와 식사 약속을 3명 이상 완료한 사용자", BadgeConditionType.DIFFERENT_MEMBER_COUNT, 3, "😎"},
+                {"약속 부자", "서로 다른 사용자와 식사 약속을 10명 이상 완료한 사용자", BadgeConditionType.DIFFERENT_MEMBER_COUNT, 10, "🤝"},
+
+                {"매너 좋은 친구", "매너온도 37도 이상을 달성한 사용자", BadgeConditionType.MANNER_TEMPERATURE, 37, "😊"},
+                {"매너왕", "매너온도 40도 이상을 달성한 사용자", BadgeConditionType.MANNER_TEMPERATURE, 40, "🔥"},
+
+                {"따뜻한 한 끼", "좋은 평가를 5회 이상 받은 사용자", BadgeConditionType.GOOD_REVIEW_COUNT, 5, "🍲"},
+                {"칭찬 부자", "칭찬 내용을 10회 이상 받은 사용자", BadgeConditionType.PRAISE_COUNT, 10, "👍"},
+
+                {"노쇼 제로", "노쇼 없이 식사 약속을 5회 이상 완료한 사용자", BadgeConditionType.NO_SHOW_FREE_COUNT, 5, "✅"},
+                {"시간 약속왕", "약속 시간에 늦지 않고 10회 이상 참여한 사용자", BadgeConditionType.ON_TIME_COUNT, 10, "⏰"},
+
+                {"캠퍼스 메이트", "같은 학교 사용자와 매칭을 10회 이상 완료한 사용자", BadgeConditionType.SAME_SCHOOL_MATCHING_COUNT, 10, "🏫"},
+                {"전국구 메이트", "다른 학교 사용자와 매칭을 3회 이상 완료한 사용자", BadgeConditionType.DIFFERENT_SCHOOL_MATCHING_COUNT, 3, "🌍"}
+        };
+
+        List<Badge> badges = new ArrayList<>();
+        for (Object[] data : badgeData) {
+            badges.add(new Badge(
+                    (String) data[0],
+                    (String) data[1],
+                    (BadgeConditionType) data[2],
+                    (Integer) data[3],
+                    (String) data[4]
+            ));
         }
 
-        for (Badge badge : badgeRepository.findAll()) {
+        badgeRepository.saveAll(badges);
+        entityManager.flush();
+
+        Badge signupBadge = badges.stream()
+                .filter(badge -> badge.getConditionType() == BadgeConditionType.SIGNUP)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("회원가입 뱃지가 없습니다."));
+
+        List<Member> users = entityManager.createQuery("""
+            select m
+            from Member m
+            where m.loginId in :loginIds
+            """, Member.class)
+                .setParameter("loginIds", testUserLoginIds())
+                .getResultList();
+
+        for (Member user : users) {
+            if (!memberBadgeRepository.existsByMemberAndBadge(user, signupBadge)) {
+                memberBadgeRepository.save(new MemberBadge(user, signupBadge));
+            }
+        }
+
+        for (Badge badge : badges) {
             if (!memberBadgeRepository.existsByMemberAndBadge(member, badge)) {
                 memberBadgeRepository.save(new MemberBadge(member, badge));
             }

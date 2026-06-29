@@ -589,7 +589,6 @@
     cursor: not-allowed;
 }
 
-
 /* 초대 모달 */
 #inviteMemberModal {
     align-items: center;
@@ -1324,33 +1323,3 @@
     font-weight: 900;
     cursor: pointer;
 }
-<<<<<<< Updated upstream
-=======
-
-.chat-shell .app-header {
-    display: grid !important;
-    grid-template-columns: 40px 1fr 40px !important;
-    align-items: center !important;
-}
-
-.chat-shell .app-header-title {
-    text-align: center;
-}
-
-.chat-shell .app-header-right {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-
-.chat-menu-button {
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1;
-    background: transparent;
-    border: none;
-    color: #123f35;
-    padding: 0;
-}
->>>>>>> Stashed changes
